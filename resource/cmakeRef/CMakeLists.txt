@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-project("cmake test 1")
+project("ZDS")
 include(generalSettings.cmake)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

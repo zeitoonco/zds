@@ -231,7 +231,7 @@ string JVariable::toString() {
 	if (this->isFloat() || this->isBoolian())
 		return value;
 	else
-		return "\"" + value + "\"";
+		return "\"" + JSONUtility::encodeString(value) + "\"";
 }
 size_t JVariable::size() {
 	if (isFloat() || isInt() || isBoolian())
@@ -408,6 +408,9 @@ size_t JStruct::size() {
 	return fields.size();
 }
 void JStruct::add(string name, string value) {
+	fields.push_back(new JItem(name, value, this));
+}
+void JStruct::add(string name, JValue* value){
 	fields.push_back(new JItem(name, value, this));
 }
 void JStruct::addIgnored(string name, string value) {

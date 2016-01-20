@@ -36,7 +36,7 @@ public:
 		_line = line;
 		_file = file;
 	}
-	virtual ~exceptionEx() {
+	virtual ~exceptionEx() throw(){
 		delete _innerException;
 	}
 

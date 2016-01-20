@@ -24,7 +24,7 @@ enum JTypes {
 	JTstruct, JTarray, JTvariable, JTignored
 };
 
-class JValue {
+class JValue { //todo: getValue & ==string operator
 public:
 	virtual ~JValue() {
 	}
@@ -98,6 +98,7 @@ public:
 	virtual ~JStruct();
 
 	void add(string name, string value);
+	void add(string name, JValue* value);
 	void addIgnored(string name, string value);
 	string toString();
 	void fromString(string str);
@@ -125,6 +126,10 @@ public:
 	}
 	JArray(string json) {
 		this->fromString(json);
+	}
+	JArray(vector<string> list) {
+		for (int i = 0; i < list.size(); i++)
+			add(list[i]);
 	}
 	virtual ~JArray();
 

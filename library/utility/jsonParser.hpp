@@ -39,9 +39,17 @@ public:
 	JValue& operator [](int i);
 	JValue& operator [](string name);
 	virtual size_t size()=0;
+	virtual string getValue()=0;
 
 	inline string getNameAndType() {
 		return "JValue";
+	}
+
+	inline bool operator==(const string& rhs) {
+		return (getValue() == rhs);
+	}
+	inline bool operator!=(const string& rhs) {
+		return !(getValue() == rhs);
 	}
 };
 
@@ -80,9 +88,17 @@ public:
 	JTypes type() {
 		return value->getType();
 	}
+	string getValue();
 
 	inline string getNameAndType() {
 		return "JItem[" + name + "]";
+	}
+
+	inline bool operator==(const string& rhs) {
+		return (getValue() == rhs);
+	}
+	inline bool operator!=(const string& rhs) {
+		return !(getValue() == rhs);
 	}
 };
 
@@ -112,9 +128,17 @@ public:
 	JTypes getType() {
 		return JTypes::JTstruct;
 	}
+	string getValue();
 
 	inline string getNameAndType() {
 		return "JStruct";
+	}
+
+	inline bool operator==(const string& rhs) {
+		return (getValue() == rhs);
+	}
+	inline bool operator!=(const string& rhs) {
+		return !(getValue() == rhs);
 	}
 };
 
@@ -128,7 +152,7 @@ public:
 		this->fromString(json);
 	}
 	JArray(vector<string> list) {
-		for (int i = 0; i < list.size(); i++)
+		for (size_t i = 0; i < list.size(); i++)
 			add(list[i]);
 	}
 	virtual ~JArray();
@@ -150,9 +174,17 @@ public:
 	JTypes getType() {
 		return JTypes::JTarray;
 	}
+	string getValue();
 
 	inline string getNameAndType() {
 		return "JArray";
+	}
+
+	inline bool operator==(const string& rhs) {
+		return (getValue() == rhs);
+	}
+	inline bool operator!=(const string& rhs) {
+		return !(getValue() == rhs);
 	}
 };
 
@@ -192,6 +224,12 @@ public:
 		return "JVariable";
 	}
 
+	inline bool operator==(const string& rhs) {
+		return (getValue() == rhs);
+	}
+	inline bool operator!=(const string& rhs) {
+		return !(getValue() == rhs);
+	}
 };
 
 class JIgnored: public JValue {
@@ -211,9 +249,17 @@ public:
 	JTypes getType() {
 		return JTypes::JTignored;
 	}
+	string getValue();
 
 	inline string getNameAndType() {
 		return "JIgnored";
+	}
+
+	inline bool operator==(const string& rhs) {
+		return (getValue() == rhs);
+	}
+	inline bool operator!=(const string& rhs) {
+		return !(getValue() == rhs);
 	}
 };
 

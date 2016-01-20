@@ -98,6 +98,10 @@ size_t JItem::size() {
 JItem::~JItem() {
 	delete value;
 }
+
+string JItem::getValue() {
+	return this->value->getValue();
+}
 //-------------------------------jValue
 JValue* JValue::praseString(string str) {
 	string trimed = Strings::trim(str);
@@ -321,9 +325,14 @@ void JArray::removeAt(int index) {
 size_t JArray::size() {
 	return fields.size();
 }
+string JArray::getValue() {
+	return this->toString();
+}
+
+//-------------------------------jStruct
 
 //todo : check new&delete in from strings,destructor
-//-------------------------------jStruct
+
 string JStruct::toString() {
 	stringstream str;
 	str << '{';
@@ -410,11 +419,14 @@ size_t JStruct::size() {
 void JStruct::add(string name, string value) {
 	fields.push_back(new JItem(name, value, this));
 }
-void JStruct::add(string name, JValue* value){
+void JStruct::add(string name, JValue* value) {
 	fields.push_back(new JItem(name, value, this));
 }
 void JStruct::addIgnored(string name, string value) {
 	fields.push_back(new JItem(name, (JValue*) new JIgnored(value), this));
+}
+string JStruct::getValue() {
+	return this->toString();
 }
 
 JStruct::~JStruct() {
@@ -433,4 +445,8 @@ void JIgnored::fromString(string str) {
 
 size_t JIgnored::size() {
 	return this->value.size();
+}
+
+string JIgnored::getValue() {
+	return this->value;
 }

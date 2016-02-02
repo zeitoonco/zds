@@ -9,6 +9,7 @@
 #define UTILITY_
 
 #include <string>
+#include <string.h>
 #include <sstream>
 
 using namespace std;
@@ -16,18 +17,13 @@ using namespace std;
 typedef unsigned int uint;
 
 namespace zeitoon {
-
-/**
- * namespace utility kelass va tavabie darad ke komak mikonand baraye kelass haaye datatypes taa string ha ra
- * parese konand va kollan modiarat rooye string ha dashte bashand.
- *
- */
 namespace utility {
 
 class JSONUtility {
 protected:
 	const static int specialCharsLen = 6;
 	const static char specialChars[specialCharsLen][2];
+
 public:
 
 	/**getEndOfString()
@@ -164,6 +160,8 @@ public:
 class Strings {
 protected:
 	static const char* defIgnrChrs;
+	static const char* xBaseDigit;
+
 public:
 
 	/**compare() do string ra migirad va check mikonad ba ham barabar and ya na.
@@ -298,34 +296,69 @@ public:
 	static string itoa(long long int val) {
 		return toString(val);
 	}
-
-	/**atoi() stringe voroodi ra be integer tabdil mikonad.(agar integeri dar string bashad)
-	 *
-	 * @param val stringi ke bayad tabdil be integer shavad.
-	 *
-	 * @return integeri ke az string tolid shode ast.
-	 */
-	static long long int atoi(string val) {
-		stringstream ss(val);
-		long long int t;
-		ss >> t;
-		return t;
+	static string itoa(long int val) {
+		return toString(val);
+	}
+	static string itoa(int val) {
+		return toString(val);
+	}
+	static string itoa(unsigned long long int val) {
+		return toString(val);
+	}
+	static string itoa(unsigned long int val) {
+		return toString(val);
+	}
+	static string itoa(unsigned int val) {
+		return toString(val);
 	}
 
-	static string toString(long long int val) {
-		stringstream ss;
-		ss << val;
-		return ss.str();
+	static string toString(int val, unsigned int base = 10) {
+		return toString((long long int) val, base);
 	}
-	static string toString(unsigned long long int val) {
-		stringstream ss;
-		ss << val;
-		return ss.str();
+	static string toString(long int val, unsigned int base = 10) {
+		return toString((long long int) val, base);
 	}
+	static string toString(long long int val, unsigned int base = 10) {
+		string n = toString((unsigned long long int) val, base);
+		return (val < 0 ? "-" + n : n);
+	}
+
+	static string toString(unsigned int val, unsigned int base = 10) {
+		return toString((unsigned long long int) val, base);
+	}
+	static string toString(unsigned long int val, unsigned int base = 10) {
+		return toString((unsigned long long int) val, base);
+	}
+	static string toString(unsigned long long int val, unsigned int base = 10) {
+		if (base == 10) {
+			return to_string(val);
+		} else {
+			char num[65];
+			memset(num, 0, 65);
+			int i;
+			for (i = 0; i < 64 && val >= base; i++) {
+				num[i] = xBaseDigit[val % base];
+				val = val / base;
+			}
+			num[i++] = xBaseDigit[val];
+			char t;
+			for (int j = 0; j < (i / 2); j++) {
+				t = num[j];
+				num[j] = num[i - j - 1];
+				num[i - j - 1] = t;
+			}
+			return string(num);
+		}
+	}
+
 	static string toString(long double val) {
-		stringstream ss;
-		ss << val;
-		return ss.str();
+		return to_string(val);
+	}
+	static string toString(double val) {
+		return to_string(val);
+	}
+	static string toString(float val) {
+		return to_string(val);
 	}
 	static string toString(bool val) {
 		return string(val ? "true" : "false");
@@ -340,6 +373,49 @@ public:
 	static const char* typeString[__MAX];
 	static const char* toString(MessageTypes_ value) {
 		return typeString[value];
+	}
+};
+
+class CommunicationUtility {
+public:
+	static string getRandomID() {
+		srand(time(NULL));
+		return Strings::itoa(rand());
+	}
+
+	static string makeCommand(string node, string data) {
+		return makeCommand(node, "", "", data);
+	}
+	static string makeCommand(string node, string id, string data) {
+		return makeCommand(node, id, "", data);
+	}
+	static string makeCommand(string node, string id, string from, string data) {
+		return ("{\"type\" : \"call\" , \"node\" : \"" + node + "\" " +
+				(id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
+				(from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
+				(data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+				"}");
+	}
+
+	static string makeCallback(string node, string data) {
+		return makeCommand(node, "", "", data);
+	}
+	static string makeCallback(string node, string id, string data) {
+		return makeCommand(node, id, "", data);
+	}
+	static string makeCallback(string node, string id, string from, string data) {
+		return ("{\"type\" : \"callback\" , \"node\" : \"" + node + "\" " +
+				(id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
+				(from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
+				(data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+				"}");
+	}
+
+	static string makeEvent(string node, string from, string data) {
+		return ("{\"type\" : \"fire\" , \"node\" : \"" + node + "\" " +
+				(from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
+				(data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+				"}");
 	}
 };
 

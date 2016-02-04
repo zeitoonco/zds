@@ -21,6 +21,7 @@ const char JSONUtility::specialChars[specialCharsLen][2] = { { '\\', '\\' },  { 
  */
 const char* Strings::defIgnrChrs = " \r\n\t";
 
+const char* Strings::xBaseDigit="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const char* MessageTypes::typeString[__MAX] = { "fire", "call", "callback" };
 

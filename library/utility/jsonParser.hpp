@@ -196,6 +196,7 @@ public:
 	JVariable(string ivalue) {
 		fromString(ivalue);
 	}
+	bool isNull();
 	bool isInt();
 	bool isFloat();
 	bool isBoolian();

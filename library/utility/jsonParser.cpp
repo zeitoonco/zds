@@ -137,6 +137,10 @@ JValue& JValue::operator [](string name) {
 }
 
 //-------------------------------jVariable
+bool JVariable::isNull(){//TODO: BE GIT EZAFE SHAVAD
+return (Strings::compare("NULL",value)==0);
+}
+
 bool JVariable::isInt() {
 	if (value.length() == 0)
 		return false;
@@ -232,7 +236,7 @@ void JVariable::fromString(string str) {
 	value = str;
 }
 string JVariable::toString() {
-	if (this->isFloat() || this->isBoolian())
+	if (this->isFloat() || this->isBoolian() || this->isNull())
 		return value;
 	else
 		return "\"" + JSONUtility::encodeString(value) + "\"";
@@ -319,6 +323,8 @@ void JArray::remove(JValue* value) {
 }
 
 void JArray::removeAt(int index) {
+	if (index < 0 || index >= fields.size())
+		EXToutOfRange("Invalid index.");
 	fields.erase(fields.begin() + index);
 }
 

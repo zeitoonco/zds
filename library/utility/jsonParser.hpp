@@ -48,6 +48,7 @@ public:
 	inline bool operator==(const string& rhs) {
 		return (getValue() == rhs);
 	}
+
 	inline bool operator!=(const string& rhs) {
 		return !(getValue() == rhs);
 	}

@@ -137,7 +137,7 @@ JValue& JValue::operator [](string name) {
 }
 
 //-------------------------------jVariable
-bool JVariable::isNull(){//TODO: BE GIT EZAFE SHAVAD
+bool JVariable::isNull(){
 return (Strings::compare("NULL",value)==0);
 }
 
@@ -147,17 +147,17 @@ bool JVariable::isInt() {
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
 		if ((str[i] < 48 || str[i] > 57)	//Numbers
-		&& str[i] != 32 && str[i] != 46 && str[i] != 43)	// ' ','-','+'
+		&& !((str[i] == 45 || str[i] == 43) && i==0))	// ' ','-','+'
 			return false;
 	return true;
 }
-bool JVariable::isFloat() {
+bool JVariable::isFloat() { //TODO: make sure that 'e','E','.' r only used once?
 	if (value.length() == 0)
 		return false;
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
 		if ((str[i] < 48 || str[i] > 57)	//Numbers
-		&& str[i] != 32 && str[i] != 45 && str[i] != 46 && str[i] != 43	// ' ','.','-','+'
+		&& str[i] != 46 && !((str[i] == 45 || str[i] == 43) && i==0)	// '.','-','+'
 		&& str[i] != 101 && str[i] != 69)	//e & E
 			return false;
 	return true;
@@ -270,7 +270,9 @@ void JArray::fromString(string str) {
 	str = Strings::trim(str);
 	if (str[0] != '[')
 		EXTcantParseString("can't parse string as array");
-	str = str.substr(1, str.size() - 2);
+	str = Strings::trim(str.substr(1, str.size() - 2));
+	if (str.length()==0)
+		return;
 	string parsed;
 	size_t q = 0, j = 0;
 	bool ready = false;
@@ -456,3 +458,5 @@ size_t JIgnored::size() {
 string JIgnored::getValue() {
 	return this->value;
 }
+
+

@@ -225,6 +225,8 @@ public:
 	 *
 	 */
 	static string crtrim(string a, string ignoreChars = " ") {
+		if (a.length()==0)
+			return "";
 		for (uint i = a.length() - 1; i >= 0; i--)
 			if (ignoreChars.find(a[i]) == string::npos)
 				return a.substr(0, i + 1);

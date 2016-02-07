@@ -65,13 +65,16 @@ public:
 	 *
 	 */
 	void connect() {
-		tcp::resolver resolver(io_service);
-		stringstream str;
-		str << server.port;
-		const char* port = str.str().c_str();
-		tcp::resolver::query query(server.ip.c_str(), port);
-		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-		boost::asio::connect(socket, endpoint_iterator);
+		//tcp::resolver resolver(io_service);
+		//stringstream str;
+		//str << server.port;
+		//const char* port = str.str().c_str();
+		//tcp::resolver::query query(server.ip.c_str(), port);
+		//tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+//cerr<<"IP"<<server.ip<<";";
+		tcp::endpoint connectionEndpoint(boost::asio::ip::address_v4::from_string(server.ip), server.port);
+		socket.connect(connectionEndpoint);
+		//boost::asio::connect(socket, endpoint_iterator);
 		connected = true;
 		boost::thread readThread(&NetworkHub_Client::read, this);
 	}
@@ -87,10 +90,13 @@ public:
 			boost::system::error_code error;
 			boost::array<char, 10240> buf;
 			size_t len = socket.read_some(boost::asio::buffer(buf), error);
-			if (receiveFunc != NULL && receiveFuncOwner != NULL)
-				receiveFunc(receiveFuncOwner, string(buf.data(), len));
+			if (receiveFunc != NULL) {
+				if (receiveFuncOwner != NULL)
+					receiveFunc(receiveFuncOwner, string(buf.data(), len)); //TODO:run on new thread
+				else
+					receiveFunc(NULL, string(buf.data(), len)); //TODO:run on new thread
+			}
 			//receiveFunc(string(buf.data(), len));
-
 		}
 	}
 

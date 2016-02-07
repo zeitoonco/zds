@@ -9,10 +9,10 @@
 #include <boost/asio.hpp>
 #include <string.h>
 #include <boost/thread.hpp>
+#include <boost/array.hpp>
 
 namespace zeitoon {
 namespace utility {
-
 
 using namespace std;
 
@@ -32,7 +32,8 @@ public:
 	tcp::socket *socket;
 };
 
-typedef void (*receiveFuncP)(NetClient*, string);/**< define pointer to function */
+//typedef void (*receiveFuncP)(NetClient*, string);/**< define pointer to function */
+typedef void (*receiveFuncP)(void*, NetClient*, string);
 
 /**class NetworkHub
  *
@@ -48,7 +49,8 @@ private:
 	boost::asio::io_service io_service;/**< baraye estefade az ketabkhane boost.asio, bayad yek io_service sakht ta in io_service polli beine tavabe e libarary ba system bashad */
 	tcp::acceptor acceptor;/**< baraye connect kardan va ghabool kardn etesaale client jadid be server */
 	bool isListen;
-	receiveFuncP receivefunc;/**< dar in moteghaeir, functioni ke az client daryaaft mishavad ra zakhire mikonad. in function neshan midahad ke data be kodaam fanction bayad ersal shavad*/
+	receiveFuncP receiveFunc;/**< dar in moteghaeir, functioni ke az client daryaaft mishavad ra zakhire mikonad. in function neshan midahad ke data be kodaam fanction bayad ersal shavad*/
+	void* receiveFuncOwner;
 
 public:
 
@@ -62,7 +64,7 @@ public:
 	 */
 	NetworkHub(int port) :
 			listenPort(port), acceptor(io_service,
-					tcp::endpoint(tcp::v4(), listenPort)), isListen(true),receivefunc(NULL) {
+					tcp::endpoint(tcp::v4(), listenPort)), isListen(true), receiveFunc(NULL) {
 	}
 
 	/**read() baraye khandane data az client...
@@ -76,7 +78,7 @@ public:
 	 */
 	void read(NetClient& temp) {
 		while (isListen) {
-			boost::array<char, 128> buf;
+			boost::array<char, 10240> buf;
 			boost::system::error_code error;
 			size_t len = temp.socket->read_some(boost::asio::buffer(buf),
 					error);
@@ -84,7 +86,14 @@ public:
 				break;
 			else if (error)
 				throw boost::system::system_error(error);
-			receivefunc(&temp, string(buf.data(), len));
+
+			if (receiveFunc != NULL) {
+				if (receiveFuncOwner != NULL)
+					receiveFunc(receiveFuncOwner, &temp, string(buf.data(), len)); //TODO:run on new thread
+				else
+					receiveFunc(NULL, &temp, string(buf.data(), len)); //TODO:run on new thread
+			}
+			//receivefunc(&temp, string(buf.data(), len));
 		}
 	}
 
@@ -149,8 +158,9 @@ public:
 	/**registerReceiveFunc functioni ke migirad ra mosavi functione class gharar midahad.
 	 *
 	 */
-	void registerReceiveFunc(receiveFuncP func) {
-		receivefunc = func;
+	void registerReceiveFunc(void * owner, receiveFuncP func) {
+		receiveFunc = func;
+		receiveFuncOwner = owner;
 	}
 
 };

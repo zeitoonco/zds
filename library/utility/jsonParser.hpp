@@ -125,6 +125,7 @@ public:
 	}
 	JValue& operator [](int i);
 	JValue& operator [](string name);
+	JItem* getField(string name);
 	size_t size();
 	JTypes getType() {
 		return JTypes::JTstruct;

@@ -137,8 +137,8 @@ JValue& JValue::operator [](string name) {
 }
 
 //-------------------------------jVariable
-bool JVariable::isNull(){
-return (Strings::compare("NULL",value)==0);
+bool JVariable::isNull() {
+	return (Strings::compare("NULL", value) == 0);
 }
 
 bool JVariable::isInt() {
@@ -147,7 +147,7 @@ bool JVariable::isInt() {
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
 		if ((str[i] < 48 || str[i] > 57)	//Numbers
-		&& !((str[i] == 45 || str[i] == 43) && i==0))	// ' ','-','+'
+		&& !((str[i] == 45 || str[i] == 43) && i == 0))	// ' ','-','+'
 			return false;
 	return true;
 }
@@ -157,8 +157,8 @@ bool JVariable::isFloat() { //TODO: make sure that 'e','E','.' r only used once?
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
 		if ((str[i] < 48 || str[i] > 57)	//Numbers
-		&& str[i] != 46 && !((str[i] == 45 || str[i] == 43) && i==0)	// '.','-','+'
-		&& str[i] != 101 && str[i] != 69)	//e & E
+		&& str[i] != 46 && !((str[i] == 45 || str[i] == 43) && i == 0)	// '.','-','+'
+				&& str[i] != 101 && str[i] != 69)	//e & E
 			return false;
 	return true;
 }
@@ -271,7 +271,7 @@ void JArray::fromString(string str) {
 	if (str[0] != '[')
 		EXTcantParseString("can't parse string as array");
 	str = Strings::trim(str.substr(1, str.size() - 2));
-	if (str.length()==0)
+	if (str.length() == 0)
 		return;
 	string parsed;
 	size_t q = 0, j = 0;
@@ -325,7 +325,7 @@ void JArray::remove(JValue* value) {
 }
 
 void JArray::removeAt(int index) {
-	if (index < 0 || index >= fields.size())
+	if (index < 0 || index >= (int) fields.size())
 		EXToutOfRange("Invalid index.");
 	fields.erase(fields.begin() + index);
 }
@@ -420,6 +420,13 @@ JValue& JStruct::operator [](string name) {
 			return *(itm->value);
 	}
 	EXTinvalidName("cant find " + name);
+}
+JItem* JStruct::getField(string name) {
+	for (auto itm : fields) {
+		if (Strings::compare(itm->name, name, false) == 0)
+			return itm;
+	}
+	return NULL;
 }
 size_t JStruct::size() {
 	return fields.size();

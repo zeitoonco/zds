@@ -72,6 +72,14 @@ void CommunicationMediator::registerHook(string name) {
 void CommunicationMediator::removeHook(string name) {
 	sm->send(CommunicationUtility::makeCommand("removeHook", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
 }
+
+void zeitoon::utility::CommunicationMediator::errorReport(std::string node, std::string id, std::string desc) {
+	sm->send(
+			"{\"type\" : \"call\" , \"node\" : \"error\" , \"data\" : {\"node\" : \"" + node + "\" , \"id\" : \"" + id
+					+ "\" , \"description\" : \"" + desc + "\} }");
+
+}
+
 bool CommunicationMediator::dataReceive(string data) {
 	JStruct js(data);
 	string id, dt;

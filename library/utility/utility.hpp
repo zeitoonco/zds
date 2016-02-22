@@ -400,10 +400,10 @@ public:
 	}
 
 	static string makeCallback(string node, string data) {
-		return makeCommand(node, "", "", data);
+		return makeCallback(node, "", "", data);
 	}
 	static string makeCallback(string node, string id, string data) {
-		return makeCommand(node, id, "", data);
+		return makeCallback(node, id, "", data);
 	}
 	static string makeCallback(string node, string id, string from, string data) {
 		return ("{\"type\" : \"callback\" , \"node\" : \"" + node + "\" " +

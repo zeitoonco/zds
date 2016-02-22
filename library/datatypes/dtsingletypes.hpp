@@ -359,7 +359,6 @@ public:
 	 *
 	 */
 	void fromString(string data, SerializationType type, bool checkName = true) {
-		int i = 0;
 		IntType val;
 		switch (type) {
 		case JSON:
@@ -687,7 +686,6 @@ public:
 	 *
 	 */
 	void fromString(string data, SerializationType type, bool checkName = true) {
-		int i = 0;
 		FloatType val;
 		string name;
 		stringstream str(data);

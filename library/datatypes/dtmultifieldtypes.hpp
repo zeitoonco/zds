@@ -571,18 +571,20 @@ public:
 	 * @return version DTSruct.
 	 *
 	 */
-	static size_t getVersion() {
-		return 0;
-	}
+	virtual size_t getVersion()=0;
 
 	/**getMinSupportedVersion() minimom versione DTStruct ra barmigardand.
 	 *
 	 * @return minimom version DTSruct.
 	 *
 	 */
-	static size_t getMinSupportedVersion() {
-		return 0;
-	}
+	virtual size_t getMinSupportedVersion()=0;
+
+	/**
+	 * getMinSupportedVersionWOConversation() kamterin versioni ke lazem ast taa tavabe seda zade shavand ra
+	 * barmigardanad
+	 */
+	virtual size_t getMinSupportedVersionWOConversation()=0;
 
 	/**remove() yek naam daryaft mikonad va dar list object ba in naam ra peida mikonad va aan ra az list hazf mikonad.
 	 *
@@ -879,15 +881,6 @@ public:
 	 */
 	static string getTypeName() {
 		return "DTStruct";
-	}
-protected:
-
-	/**
-	 * getMinSupportedVersionWOConversation() kamterin versioni ke lazem ast taa tavabe seda zade shavand ra
-	 * barmigardanad
-	 */
-	static size_t getMinSupportedVersionWOConversation() {
-		return 0;
 	}
 
 private:

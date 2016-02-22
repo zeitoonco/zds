@@ -46,6 +46,7 @@ private:
 	void removeCommand(string name);
 	void registerHook(string name);
 	void removeHook(string name);
+	void errorReport(std::string node, std::string id, std::string desc);
 	bool dataReceive(string data);
 
 	string getNameAndType() {

@@ -17,10 +17,10 @@ namespace utility {
 
 class CommunicationHandlerInterface {
 private:
-	ServerMediator sm;
 	map<string, std::chrono::system_clock::time_point> pingtimes;
 
 public:
+	ServerMediator sm;
 	CommunicationHandlerInterface(CommunicationHandlerInterface *owner, string serverIP, int serverPort) :
 			sm(owner, serverIP, serverPort) {
 	}
@@ -47,7 +47,7 @@ public:
 	virtual string getInstallInfo() = 0;
 	virtual string getInstallID() =0;
 	virtual string getServiceName()=0;
-	virtual string getServiceVersion()=0;
+	virtual size_t getServiceVersion()=0;
 	virtual string changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion, int &newVersion)=0;
 
 	virtual void onError(string node, string id, string description)=0;
@@ -69,7 +69,7 @@ public:
 			} else if (!Strings::compare(node, "hello")) {
 				string id = getInstallID();
 				sm.send(
-						"{\"type\" : \"internal\" , \"node\" : \"hello\" , \"name\" : \"" + getServiceName() + "\" , \"version\" : \"5\""
+						"{\"type\" : \"internal\" , \"node\" : \"hello\" , \"name\" : \"" + getServiceName() + "\" , \"version\" : " + std::to_string(this->getServiceVersion())
 								+ (id.length() > 0 ? " , \"id\" : \"" + getInstallID() + "\"" : "") + "}");
 			}
 		} else {
@@ -118,9 +118,7 @@ public:
 		return false;
 	}
 
-	string
-	getNameAndType()
-	{
+	string getNameAndType() {
 		return "CommunicationHandlerInterface";
 	}
 };

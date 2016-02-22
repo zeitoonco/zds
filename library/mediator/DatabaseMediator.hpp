@@ -9,6 +9,7 @@
 #define MEDIATOR_DATABASEMEDIATOR_HPP_
 
 #include "utility/exceptionex.hpp"
+#include  "datatypes/DTTableString.hpp"
 
 namespace zeitoon {
 namespace utility {
@@ -21,6 +22,12 @@ class DatabaseMediator {
 	DatabaseMediator(ServerMediator *ism) :
 			sm(ism) {
 	}
+	void query(std::string cmd);
+	zeitoon::datatypes::DTTableString querySync(std::string cmd);
+	void execute(std::string cmd);
+	int executeSync(std::string cmd);
+	void singleFieldQuery(std::string cmd);
+	std::string singleFieldQuerySync(std::string cmd);//single field result Only
 	virtual ~DatabaseMediator() {
 	}
 };

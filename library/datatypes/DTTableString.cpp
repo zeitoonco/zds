@@ -7,6 +7,7 @@
 
 #include "datatypes/DTTableString.hpp"
 #include "utility/exceptionex.hpp"
+#include "utility/jsonParser.hpp"
 #include "datatypes/dtmultifieldtypes.hpp"
 #include "datatypes/dtsingletypes.hpp"
 
@@ -152,7 +153,6 @@ std::string DTTableString::getNameAndType() {
 
 void DTTableString::columnRemove(string name) { //Call Clear if theres only one row , and the command is to remove that particular row ;
 	JArray &cols = (JArray&) jsonData["columns"];
-	JArray &tupples = (JArray&) jsonData["rows"];
 	int index = -1;
 	for (unsigned int colIter = 0; colIter < cols.size(); colIter++) {
 		if (cols[colIter]["name"] == name) {

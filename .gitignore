@@ -14,6 +14,8 @@ build
 Release
 obj\Debug
 obj\Release
+.idea
+
 
 # Packages #
 ############

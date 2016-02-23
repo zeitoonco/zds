@@ -1,0 +1,28 @@
+pg databse:
+  add cmd: remove user/service
+  
+Mediators:
+  add local config manager
+  throw exception on error
+  
+Datatypes:
+  use jsonParse
+
+  
+JsonParser:
+  add level of parsing
+  add ignore
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  now #ajl:
+    use dtstruct as data field in mediators
+    add Info.cpp
+    #
+    use DSQuery in DBMediator

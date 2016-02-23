@@ -16,17 +16,6 @@ using namespace std;
 using zeitoon::utility::Strings;
 
 namespace zeitoon {
-
-/**namespace datatypes ke dar aan kelass haye marboot be datataypes gharar migirad.
- *
- * hadaf e datatypes in ast ke yek standard baraye tarif va estefade az moteghayer haayi ke dar
- * code haye plugin ha core va tamam ghesmat proje zeitoon gharar darand estefade shavad.
- * kelass haye datatypes be in goone hastnad ke baraye type haye mokhtalef piadesazi jodagaane darand.
- * dar namespace datatype type haye integer va anvaa e an(long int,...), float va anvaa e an(double,...),
- * boolian, string, enum, array va structure gharar darad ke har moghe dar code niaz be tarif moteghaeri az in type ha
- * bashad, kellas e mored nazar seda zade mishavad.
- *
- */
 namespace datatypes {
 
 /**class DTSingleTypes baraye moteghaeir haayie k yki hastand.(hame be joz arraye va structure).
@@ -39,9 +28,10 @@ namespace datatypes {
  *
  */
 template<typename T>
-class DTSingleType: public DTBase {
+class DTSingleType : public DTBase {
 protected:
-	T _defaultValue;/**< meghdar e default baraye moteghaeri ke sakhte shode ast. az noe T, yani az noe moteghaeri sakhte shode*/
+	T _defaultValue;
+	/**< meghdar e default baraye moteghaeri ke sakhte shode ast. az noe T, yani az noe moteghaeri sakhte shode*/
 	T _value;/**< meghdar e moteghaeiri ke sakhte mishavad dar in moteghaeir zakhire mishavad */
 
 	/**parseObject, objecti ra ke daryaaft mikonad ra parse mikond
@@ -58,9 +48,9 @@ protected:
 	 * @return meghdar value e object e voroodi
 	 *
 	 */
-	virtual T parseObject(DTBase& dtvar) {
+	virtual T parseObject(DTBase &dtvar) {
 		DTSingleType<T> *temp;
-		temp = dynamic_cast<DTSingleType<T>*>(&dtvar);
+		temp = dynamic_cast<DTSingleType<T> *>(&dtvar);
 		if (temp) {
 			return temp->getValue();
 		} else {
@@ -151,7 +141,7 @@ public:
 	 *
 	 * @rerturn object e this. khode moteghaeir.
 	 */
-	virtual DTBase& operator =(DTBase& dtvar) {
+	virtual DTBase &operator=(DTBase &dtvar) {
 		setValue(parseObject(dtvar));
 		return *this;
 	}
@@ -166,7 +156,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator ==(DTBase& dtvar) {
+	virtual bool operator==(DTBase &dtvar) {
 		T val;
 		try {
 			val = parseObject(dtvar);
@@ -185,7 +175,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator !=(DTBase& dtvar) {
+	virtual bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -197,7 +187,7 @@ public:
 	 *
 	 * @rerturn object e this. khode moteghaeir.
 	 */
-	virtual DTBase& operator =(string str) {
+	virtual DTBase &operator=(string str) {
 		setValue(parseString(str));
 		return *this;
 	}
@@ -212,7 +202,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator ==(string str) {
+	virtual bool operator==(string str) {
 		T val;
 		try {
 			val = parseString(str);
@@ -231,7 +221,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator !=(string str) {
+	virtual bool operator!=(string str) {
 		return !(*this == str);
 	}
 
@@ -256,7 +246,7 @@ public:
  *
  */
 template<typename IntType = int>
-class DTInteger: public DTSingleType<IntType> {
+class DTInteger : public DTSingleType<IntType> {
 public:
 
 	/**constructor baraye DTInteger.
@@ -299,7 +289,8 @@ public:
 	void setValue(IntType val) {
 		if (_max > _min && (val < _min || val > _max)) {
 			stringstream msg;
-			msg << "Provided value is out of range. Min : " << this->_min << " Max : " << this->_max << " Value: " << val;
+			msg << "Provided value is out of range. Min : " << this->_min << " Max : " << this->_max <<
+			" Value: " << val;
 			EXToutOfRange(msg.str());
 		}
 		DTSingleType<IntType>::setValue(val);
@@ -315,7 +306,7 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type) {
+	string toString(SerializationType type = SerializationType::JSON) {
 		return toString(type, 10);
 	}
 
@@ -330,22 +321,22 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type, int base) {
+	string toString(int base, SerializationType type = SerializationType::JSON) {
 		stringstream str;
 		string data;
 		//char based[64];
 		//memset(based, 0, 64);
-		string based = Strings::toString((long long int)this->getValue());		//, based, base);
+		string based = Strings::toString((long long int) this->getValue());        //, based, base);
 		switch (type) {
-		case RAW:
-		case JSON:
-			str << based;
-			break;
-		case XML:
-			str << '<' << this->getName() << '>' << based << "</" << this->getName() << '>';
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case RAW:
+			case JSON:
+				str << based;
+				break;
+			case XML:
+				str << '<' << this->getName() << '>' << based << "</" << this->getName() << '>';
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		return str.str();
 	}
@@ -358,20 +349,20 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type, bool checkName = true) {
+	void fromString(string data, SerializationType type = SerializationType::JSON) {
 		IntType val;
 		switch (type) {
-		case JSON:
-			val = parseString(data);
-			break;
-		case XML:
-			EXTnotImplemented("XML not implemented yet.");
-			break;
-		case RAW:
-			val = parseString(data);
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case JSON:
+				val = parseString(data);
+				break;
+			case XML:
+				EXTnotImplemented("XML not implemented yet.");
+				break;
+			case RAW:
+				val = parseString(data);
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		this->setValue(val);
 	}
@@ -385,7 +376,7 @@ public:
 	 * @rerturn object e this. khode moteghaeir.
 	 *
 	 */
-	DTBase& operator =(IntType var) {
+	DTBase &operator=(IntType var) {
 		setValue(var);
 		return *this;
 	}
@@ -400,7 +391,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	bool operator ==(IntType var) {
+	bool operator==(IntType var) {
 		return (this->getValue() == var);
 	}
 
@@ -410,7 +401,7 @@ public:
 	 * @param var IntType
 	 *
 	 */
-	bool operator !=(IntType var) {
+	bool operator!=(IntType var) {
 		return !(*this == var);
 	}
 
@@ -422,8 +413,8 @@ public:
 	 *
 	 * @rerturn object e this. khode moteghaeir.
 	 */
-	virtual DTBase& operator =(DTBase& dtvar) {
-		return DTSingleType<IntType>::operator =(dtvar);
+	virtual DTBase &operator=(DTBase &dtvar) {
+		return DTSingleType<IntType>::operator=(dtvar);
 	}
 
 	/**overload operator ==
@@ -436,7 +427,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator ==(DTBase& dtvar) {
+	virtual bool operator==(DTBase &dtvar) {
 		IntType val;
 		bool exact;
 		try {
@@ -456,7 +447,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator !=(DTBase& dtvar) {
+	virtual bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -469,8 +460,8 @@ public:
 	 * @return object bargardande mishavad.
 	 *
 	 */
-	virtual DTBase& operator =(string str) {
-		return DTSingleType<IntType>::operator =(str);
+	virtual DTBase &operator=(string str) {
+		return DTSingleType<IntType>::operator=(str);
 	}
 
 	/**overload operator ==
@@ -483,7 +474,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator ==(string str) {
+	virtual bool operator==(string str) {
 		IntType val;
 		bool exact;
 		try {
@@ -503,7 +494,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	virtual bool operator !=(string str) {
+	virtual bool operator!=(string str) {
 		return !(*this == str);
 	}
 
@@ -517,6 +508,7 @@ public:
 	static string getTypeName() {
 		return "DTInteger";
 	}
+
 protected:
 	IntType _min;
 	IntType _max;
@@ -533,10 +525,10 @@ protected:
 	 *
 	 *@return adad parse shode az noe IntType.
 	 */
-	IntType parseObject(DTBase &dtvar, bool& isExact) {
+	IntType parseObject(DTBase &dtvar, bool &isExact) {
 		IntType val;
 		DTSingleType<IntType> *temp;
-		temp = dynamic_cast<DTSingleType<IntType>*>(&dtvar);
+		temp = dynamic_cast<DTSingleType<IntType> *>(&dtvar);
 		if (temp) {
 			val = temp->getValue();
 			isExact = true;
@@ -575,14 +567,14 @@ protected:
 	 * @return adad e hasel az parse kardan.
 	 *
 	 */
-	IntType parseString(string str, bool& isExact) {
+	IntType parseString(string str, bool &isExact) {
 		IntType x;
 		long double y;
 		str = Strings::trim(str);
 		for (int i = 0; i < str.size(); i++) {
-			if ((str[i] < 48 || str[i] > 57)	//Numbers
-			&& str[i] != 32 && str[i] != 45 && str[i] != 46 && str[i] != 43	// ' ','.','-','+'
-			&& str[i] != 101 && str[i] != 69)	//e & E
+			if ((str[i] < 48 || str[i] > 57)    //Numbers
+			    && str[i] != 32 && str[i] != 45 && str[i] != 46 && str[i] != 43    // ' ','.','-','+'
+			    && str[i] != 101 && str[i] != 69)    //e & E
 				EXTcantParseString("Can't parse this string as Integer : \"" + str + "\"");
 		}
 		stringstream data(str);
@@ -601,7 +593,7 @@ protected:
  *
  */
 template<typename FloatType = float>
-class DTFloat: public DTSingleType<FloatType> {
+class DTFloat : public DTSingleType<FloatType> {
 public:
 
 	/**constructor baraye DTFloat.
@@ -645,7 +637,8 @@ public:
 	void setValue(FloatType val) {
 		if (_max > _min && (val < _min || val > _max)) {
 			stringstream msg;
-			msg << "Provided value is out of range. Min : " << this->_min << " Max : " << this->_max << " Value: " << val;
+			msg << "Provided value is out of range. Min : " << this->_min << " Max : " << this->_max <<
+			" Value: " << val;
 			EXToutOfRange(msg.str());
 		}
 		DTSingleType<FloatType>::setValue(val);
@@ -660,19 +653,21 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type) {
+	string toString(SerializationType type = SerializationType::JSON) {
 		stringstream str;
 		string data;
 		switch (type) {
-		case RAW:
-		case JSON:
-			str << setprecision(std::numeric_limits<double>::digits10 + 1) << this->getValue();
-			break;
-		case XML:
-			str << '<' << this->getName() << '>' << setprecision(std::numeric_limits<FloatType>::digits10 + 1) << this->getValue() << "</" << this->getName() << '>';
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case RAW:
+			case JSON:
+				str << setprecision(std::numeric_limits<double>::digits10 + 1) << this->getValue();
+				break;
+			case XML:
+				str << '<' << this->getName() << '>' <<
+				setprecision(std::numeric_limits<FloatType>::digits10 + 1) << this->getValue() << "</" <<
+				this->getName() << '>';
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		return str.str();
 	}
@@ -685,22 +680,22 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type, bool checkName = true) {
+	void fromString(string data, SerializationType type = SerializationType::JSON) {
 		FloatType val;
 		string name;
 		stringstream str(data);
 		switch (type) {
-		case JSON:
-			val = parseString(data);
-			break;
-		case XML:
-			EXTnotImplemented("XML not implemented yet.");
-			break;
-		case RAW:
-			val = parseString(data);
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case JSON:
+				val = parseString(data);
+				break;
+			case XML:
+				EXTnotImplemented("XML not implemented yet.");
+				break;
+			case RAW:
+				val = parseString(data);
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		this->setValue(val);
 	}
@@ -713,8 +708,8 @@ public:
 	 *
 	 * @rerturn object e this. khode moteghaeir.
 	 */
-	virtual DTBase& operator =(DTBase& dtvar) {
-		return DTSingleType<FloatType>::operator =(dtvar);
+	virtual DTBase &operator=(DTBase &dtvar) {
+		return DTSingleType<FloatType>::operator=(dtvar);
 	}
 
 	/**overload operator ==
@@ -726,8 +721,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(DTBase& dtvar) {
-		return DTSingleType<FloatType>::operator ==(dtvar);
+	virtual bool operator==(DTBase &dtvar) {
+		return DTSingleType<FloatType>::operator==(dtvar);
 	}
 
 	/**overload operator !=
@@ -738,7 +733,7 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(DTBase& dtvar) {
+	virtual bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -751,8 +746,8 @@ public:
 	 * @rerturn object e this. khode moteghaeir.
 	 *
 	 */
-	virtual DTBase& operator =(string str) {
-		return DTSingleType<FloatType>::operator =(str);
+	virtual DTBase &operator=(string str) {
+		return DTSingleType<FloatType>::operator=(str);
 	}
 
 	/**overload operator ==
@@ -764,8 +759,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(string str) {
-		return DTSingleType<FloatType>::operator ==(str);
+	virtual bool operator==(string str) {
+		return DTSingleType<FloatType>::operator==(str);
 	}
 
 	/**overload operator !=
@@ -776,7 +771,7 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(string str) {
+	virtual bool operator!=(string str) {
 		return !(*this == str);
 	}
 
@@ -789,7 +784,7 @@ public:
 	 * @rerturn object e this. khode moteghaeir.
 	 *
 	 */
-	DTBase& operator =(FloatType var) {
+	DTBase &operator=(FloatType var) {
 		setValue(var);
 		return *this;
 	}
@@ -804,7 +799,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	bool operator ==(FloatType var) {
+	bool operator==(FloatType var) {
 		return (this->getValue() == var);
 	}
 
@@ -817,7 +812,7 @@ public:
 	 * @return true or flase
 	 *
 	 */
-	bool operator !=(FloatType var) {
+	bool operator!=(FloatType var) {
 		return !(*this == var);
 	}
 
@@ -832,6 +827,7 @@ public:
 	static string getTypeName() {
 		return "DTFloat";
 	}
+
 protected:
 	FloatType _min;
 	FloatType _max;
@@ -855,9 +851,9 @@ protected:
 		FloatType val;
 		str = Strings::trim(str);
 		for (int i = 0; i < str.size(); i++) {
-			if ((str[i] < 48 || str[i] > 57)	//Numbers
-			&& str[i] != 32 && str[i] != 45 && str[i] != 46 && str[i] != 43	// ' ','.','-','+'
-			&& str[i] != 101 && str[i] != 69)	//e & E
+			if ((str[i] < 48 || str[i] > 57)    //Numbers
+			    && str[i] != 32 && str[i] != 45 && str[i] != 46 && str[i] != 43    // ' ','.','-','+'
+			    && str[i] != 101 && str[i] != 69)    //e & E
 				EXTcantParseString("Can't parse this string as Integer : \"" + str + "\"");
 		}
 		stringstream strs(str);
@@ -872,7 +868,7 @@ protected:
  *
  */
 
-class DTBoolean: public DTSingleType<bool> {
+class DTBoolean : public DTSingleType<bool> {
 public:
 
 	/**enum boolTxType
@@ -887,7 +883,10 @@ public:
 
 protected:
 	int boolStrLen = 4;
-	string boolStr[4][2] = { { "false", "true" }, { "0", "1" }, { "off", "on" }, { "no", "yes" } };
+	string boolStr[4][2] = {{"false", "true"},
+	                        {"0",     "1"},
+	                        {"off",   "on"},
+	                        {"no",    "yes"}};
 	boolTxType _stringType;
 
 public:
@@ -910,9 +909,11 @@ public:
 	void setValue(int val) {
 		setValue(!(val == 0));
 	}
+
 	void setStringType(boolTxType type) {
 		_stringType = type;
 	}
+
 	boolTxType getStringType() {
 		return _stringType;
 	}
@@ -934,8 +935,8 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type) {
-		return toString(type, getStringType());
+	string toString(SerializationType type = SerializationType::JSON) {
+		return toString(getStringType(), type);
 	}
 
 	/**toString ke _value object ra dar yek string zakhire mikond.
@@ -949,23 +950,24 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type, boolTxType txType) {
+	string toString(boolTxType txType, SerializationType type = SerializationType::JSON) {
 		stringstream str;
 		switch (type) {
-		case RAW:
-			str << boolStr[txType][getInt()];
-			break;
-		case JSON:
-			if (_stringType == OneZero)
+			case RAW:
 				str << boolStr[txType][getInt()];
-			else
-				str << "\"" << boolStr[txType][getInt()] << "\"";
-			break;
-		case XML:
-			str << '<' << this->getName() << '>' << boolStr[txType][getInt()] << "</" << this->getName() << '>';
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+				break;
+			case JSON:
+				if (_stringType == OneZero)
+					str << boolStr[txType][getInt()];
+				else
+					str << "\"" << boolStr[txType][getInt()] << "\"";
+				break;
+			case XML:
+				str << '<' << this->getName() << '>' << boolStr[txType][getInt()] << "</" << this->getName() <<
+				'>';
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		return str.str();
 	}
@@ -978,19 +980,19 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type, bool checkName = true) {
+	void fromString(string data, SerializationType type = SerializationType::JSON) {
 		bool val;
 		string name;
 		switch (type) {
-		case RAW:
-		case JSON:
-			val = parseString(data);
-			break;
-		case XML:
-			EXTnotImplemented("XML not implemented yet.");
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case RAW:
+			case JSON:
+				val = parseString(data);
+				break;
+			case XML:
+				EXTnotImplemented("XML not implemented yet.");
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		this->setValue(val);
 	}
@@ -998,12 +1000,15 @@ public:
 	void on() {
 		this->setValue(true);
 	}
+
 	void off() {
 		this->setValue(false);
 	}
+
 	void disable() {
 		this->setValue(false);
 	}
+
 	void enable() {
 		this->setValue(true);
 	}
@@ -1016,8 +1021,8 @@ public:
 	 *
 	 * @rerturn object e this. khode moteghaeir.
 	 */
-	virtual DTBase& operator =(DTBase& dtvar) {
-		return DTSingleType<bool>::operator =(dtvar);
+	virtual DTBase &operator=(DTBase &dtvar) {
+		return DTSingleType<bool>::operator=(dtvar);
 	}
 
 	/**overload operator ==
@@ -1029,8 +1034,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(DTBase& dtvar) {
-		return DTSingleType<bool>::operator ==(dtvar);
+	virtual bool operator==(DTBase &dtvar) {
+		return DTSingleType<bool>::operator==(dtvar);
 	}
 
 	/**overload operator !=
@@ -1041,7 +1046,7 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(DTBase& dtvar) {
+	virtual bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -1054,8 +1059,8 @@ public:
 	 * @rerturn object e this. khode moteghaeir.
 	 *
 	 */
-	virtual DTBase& operator =(string str) {
-		return DTSingleType<bool>::operator =(str);
+	virtual DTBase &operator=(string str) {
+		return DTSingleType<bool>::operator=(str);
 	}
 
 	/**overload operator ==
@@ -1067,8 +1072,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(string str) {
-		return DTSingleType<bool>::operator ==(str);
+	virtual bool operator==(string str) {
+		return DTSingleType<bool>::operator==(str);
 	}
 
 	/**overload operator !=
@@ -1079,27 +1084,33 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(string str) {
+	virtual bool operator!=(string str) {
 		return !(*this == str);
 	}
-	DTBoolean& operator =(bool val) {
+
+	DTBoolean &operator=(bool val) {
 		this->setValue(val);
 		return *this;
 	}
-	DTBoolean& operator =(int val) {
+
+	DTBoolean &operator=(int val) {
 		this->setValue(val);
 		return *this;
 	}
-	bool operator ==(bool val) {
+
+	bool operator==(bool val) {
 		return (this->getValue() == val);
 	}
-	bool operator !=(bool val) {
+
+	bool operator!=(bool val) {
 		return !(*this == val);
 	}
-	bool operator ==(int val) {
+
+	bool operator==(int val) {
 		return (!(val == 0)) == this->getValue();
 	}
-	bool operator !=(int val) {
+
+	bool operator!=(int val) {
 		return !(*this == val);
 	}
 
@@ -1113,6 +1124,7 @@ public:
 	static string getTypeName() {
 		return "DTBoolean";
 	}
+
 protected:
 
 	/**parseString
@@ -1142,7 +1154,7 @@ protected:
  * in class az kelasse DTSingleType ers mibarad.
  *
  */
-class DTString: public DTSingleType<string> {
+class DTString : public DTSingleType<string> {
 public:
 
 	/**
@@ -1176,20 +1188,20 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type) {
+	string toString(SerializationType type = SerializationType::JSON) {
 		stringstream str;
 		switch (type) {
-		case JSON:
-			str << '"' << utility::JSONUtility::encodeString(this->getValue()) << '"';
-			break;
-		case XML:
-			str << '<' << this->getName() << '>' << this->getValue() << "</" << this->getName() << '>';
-			break;
-		case RAW:
-			str << this->getValue();
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case JSON:
+				str << '"' << utility::JSONUtility::encodeString(this->getValue()) << '"';
+				break;
+			case XML:
+				str << '<' << this->getName() << '>' << this->getValue() << "</" << this->getName() << '>';
+				break;
+			case RAW:
+				str << this->getValue();
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		return str.str();
 	}
@@ -1206,27 +1218,27 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type, bool checkName = true) {
+	void fromString(string data, SerializationType type = SerializationType::JSON) {
 		string str;
 		switch (type) {
-		case JSON: {
-			//we can't use trim because first character in string can be '"'
-			size_t x = data.find('"');
-			size_t y = data.rfind('"');
-			if (x == string::npos || y == string::npos)
-				EXTcantParseString("provided string is not enclosed with '\"'.");
-			str = data.substr(x + 1, y - x - 1);
-			str = parseString(utility::JSONUtility::decodeString(data));
-			break;
-		}
-		case XML:
-			EXTnotImplemented("XML not implemented yet.");
-			break;
-		case RAW:
-			str = parseString(data);
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case JSON: {
+				//we can't use trim because first character in string can be '"'
+				size_t x = data.find('"');
+				size_t y = data.rfind('"');
+				if (x == string::npos || y == string::npos)
+					EXTcantParseString("provided string is not enclosed with '\"'.");
+				str = data.substr(x + 1, y - x - 1);
+				str = parseString(utility::JSONUtility::decodeString(data));
+				break;
+			}
+			case XML:
+				EXTnotImplemented("XML not implemented yet.");
+				break;
+			case RAW:
+				str = parseString(data);
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		this->setValue(str);
 	}
@@ -1239,8 +1251,8 @@ public:
 	 *
 	 * @rerturn object e this. khode moteghaeir.
 	 */
-	virtual DTBase& operator =(DTBase& dtvar) {
-		return DTSingleType<string>::operator =(dtvar);
+	virtual DTBase &operator=(DTBase &dtvar) {
+		return DTSingleType<string>::operator=(dtvar);
 	}
 
 	/**overload operator ==
@@ -1252,8 +1264,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(DTBase& dtvar) {
-		return DTSingleType<string>::operator ==(dtvar);
+	virtual bool operator==(DTBase &dtvar) {
+		return DTSingleType<string>::operator==(dtvar);
 	}
 
 	/**overload operator !=
@@ -1264,7 +1276,7 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(DTBase& dtvar) {
+	virtual bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -1277,8 +1289,8 @@ public:
 	 * @rerturn object e this. khode moteghaeir.
 	 *
 	 */
-	virtual DTBase& operator =(string str) {
-		return DTSingleType<string>::operator =(str);
+	virtual DTBase &operator=(string str) {
+		return DTSingleType<string>::operator=(str);
 	}
 
 	/**overload operator ==
@@ -1290,8 +1302,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(string str) {
-		return DTSingleType<string>::operator ==(str);
+	virtual bool operator==(string str) {
+		return DTSingleType<string>::operator==(str);
 	}
 
 	/**overload operator !=
@@ -1302,7 +1314,7 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(string str) {
+	virtual bool operator!=(string str) {
 		return !(*this == str);
 	}
 
@@ -1316,6 +1328,7 @@ public:
 	static string getTypeName() {
 		return "DTString";
 	}
+
 protected:
 	string parseString(string str) {
 		return str;
@@ -1323,7 +1336,7 @@ protected:
 };
 
 template<typename EnumType>
-class DTEnum: public DTSingleType<int> {
+class DTEnum : public DTSingleType<int> {
 public:
 
 	/**constructor baraye DTEnum.
@@ -1345,20 +1358,21 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type) {
+	string toString(SerializationType type = SerializationType::JSON) {
 		stringstream str;
 		switch (type) {
-		case JSON:
-			str << '"' << EnumType::typeString[this->getValue()] << '"';
-			break;
-		case XML:
-			str << '<' << this->getName() << '>' << EnumType::typeString[this->getValue()] << "</" << this->getName() << '>';
-			break;
-		case RAW:
-			str << EnumType::typeString[this->getValue()];
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case JSON:
+				str << '"' << EnumType::typeString[this->getValue()] << '"';
+				break;
+			case XML:
+				str << '<' << this->getName() << '>' << EnumType::typeString[this->getValue()] << "</" <<
+				this->getName() << '>';
+				break;
+			case RAW:
+				str << EnumType::typeString[this->getValue()];
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		return str.str();
 	}
@@ -1371,18 +1385,18 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type, bool checkName = true) {
+	void fromString(string data, SerializationType type = SerializationType::JSON) {
 		int val;
 		switch (type) {
-		case RAW:
-		case JSON:
-			val = parseString(data);
-			break;
-		case XML:
-			EXTnotImplemented("XML not implemented yet.");
-			break;
-		default:
-			EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
+			case RAW:
+			case JSON:
+				val = parseString(data);
+				break;
+			case XML:
+				EXTnotImplemented("XML not implemented yet.");
+				break;
+			default:
+				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
 		}
 		this->setValue(val);
 	}
@@ -1395,8 +1409,8 @@ public:
 	 *
 	 * @rerturn object e this. khode moteghaeir.
 	 */
-	virtual DTBase& operator =(DTBase& dtvar) {
-		return DTSingleType<int>::operator =(dtvar);
+	virtual DTBase &operator=(DTBase &dtvar) {
+		return DTSingleType<int>::operator=(dtvar);
 	}
 
 	/**overload operator ==
@@ -1408,8 +1422,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(DTBase& dtvar) {
-		return DTSingleType<int>::operator ==(dtvar);
+	virtual bool operator==(DTBase &dtvar) {
+		return DTSingleType<int>::operator==(dtvar);
 	}
 
 	/**overload operator !=
@@ -1420,7 +1434,7 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(DTBase& dtvar) {
+	virtual bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -1433,11 +1447,11 @@ public:
 	 * @rerturn object e this. khode moteghaeir.
 	 *
 	 */
-	virtual DTBase& operator =(string str) {
-		return DTSingleType<int>::operator =(str);
+	virtual DTBase &operator=(string str) {
+		return DTSingleType<int>::operator=(str);
 	}
 
-	virtual DTBase& operator =(int val) {
+	virtual DTBase &operator=(int val) {
 		this->setValue(val);
 		return *this;
 	}
@@ -1451,8 +1465,8 @@ public:
 	 * @rerturn true or false.
 	 *
 	 */
-	virtual bool operator ==(string str) {
-		return DTSingleType<int>::operator ==(str);
+	virtual bool operator==(string str) {
+		return DTSingleType<int>::operator==(str);
 	}
 
 	/**overload operator !=
@@ -1463,7 +1477,7 @@ public:
 	 *
 	 * @return true or false
 	 */
-	virtual bool operator !=(string str) {
+	virtual bool operator!=(string str) {
 		return !(*this == str);
 	}
 
@@ -1477,6 +1491,7 @@ public:
 	static string getTypeName() {
 		return "DTEnum";
 	}
+
 protected:
 	int parseString(string str) {
 		str = Strings::trim(str, "\"");

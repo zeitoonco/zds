@@ -31,7 +31,7 @@ namespace datatypes {
  * etefade mikond. haal in meghdar be soorat mokhtalef dar string zakhire mishavad. in maghadir be soorat json, xml,
  * binary va raw dar string zakhire mishavad.
  */
-enum  SerializationType {
+enum SerializationType {
 	JSON, XML, BINARY, RAW
 };
 
@@ -41,7 +41,7 @@ enum  SerializationType {
  * DTMultitypes be soorat e mostaghim az in kelass ers mibarand.
  *
  */
-class DTBase{
+class DTBase {
 protected:
 
 	/**isvalidname baraye check kardan valid boodn naami ke dar _name gharar migirad
@@ -57,13 +57,14 @@ protected:
 		for (uint i = 0; i < name.length(); i++) {
 			char c = name[i];
 			if (!((c >= 65 && c <= 90) || //Lower case alphabet
-					(c >= 97 && c <= 122) || //Upper case alphabet
-					(c == 95) || // underline
-					(i > 0 && (c >= 48 && c < 57)))) //numbers, except in first place
+			      (c >= 97 && c <= 122) || //Upper case alphabet
+			      (c == 95) || // underline
+			      (i > 0 && (c >= 48 && c < 57)))) //numbers, except in first place
 				return false;
 		}
 		return true;
 	}
+
 public:
 
 	/**constructor DTBase k name e moteghaeir ra migirad.
@@ -77,7 +78,8 @@ public:
 		if (isValidName(name))
 			_name = name;
 		else
-			EXTinvalidName("'" + name + "' contains invalid characters");/**< agar name valid nabashd exception inavalid name throw mishavad*/
+			EXTinvalidName("'" + name +
+			               "' contains invalid characters");/**< agar name valid nabashd exception inavalid name throw mishavad*/
 	}
 
 	/**constructor DTBase ke meghdar e moteghaeir va type aan ra migirad
@@ -109,7 +111,7 @@ public:
 	 *
 	 * @return strinigi ke dar an meghdar moteghaeir zakhire shode ast.
 	 */
-	virtual string toString(SerializationType type) = 0;
+	virtual string toString(SerializationType type = SerializationType::JSON) = 0;
 
 	/**fromString ke stringi raa ke migirad parse mikonad va aan string raa tabdil be meghdar moteghaeir mikond
 	 *
@@ -119,12 +121,9 @@ public:
 	 *
 	 * @param data stringi ke dar aan meghdar e moteghaeir zakhire shode ast.
 	 * @param type nahve zakhire maghadir(json, xml...)
-	 * @param checkname dar baazi mavared(mesl xml), alave bar meghdar, esm e moteghaeir ham dar string zakhire
-	 * mishavad. checkName agar true bood esm e moteghaeir ham barresi mishavad.
 	 *
 	 */
-	virtual void fromString(string data, SerializationType type,
-			bool checkName = true)= 0;
+	virtual void fromString(string data, SerializationType type = SerializationType::JSON) = 0;
 
 	/**overload operator = baraye vaghti yek moteghaeir mosavi string gharar girad.
 	 *
@@ -135,7 +134,7 @@ public:
 	 *
 	 * @return vaghti mosavi gharar dad hamin kelass ra(this) barmigadand.
 	 */
-	virtual DTBase& operator =(const string str) = 0;
+	virtual DTBase &operator=(const string str) = 0;
 
 	/**overload operator ==
 	 *
@@ -147,7 +146,7 @@ public:
 	 * @retrun true or false
 	 *
 	 */
-	virtual bool operator ==(DTBase& dtvar) = 0;
+	virtual bool operator==(DTBase &dtvar) = 0;
 
 	/**overload operator !=
 	 *
@@ -159,7 +158,7 @@ public:
 	 * @retrun true or false
 	 *
 	 */
-	virtual bool operator !=(DTBase& dtvar) = 0;
+	virtual bool operator!=(DTBase &dtvar) = 0;
 
 	/**
 	 * getname naame moteghaeir ra barmigardand.
@@ -199,6 +198,7 @@ public:
 	virtual string getNameAndType() {
 		return getName() + "[" + getTypeName() + "]";
 	}
+
 private:
 	string _name;/**< naame moteghaeir */
 };

@@ -14,17 +14,6 @@ using zeitoon::utility::Strings;
 using zeitoon::utility::JSONUtility;
 
 namespace zeitoon {
-
-/**namespace datatypes ke dar aan kelass haye marboot be datataypes gharar migirad.
- *
- * hadaf e datatypes in ast ke yek standard baraye tarif va estefade az moteghayer haayi ke dar
- * code haye plugin ha core va tamam ghesmat proje zeitoon gharar darand estefade shavad.
- * kelass haye datatypes be in goone hastnad ke baraye type haye mokhtalef piadesazi jodagaane darand.
- * dar namespace datatype type haye integer va anvaa e an(long int,...), float va anvaa e an(double,...),
- * boolian, string, enum, array va structure gharar darad ke har moghe dar code niaz be tarif moteghaeri az in type ha
- * bashad, kellas e mored nazar seda zade mishavad.
- *
- */
 namespace datatypes {
 
 /**class DTMultifieldType piadesazi baraye object haa va moteghaeir haayi ke single nistand
@@ -35,9 +24,9 @@ namespace datatypes {
  *
  */
 template<typename childT>
-class DTMultiFieldType: public DTBase {
+class DTMultiFieldType : public DTBase {
 public:
-	typedef typename vector<childT*>::iterator iterator;/**< vector az jense childT ke moteghaeir haaye single object ra dar khod zakhire mikonad*/
+	typedef typename vector<childT *>::iterator iterator;/**< vector az jense childT ke moteghaeir haaye single object ra dar khod zakhire mikonad*/
 
 	/**constructor e DTMultiFieldType
 	 *
@@ -62,7 +51,7 @@ public:
 	 * @param val objectti ke bayad be moteghair ha ezafe shavad.
 	 *
 	 */
-	virtual void add(childT* val) {
+	virtual void add(childT *val) {
 		list.push_back(val);
 	}
 
@@ -79,7 +68,7 @@ public:
 	 * @param del boolian baraye moshakhas kardan delete kaamel e object ya na.
 	 *
 	 */
-	virtual void remove(childT* val, bool del = false) {
+	virtual void remove(childT *val, bool del = false) {
 		for (iterator i = list.begin(); i != list.end(); i++)
 			if (*i == val) {
 				list.erase(i);
@@ -108,7 +97,7 @@ public:
 	 * @return object ba shomare moshakhas dar list.
 	 *
 	 */
-	virtual childT* operator [](int index) {
+	virtual childT *operator[](int index) {
 		return list[index];
 	}
 
@@ -123,8 +112,9 @@ public:
 	static string getTypeName() {
 		return "DTMultiFieldType";
 	}
+
 protected:
-	vector<childT*> list;
+	vector<childT *> list;
 };
 
 /**class DTSet
@@ -135,10 +125,10 @@ protected:
  *
  */
 template<typename T>
-class DTSet: public DTMultiFieldType<T> {
+class DTSet : public DTMultiFieldType<T> {
 public:
-	typedef typename vector<T*>::iterator iterator;
-	typedef vector<T*> List;
+	typedef typename vector<T *>::iterator iterator;
+	typedef vector<T *> List;
 protected:
 
 	/**
@@ -157,7 +147,7 @@ protected:
 	 * @return agar dar vector bood true va agar nabood false barmigardanad.
 	 *
 	 */
-	bool isAllocated(T* item) {
+	bool isAllocated(T *item) {
 		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
 			if (*i == item)
 				return true;
@@ -183,7 +173,7 @@ protected:
 	 * @return agar amaliat e hazf anjaam shod true va agar object ra peida nakard false barmigardanad.
 	 *
 	 */
-	bool tryRemoveAllocated(T* item) {
+	bool tryRemoveAllocated(T *item) {
 		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
 			if (*i == item) {
 				DTMultiFieldType<T>::remove(*i, true);
@@ -198,9 +188,10 @@ protected:
 	 *@param item objecti ke bayad be vector allocatedOnes ezafe shavad.
 	 *
 	 */
-	void addAllocated(T* item) {
+	void addAllocated(T *item) {
 		allocatedOnes.push_back(item);
 	}
+
 public:
 
 	/**constructor baraye DTSet.
@@ -225,7 +216,7 @@ public:
 	 * @param val objecti ke bayad ezaafe shavad.
 	 *
 	 */
-	virtual void add(T* val) {
+	virtual void add(T *val) {
 		DTMultiFieldType<T>::add(val);
 	}
 
@@ -251,12 +242,12 @@ public:
 	 * @param index makaan ya haman shomare ie ke bayad val dar list gharar girad.
 	 *
 	 */
-	virtual void insert(T* val, int index) {
+	virtual void insert(T *val, int index) {
 		if (index < 0 || index > this->list.size())
 			EXToutOfRange(
 					"Provided index(" + Strings::itoa(index)
-							+ ") is out of range(0-"
-							+ Strings::itoa(this->list.size()) + ")");
+					+ ") is out of range(0-"
+					+ Strings::itoa(this->list.size()) + ")");
 		this->list.insert(this->list.begin() + index, val);
 	}
 
@@ -266,7 +257,7 @@ public:
 	 * @param del moshakhas mikonad ke val be soorat e kaamel az memory hazf shavad ya na.
 	 *
 	 */
-	virtual void remove(T* val, bool del = false) {
+	virtual void remove(T *val, bool del = false) {
 		if (!tryRemoveAllocated(val))
 			DTMultiFieldType<T>::remove(val, del);
 	}
@@ -294,8 +285,8 @@ public:
 		if (index < 0 || index >= this->list.size())
 			EXToutOfRange(
 					"Provided index(" + Strings::itoa(index)
-							+ ") is out of range(0-"
-							+ Strings::itoa(this->list.size()) + ")");
+					+ ") is out of range(0-"
+					+ Strings::itoa(this->list.size()) + ")");
 		this->remove(*(this->list.begin() + index), del);
 	}
 
@@ -309,34 +300,34 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type) {
+	string toString(SerializationType type = SerializationType::JSON) {
 		stringstream str;
 		switch (type) {
-		case JSON:
-			str << "[";
-			for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-				str << (**i).toString(JSON);
-				if (i + 1 != this->list.end())
-					str << ",";
-			}
-			str << ']';
-			break;
-		case XML:
-			str << '<' << this->getName() << '>';
-			for (iterator i = this->list.begin(); i != this->list.end(); i++)
-				str << "<item>" << (**i).toString(XML) << "</item>";
-			str << "</" << this->getName() << ">";
-			break;
-		case RAW:
-			for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-				str << (**i).toString(RAW);
-				if (i + 1 != this->list.end())
-					str << ",";
-			}
-			break;
-		default:
-			throw new invalidParameter(
-					"You've provided invalid type for string serialization type parameter.");
+			case JSON:
+				str << "[";
+				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+					str << (**i).toString(JSON);
+					if (i + 1 != this->list.end())
+						str << ",";
+				}
+				str << ']';
+				break;
+			case XML:
+				str << '<' << this->getName() << '>';
+				for (iterator i = this->list.begin(); i != this->list.end(); i++)
+					str << "<item>" << (**i).toString(XML) << "</item>";
+				str << "</" << this->getName() << ">";
+				break;
+			case RAW:
+				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+					str << (**i).toString(RAW);
+					if (i + 1 != this->list.end())
+						str << ",";
+				}
+				break;
+			default:
+				throw new invalidParameter(
+						"You've provided invalid type for string serialization type parameter.");
 		}
 		return str.str();
 	}
@@ -350,28 +341,26 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type,
-			bool checkname = true) {
+	void fromString(string data, SerializationType type) {
 		size_t pos, rePos;
 		List tempList;
 		switch (type) {
-		case JSON:
-			pos = data.find('[');
-			rePos = data.rfind(']');
-			if (pos == string::npos || rePos == string::npos)
-				EXTcantParseString("can't find brackets");
-			parseRawString(data.substr(pos + 1, rePos - pos - 1), RAW,
-					tempList);
-			break;
-		case RAW:
-			parseRawString(data, RAW, tempList);
-			break;
-		case XML:
-			EXTnotImplemented("XML not implemented yet");
-			break;
-		default:
-			EXTinvalidParameter(
-					"You've provided invalid type for string serialization type parameter");
+			case JSON:
+				pos = data.find('[');
+				rePos = data.rfind(']');
+				if (pos == string::npos || rePos == string::npos)
+					EXTcantParseString("can't find brackets");
+				parseRawString(data.substr(pos + 1, rePos - pos - 1), RAW,
+				               tempList);
+				break;
+			case RAW:
+				parseRawString(data, RAW, tempList);
+				break;
+			case XML:
+				EXTnotImplemented("XML not implemented yet");
+			default:
+				EXTinvalidParameter(
+						"You've provided invalid type for string serialization type parameter");
 		}
 		clear();
 		for (iterator i = tempList.begin(); i != tempList.end(); i++) {
@@ -388,19 +377,19 @@ public:
 	 * @return khode object bargardande mishavad.
 	 *
 	 */
-	DTBase& operator =(string str) {
+	DTBase &operator=(string str) {
 		str = Strings::trim(str);
 		SerializationType type;
 		switch (str[0]) {
-		case '[':
-			type = JSON;
-			break;
-		case '<':
-			type = XML;
-			break;
-		default:
-			type = RAW;
-			break;
+			case '[':
+				type = JSON;
+				break;
+			case '<':
+				type = XML;
+				break;
+			default:
+				type = RAW;
+				break;
 		}
 		fromString(str, type);
 		return *this;
@@ -416,9 +405,9 @@ public:
 	 * @return khode object
 	 *
 	 */
-	DTBase& operator =(DTBase& dtvar) {
-		DTSet<T>* temp;
-		temp = dynamic_cast<DTSet<T>*>(&dtvar);
+	DTBase &operator=(DTBase &dtvar) {
+		DTSet<T> *temp;
+		temp = dynamic_cast<DTSet<T> *>(&dtvar);
 		if (temp) {
 			this->clear();
 			this->list = temp->list;
@@ -426,7 +415,7 @@ public:
 		} else {
 			EXTdataTypeMismatch(
 					"Can't cast " + dtvar.getNameAndType() + " to type DTSet<"
-							+ T::getNameAndType() << ">.");
+					+ T::getNameAndType() << ">.");
 		}
 	}
 
@@ -440,9 +429,9 @@ public:
 	 * @return tru or false.
 	 *
 	 */
-	bool operator ==(DTBase& dtvar) {
-		DTSet<T>* temp;
-		temp = dynamic_cast<DTSet<T>*>(&dtvar);
+	bool operator==(DTBase &dtvar) {
+		DTSet<T> *temp;
+		temp = dynamic_cast<DTSet<T> *>(&dtvar);
 		if (temp) {
 			if (this->length() != temp->length())
 				return false;
@@ -472,7 +461,7 @@ public:
 	 * @return true or false
 	 *
 	 */
-	bool operator !=(DTBase& dtvar) {
+	bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -486,6 +475,7 @@ public:
 	static string getTypeName() {
 		return "DTSet";
 	}
+
 private:
 
 	/**parseString()
@@ -498,7 +488,7 @@ private:
 	 *@param list lsiti ke bayad object haayi ke data heye parse shode dar anha gharar darand ra zakhire konad.
 	 *
 	 */
-	void parseRawString(string str, SerializationType type, List& list) {
+	void parseRawString(string str, SerializationType type, List &list) {
 		string parsed;
 		size_t q = 0, j = 0;
 		bool ready = false;
@@ -518,7 +508,7 @@ private:
 				if (j == string::npos)
 					EXTcantParseString(
 							"syntax error at column" + Strings::itoa(i)
-									+ " : can't find end of region");
+							+ " : can't find end of region");
 				else
 					i = j + 1;
 				j = 0;
@@ -534,7 +524,7 @@ private:
 				} catch (exceptionEx *ex) {
 					EXTcantParseStringI(
 							"Failed to parse string:\"" + parsed + "\" as '"
-									+ temp->getNameAndType() + "'", ex);
+							+ temp->getNameAndType() + "'", ex);
 				}
 				list.push_back(temp);
 				ready = false;
@@ -552,10 +542,10 @@ private:
  *
  */
 
-class DTStruct: public DTMultiFieldType<DTBase> {
+class DTStruct : public DTMultiFieldType<DTBase> {
 public:
-	typedef typename vector<DTBase*>::iterator iterator;
-	typedef vector<DTBase*> List;
+	typedef typename vector<DTBase *>::iterator iterator;
+	typedef vector<DTBase *> List;
 
 	/**constructor baraye DTStruct.
 	 *
@@ -571,20 +561,20 @@ public:
 	 * @return version DTSruct.
 	 *
 	 */
-	virtual size_t getVersion()=0;
+	virtual size_t getVersion() = 0;
 
 	/**getMinSupportedVersion() minimom versione DTStruct ra barmigardand.
 	 *
 	 * @return minimom version DTSruct.
 	 *
 	 */
-	virtual size_t getMinSupportedVersion()=0;
+	virtual size_t getMinSupportedVersion() = 0;
 
 	/**
 	 * getMinSupportedVersionWOConversation() kamterin versioni ke lazem ast taa tavabe seda zade shavand ra
 	 * barmigardanad
 	 */
-	virtual size_t getMinSupportedVersionWOConversation()=0;
+	virtual size_t getMinSupportedVersionWOConversation() = 0;
 
 	/**remove() yek naam daryaft mikonad va dar list object ba in naam ra peida mikonad va aan ra az list hazf mikonad.
 	 *
@@ -623,40 +613,47 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type) {
+	string toString(SerializationType type = SerializationType::JSON) {
+		return this->toString(false, type);
+	}
+
+	string toString(bool includeVersion = false, SerializationType type = SerializationType::JSON) {
 		stringstream str;
 		switch (type) {
-		case JSON:
-			str << "{\"_version\":" << this->getVersion() << ",";
-			for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-				str << '"' << (*i)->getName() << "\":" << (*i)->toString(JSON);
-				if (i + 1 != list.end())
-					str << ',';
-			}
-			str << '}';
-			break;
-		case XML:
-			str << '<' << this->getName() << '>';
-			str << "<_version>" << this->getVersion() << "</_version>";
-			for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-				str << '<' << (*i)->getName() << '>' << (*i)->toString(XML)
-						<< "</" << (*i)->getName() << '>';
-				if (i + 1 != list.end())
-					str << ',';
-			}
-			str << "</" << this->getName() << '>';
-			break;
-		case RAW:
-			str << this->getVersion() << ",";
-			for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-				str << (**i).toString(RAW);
-				if (i + 1 != this->list.end())
-					str << ",";
-			}
-			break;
-		default:
-			throw new invalidParameter(
-					"You've provided invalid type for string serialization type parameter.");
+			case JSON:
+				str << "{";
+				if (includeVersion)
+					str << "\"_version\":" << this->getVersion() << ",";
+				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+					str << '"' << (*i)->getName() << "\":" << (*i)->toString(JSON);
+					if (i + 1 != list.end())
+						str << ',';
+				}
+				str << '}';
+				break;
+			case XML:
+				str << '<' << this->getName() << '>';
+				if (includeVersion)
+					str << "<_version>" << this->getVersion() << "</_version>";
+				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+					str << '<' << (*i)->getName() << '>' << (*i)->toString(XML)
+					<< "</" << (*i)->getName() << '>';
+					if (i + 1 != list.end())
+						str << ',';
+				}
+				str << "</" << this->getName() << '>';
+				break;
+			case RAW:
+				str << this->getVersion() << ",";
+				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+					str << (**i).toString(RAW);
+					if (i + 1 != this->list.end())
+						str << ",";
+				}
+				break;
+			default:
+				throw new invalidParameter(
+						"You've provided invalid type for string serialization type parameter.");
 		}
 		return str.str();
 	}
@@ -672,41 +669,40 @@ public:
 	 *
 	 */
 	void fromString(string data, SerializationType type,
-			bool checkname = true) {
+	                bool checkname = true) {
 		string backup = toString(RAW);
 		exceptionEx *ex = NULL;
 		size_t ver;
 		switch (type) {
-		case JSON:
-		case RAW:
-			try {
-				if (type == RAW)
-					ver = parseRawString(data);
-				else
-					ver = parseJSONString(data);
-			} catch (exception &excp) {
-				ex = EXcantParseStringI("Failed.",
-						EXunknownExceptionI("",excp));
-			} catch (exceptionEx *excp) {
-				ex = EXcantParseStringI("Failed.", excp);
-			} catch (...) {
-				ex = EXcantParseString("Unknown error occurred.");
-			}
-			if (ver < getMinSupportedVersion())
-				ex =
-						EXobsolete(
-								"This version (" + Strings::itoa(ver) + ") of '"
-										+ this->getNameAndType()
-										+ ") struct, is not supported anymore. Minimum supported version : "
-										+ Strings::itoa(
-												this->getMinSupportedVersion()));
-			break;
-		case XML:
-			throw new notImplemented("XML not implemented yet.");
-			break;
-		default:
-			throw new invalidParameter(
-					"You've provided invalid type for string serialization type parameter.");
+			case JSON:
+			case RAW:
+				try {
+					if (type == RAW)
+						ver = parseRawString(data);
+					else
+						ver = parseJSONString(data);
+				} catch (exception &excp) {
+					ex = EXcantParseStringI("Failed.",
+					                        EXunknownExceptionI("", excp));
+				} catch (exceptionEx *excp) {
+					ex = EXcantParseStringI("Failed.", excp);
+				} catch (...) {
+					ex = EXcantParseString("Unknown error occurred.");
+				}
+				if (ver < getMinSupportedVersion())
+					ex =
+							EXobsolete(
+									"This version (" + Strings::itoa(ver) + ") of '"
+									+ this->getNameAndType()
+									+ ") struct, is not supported anymore. Minimum supported version : "
+									+ Strings::itoa(
+											this->getMinSupportedVersion()));
+				break;
+			case XML:
+				throw new notImplemented("XML not implemented yet.");
+			default:
+				throw new invalidParameter(
+						"You've provided invalid type for string serialization type parameter.");
 		}
 		if (ex != NULL) {
 			fromString(backup, RAW);
@@ -723,7 +719,7 @@ public:
 	 * @retrun objecti ke ke peida mikonad.
 	 *
 	 */
-	DTBase* operator [](string name) {
+	DTBase *operator[](string name) {
 		for (iterator i = this->list.begin(); i != list.end(); i++) {
 			if (!Strings::compare((**i).getName(), name, false)) {
 				return *i;
@@ -742,19 +738,19 @@ public:
 	 * @return khode objecte this.
 	 *
 	 */
-	DTBase& operator =(string str) {
+	DTBase &operator=(string str) {
 		str = Strings::trim(str);
 		SerializationType type;
 		switch (str[0]) {
-		case '{':
-			type = JSON;
-			break;
-		case '<':
-			type = XML;
-			break;
-		default:
-			type = RAW;
-			break;
+			case '{':
+				type = JSON;
+				break;
+			case '<':
+				type = XML;
+				break;
+			default:
+				type = RAW;
+				break;
 		}
 		fromString(str, type);
 		return *this;
@@ -771,21 +767,21 @@ public:
 	 * @return this.
 	 *
 	 */
-	DTBase& operator =(DTBase& dtvar) {
+	DTBase &operator=(DTBase &dtvar) {
 		DTStruct *temp;
 		string backup = this->toString(RAW);
-		temp = dynamic_cast<DTStruct*>(&dtvar);
+		temp = dynamic_cast<DTStruct *>(&dtvar);
 		if (temp) {
 			if (temp->getVersion() < this->getMinSupportedVersion())
 				EXTobsolete(
 						"This version (" + Strings::itoa(temp->getVersion())
-								+ ") of '" + this->getNameAndType()
-								+ "' struct, is not supported anymore. Minimum supported version : "
-								+ Strings::itoa(
-										this->getMinSupportedVersion()));
+						+ ") of '" + this->getNameAndType()
+						+ "' struct, is not supported anymore. Minimum supported version : "
+						+ Strings::itoa(
+								this->getMinSupportedVersion()));
 			for (iterator i = temp->list.begin(); i != temp->list.end(); i++)
 				for (iterator j = this->list.begin(); j != this->list.end();
-						j++)
+				     j++)
 					if (!Strings::compare((*i)->getName(), (*j)->getName())) {
 						exceptionEx *ex = NULL;
 						try {
@@ -793,24 +789,24 @@ public:
 						} catch (exception &excp) {
 							ex = EXdataTypeMismatchI(
 									"Assignment between '"
-											+ (*i)->getNameAndType() + "' and '"
-											+ (*i)->getNameAndType()
-											+ "' failed",
-									EXunknownExceptionI("",excp));
+									+ (*i)->getNameAndType() + "' and '"
+									+ (*i)->getNameAndType()
+									+ "' failed",
+									EXunknownExceptionI("", excp));
 						} catch (exceptionEx *excp) {
 							ex = EXdataTypeMismatchI(
 									"Assignment between '"
-											+ (*i)->getNameAndType() + "' and '"
-											+ (*i)->getNameAndType()
-											+ "' failed", excp);
+									+ (*i)->getNameAndType() + "' and '"
+									+ (*i)->getNameAndType()
+									+ "' failed", excp);
 						} catch (...) {
 							ex =
 									EXdataTypeMismatch(
 											"Assignment between '"
-													+ (*i)->getNameAndType()
-													+ "' and '"
-													+ (*i)->getNameAndType()
-													+ "' failed. Unknown error occurred.");
+											+ (*i)->getNameAndType()
+											+ "' and '"
+											+ (*i)->getNameAndType()
+											+ "' failed. Unknown error occurred.");
 						}
 						if (ex) {
 							fromString(backup, RAW);
@@ -821,7 +817,7 @@ public:
 		} else {
 			EXTdataTypeMismatch(
 					"Can't cast '" + dtvar.getNameAndType()
-							+ "' to type DTStruct.");
+					+ "' to type DTStruct.");
 		}
 	}
 
@@ -837,14 +833,14 @@ public:
 	 * @return true or false.
 	 *
 	 */
-	bool operator ==(DTBase& dtvar) {
+	bool operator==(DTBase &dtvar) {
 		DTStruct *temp;
-		temp = dynamic_cast<DTStruct*>(&dtvar);
+		temp = dynamic_cast<DTStruct *>(&dtvar);
 		if (temp) {
 			for (iterator i = temp->list.begin(); i != temp->list.end(); i++) {
 				bool found = false;
 				for (iterator j = this->list.begin(); j != this->list.end();
-						j++)
+				     j++)
 					if (!Strings::compare((*i)->getName(), (*j)->getName())) {
 						try {
 							if ((**i) != (**j))
@@ -868,7 +864,7 @@ public:
 	 * mokhalefe operator == ra barmigardanad.
 	 *
 	 */
-	bool operator !=(DTBase& dtvar) {
+	bool operator!=(DTBase &dtvar) {
 		return !(*this == dtvar);
 	}
 
@@ -913,7 +909,7 @@ private:
 				if (j == string::npos)
 					EXTcantParseString(
 							"syntax error at column" + Strings::itoa(i)
-									+ " : can't find end of region");
+							+ " : can't find end of region");
 				else
 					i = j + 1;
 				j = 0;
@@ -931,19 +927,19 @@ private:
 					} catch (exception &excp) {
 						EXTcantParseStringI(
 								"Parsing string '" + parsed + "' as '"
-										+ this->list[cc - 1]->getNameAndType()
-										+ "' failed",
-								EXunknownExceptionI("",excp));
+								+ this->list[cc - 1]->getNameAndType()
+								+ "' failed",
+								EXunknownExceptionI("", excp));
 					} catch (exceptionEx *excp) {
 						EXTcantParseStringI(
 								"Parsing string '" + parsed + "' as '"
-										+ this->list[cc - 1]->getNameAndType()
-										+ "' failed", excp);
+								+ this->list[cc - 1]->getNameAndType()
+								+ "' failed", excp);
 					} catch (...) {
 						EXTcantParseString(
 								"Parsing string '" + parsed + "' as '"
-										+ this->list[cc - 1]->getNameAndType()
-										+ "' failed");
+								+ this->list[cc - 1]->getNameAndType()
+								+ "' failed");
 					}
 					cc++;
 					ready = false;
@@ -992,7 +988,7 @@ private:
 				if (j == string::npos)
 					EXTcantParseString(
 							"syntax error at column" + Strings::itoa(i)
-									+ " : can't find end of region");
+							+ " : can't find end of region");
 				else
 					i = j + 1;
 				j = 0;
@@ -1007,15 +1003,15 @@ private:
 				if (y == string::npos)
 					EXTcantParseString(
 							"Can't find character '\"' for name part of JSON field in '"
-									+ parsed + "'");
+							+ parsed + "'");
 				name = parsed.substr(1, y - 1);
 				x = parsed.find(':', y + 1);
 				if (x == string::npos)
 					EXTcantParseString(
 							"Can't find character ':' for JSON field in '"
-									+ parsed + "'");
+							+ parsed + "'");
 				value = parsed.substr(x + 1);
-				if (!Strings::compare(name, "version", false))
+				if (!Strings::compare(name, "_version", false))
 					ver = stoi(value);
 				else if ((*this).contains(name)) {
 					try {
@@ -1023,19 +1019,19 @@ private:
 					} catch (exception &excp) {
 						EXTcantParseStringI(
 								"Parsing string '" + value + "' as '"
-										+ (*this)[name]->getNameAndType()
-										+ "' failed",
-								EXunknownExceptionI("",excp));
+								+ (*this)[name]->getNameAndType()
+								+ "' failed",
+								EXunknownExceptionI("", excp));
 					} catch (exceptionEx *excp) {
 						EXTcantParseStringI(
 								"Parsing string '" + value + "' as '"
-										+ (*this)[name]->getNameAndType()
-										+ "' failed", excp);
+								+ (*this)[name]->getNameAndType()
+								+ "' failed", excp);
 					} catch (...) {
 						EXTcantParseString(
 								"Parsing string '" + value + "' as '"
-										+ (*this)[name]->getNameAndType()
-										+ "' failed");
+								+ (*this)[name]->getNameAndType()
+								+ "' failed");
 					}
 				}
 				ready = false;

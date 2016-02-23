@@ -67,7 +67,7 @@ public:
 
 	virtual std::string toString(SerializationType type = JSON)=0;
 
-	virtual void fromString(std::string data, SerializationType type = JSON, bool checkName = false)=0;
+	virtual void fromString(std::string data, SerializationType type = SerializationType::JSON)=0;
 
 	virtual DTBase& operator =(std::string)=0;
 

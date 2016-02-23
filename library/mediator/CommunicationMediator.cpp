@@ -16,11 +16,11 @@
 namespace zeitoon {
 namespace utility {
 
-void CommunicationMediator::runCommand(string name, string data, string id) {
-	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data));
+void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data, string id) {
+	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data.toString(true)));
 }
-string CommunicationMediator::runCommandSync(string name, string data, string id) {
-	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data));
+string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &data, string id) {
+	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data.toString(true)));
 	idData x = { "", false };
 	try {
 		lock_guard<mutex> lg(MtxIdList);
@@ -40,19 +40,19 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 	}
 	return dt;
 }
-void CommunicationMediator::runCommand(string name, string data) {
+void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data) {
 	runCommand(name, data, "");
 }
-string CommunicationMediator::runCommandSync(string name, string data) {
+string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &data) {
 	return runCommandSync(name, data, "");
 }
 
-void CommunicationMediator::runCallback(string name, string data, string id) {
-	sm->send(CommunicationUtility::makeCallback(name, id, sm->owner->getServiceName(), data));
+void CommunicationMediator::runCallback(string name, datatypes::DTStruct &data, string id) {
+	sm->send(CommunicationUtility::makeCallback(name, id, sm->owner->getServiceName(), data.toString(true)));
 }
 
-void CommunicationMediator::runEvent(string name, string data) {
-	sm->send(CommunicationUtility::makeEvent(name, sm->owner->getServiceName(), data));
+void CommunicationMediator::runEvent(string name, datatypes::DTStruct &data) {
+	sm->send(CommunicationUtility::makeEvent(name, sm->owner->getServiceName(), data.toString(true)));
 }
 void CommunicationMediator::registerEvent(string name) {
 	sm->send(CommunicationUtility::makeCommand("registerEvent", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
@@ -76,7 +76,7 @@ void CommunicationMediator::removeHook(string name) {
 void zeitoon::utility::CommunicationMediator::errorReport(std::string node, std::string id, std::string desc) {
 	sm->send(
 			"{\"type\" : \"call\" , \"node\" : \"error\" , \"data\" : {\"node\" : \"" + node + "\" , \"id\" : \"" + id
-					+ "\" , \"description\" : \"" + desc + "\} }");
+					+ "\" , \"description\" : \"" + desc + "\"} }");
 
 }
 

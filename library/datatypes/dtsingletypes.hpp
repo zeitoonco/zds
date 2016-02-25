@@ -307,7 +307,7 @@ public:
 	 *
 	 */
 	string toString(SerializationType type = SerializationType::JSON) {
-		return toString(type, 10);
+		return toString(10, type);
 	}
 
 	/**toString ke _value object ra dar yek string zakhire mikond.

@@ -1228,12 +1228,11 @@ public:
 				if (x == string::npos || y == string::npos)
 					EXTcantParseString("provided string is not enclosed with '\"'.");
 				str = data.substr(x + 1, y - x - 1);
-				str = parseString(utility::JSONUtility::decodeString(data));
+				str = parseString(utility::JSONUtility::decodeString(str));
 				break;
 			}
 			case XML:
 				EXTnotImplemented("XML not implemented yet.");
-				break;
 			case RAW:
 				str = parseString(data);
 				break;

@@ -341,7 +341,7 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type) {
+	void fromString(string data, SerializationType type = SerializationType::JSON) {
 		size_t pos, rePos;
 		List tempList;
 		switch (type) {
@@ -490,7 +490,7 @@ private:
 	 */
 	void parseRawString(string str, SerializationType type, List &list) {
 		string parsed;
-		size_t q = 0, j = 0;
+		size_t q = 0, j = string::npos - 1;
 		bool ready = false;
 		for (size_t i = 0; i < str.size(); i++) {
 			if (str[i] == '"') {
@@ -509,11 +509,12 @@ private:
 					EXTcantParseString(
 							"syntax error at column" + Strings::itoa(i)
 							+ " : can't find end of region");
-				else
+				else if (j != string::npos - 1) {
 					i = j + 1;
-				j = 0;
+					j = string::npos - 1;
+				}
 			}
-			if (i >= str.size()) {
+			if (i >= str.size() - 1) {
 				parsed = str.substr(q);
 				ready = true;
 			}
@@ -543,6 +544,15 @@ private:
  */
 
 class DTStruct : public DTMultiFieldType<DTBase> {
+protected:
+	size_t version, minVersion, minVersionWOC;
+
+	void setVersionValues(size_t iversion, size_t iminVersion, size_t iminVersionWOC) {
+		version = iversion;
+		minVersion = iminVersion;
+		minVersionWOC = -iminVersionWOC;
+	}
+
 public:
 	typedef typename vector<DTBase *>::iterator iterator;
 	typedef vector<DTBase *> List;
@@ -552,8 +562,9 @@ public:
 	 *@param name naame moteghaeir ke be constructor DTMultiType miferstd.
 	 *
 	 */
-	DTStruct(string name) :
+	DTStruct(string name, size_t iversion, size_t iminVersion, size_t iminVersionWOC) :
 			DTMultiFieldType<DTBase>(name) {
+		setVersionValues(iversion, iminVersion, iminVersionWOC);
 	}
 
 	/**getVersion() versione DTStruct ra barmigardand.
@@ -668,7 +679,7 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type) {
+	void fromString(string data, SerializationType type = SerializationType::JSON) {
 		string backup = toString(RAW);
 		exceptionEx *ex = NULL;
 		size_t ver;
@@ -688,7 +699,7 @@ public:
 				} catch (...) {
 					ex = EXcantParseString("Unknown error occurred.");
 				}
-				if (ver < getMinSupportedVersion())
+				if (ver != string::npos && ver < getMinSupportedVersion())
 					ex =
 							EXobsolete(
 									"This version (" + Strings::itoa(ver) + ") of '"
@@ -890,7 +901,7 @@ private:
 	 */
 	size_t parseRawString(string str) {
 		string parsed;
-		size_t q = 0, cc = 0, ver = 0, j = 0;
+		size_t q = 0, cc = 0, ver = string::npos, j = string::npos - 1;
 		bool ready = false;
 		for (size_t i = 0; i < str.size(); i++) {
 			if (str[i] == '"') {
@@ -909,11 +920,12 @@ private:
 					EXTcantParseString(
 							"syntax error at column" + Strings::itoa(i)
 							+ " : can't find end of region");
-				else
-					i = j + 1;
-				j = 0;
+				else if (j != string::npos - 1) {
+					i = j;
+					j = string::npos - 1;
+				}
 			}
-			if (i >= str.size()) {
+			if (i >= str.size() - 1) {
 				parsed = str.substr(q);
 				ready = true;
 			}
@@ -940,9 +952,9 @@ private:
 								+ this->list[cc - 1]->getNameAndType()
 								+ "' failed");
 					}
-					cc++;
-					ready = false;
 				}
+				cc++;
+				ready = false;
 			}
 		}
 		return ver;
@@ -957,7 +969,7 @@ private:
 	 *
 	 */
 	size_t parseJSONString(string str) {
-		size_t pos, rePos, ver = 0, j = 0;
+		size_t pos, rePos, ver = string::npos, j = string::npos - 1;
 		pos = str.find('{');
 		rePos = str.rfind('}');
 		if (pos == string::npos || rePos == string::npos)
@@ -982,17 +994,18 @@ private:
 				ready = true;
 				check = true;
 				q = i + 1;
-			}
+			} //else { nothing!;			}
 			if (!ready) {
 				if (j == string::npos)
 					EXTcantParseString(
 							"syntax error at column" + Strings::itoa(i)
 							+ " : can't find end of region");
-				else
-					i = j + 1;
-				j = 0;
+				else if (j != string::npos - 1) {
+					i = j;
+					j = string::npos - 1;
+				}
 			}
-			if (i >= str.size()) {
+			if (i >= (str.size() - 1)) {
 				parsed = str.substr(q);
 				ready = true;
 			}

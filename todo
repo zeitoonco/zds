@@ -12,7 +12,7 @@ Datatypes:
 JsonParser:
   add level of parsing
   add ignore
-  
+  rewrite parsing process for JSON to handle all unexpected situations.
   
   
   

@@ -668,8 +668,7 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type,
-	                bool checkname = true) {
+	void fromString(string data, SerializationType type) {
 		string backup = toString(RAW);
 		exceptionEx *ex = NULL;
 		size_t ver;

@@ -10,30 +10,7 @@ using namespace zeitoon::utility;
 using std::string;
 
 namespace zeitoon {
-
-/**namespace datatypes ke dar aan kelass haye marboot be datataypes gharar migirad.
- *
- * hadaf e datatypes in ast ke yek standard baraye tarif va estefade az moteghayer haayi ke dar
- * code haye plugin ha core va tamam ghesmat proje zeitoon gharar darand estefade shavad.
- * kelass haye datatypes be in goone hastnad ke baraye type haye mokhtalef piadesazi jodagaane darand.
- * dar namespace datatype type haye integer va anvaa e an(long int,...), float va anvaa e an(double,...),
- * boolian, string, enum, array va structure gharar darad ke har moghe dar code niaz be tarif moteghaeri az in type ha
- * bashad, kellas e mored nazar seda zade mishavad.
- *
- */
 namespace datatypes {
-
-/** enum SerializationType
- *
- * dar in proje az string ha baraye ersal va daryaft moteghaeir ha estefade mishavad. be in soorat k meghdar har moteghaeir
- * dar yek string zakhire mishavad va sepas be tabe digar ferestade mishavad va dar aan tabe string daryaft mikond va
- * sepas aan stringv ra parse mikonad ta meghdari ke dar an zakhire sode ast raa be dast avard va sepas az aan meghdar
- * etefade mikond. haal in meghdar be soorat mokhtalef dar string zakhire mishavad. in maghadir be soorat json, xml,
- * binary va raw dar string zakhire mishavad.
- */
-enum SerializationType {
-	JSON, XML, BINARY, RAW
-};
 
 /** class DTBase
  *
@@ -90,8 +67,8 @@ public:
 	 * @param text stringi ke meghdare moteghaeir dar aan ast.
 	 * @param type nahve zakhire shodane meghdar ra dar string neshan midahad(json, xml, raw...)
 	 */
-	DTBase(string text, SerializationType type) {
-		this->fromString(text, type);
+	DTBase(string name, string text) : DTBase(name) {
+		this->fromString(text);
 	}
 
 	/**
@@ -111,7 +88,7 @@ public:
 	 *
 	 * @return strinigi ke dar an meghdar moteghaeir zakhire shode ast.
 	 */
-	virtual string toString(SerializationType type = SerializationType::JSON) = 0;
+	virtual string toString() = 0;
 
 	/**fromString ke stringi raa ke migirad parse mikonad va aan string raa tabdil be meghdar moteghaeir mikond
 	 *
@@ -123,7 +100,7 @@ public:
 	 * @param type nahve zakhire maghadir(json, xml...)
 	 *
 	 */
-	virtual void fromString(string data, SerializationType type = SerializationType::JSON) = 0;
+	virtual void fromString(string data) = 0;
 
 	/**overload operator = baraye vaghti yek moteghaeir mosavi string gharar girad.
 	 *

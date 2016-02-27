@@ -45,8 +45,8 @@ public:
 
 	int fieldSize(int tupleNumber, int columnNumber);
 
-	std::string toString(SerializationType type = JSON); //no need to implement
-	void fromString(std::string data, SerializationType type = SerializationType::JSON);
+	std::string toString(); //no need to implement
+	void fromString(std::string data);
 
 	DTBase &operator=(std::string);
 

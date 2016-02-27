@@ -5,6 +5,7 @@
  *      Author: ajl
  */
 
+#include "datatypes/dtmultifieldtypes.hpp"
 #include "CommunicationMediator.hpp"
 #include "utility/jsonParser.hpp"
 #include "ServerMediator.hpp"
@@ -16,16 +17,17 @@
 namespace zeitoon {
 namespace utility {
 
-void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data, string id) {
-	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data.toString(true)));
+void CommunicationMediator::runCommand(string name, string data, string id) {
+	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data));
 }
-string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &data, string id) {
-	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data.toString(true)));
-	idData x = { "", false };
+
+string CommunicationMediator::runCommandSync(string name, string data, string id) {
+	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data));
+	idData x = {"", false};
 	try {
 		lock_guard<mutex> lg(MtxIdList);
 		idList[id] = &x;
-	} catch (std::exception& ex) {
+	} catch (std::exception ex) {
 		EXTunknownExceptionI("unable to add to id-list", ex);
 	}
 	while (!x.set) {
@@ -35,48 +37,87 @@ string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &d
 	try {
 		lock_guard<mutex> lg(MtxIdList);
 		idList.erase(id);
-	} catch (std::exception& ex) {
+	} catch (std::exception &ex) {
 		EXTunknownExceptionI("unable to remove from id-list", ex);
 	}
 	return dt;
 }
+
+void CommunicationMediator::runCommand(string name, string data) {
+	runCommand(name, data, "");
+}
+
+string CommunicationMediator::runCommandSync(string name, string data) {
+	return runCommandSync(name, data, "");
+}
+
+void CommunicationMediator::runCallback(string name, string data, string id) {
+	sm->send(CommunicationUtility::makeCallback(name, id, sm->owner->getServiceName(), data));
+}
+
+void CommunicationMediator::runEvent(string name, string data) {
+	sm->send(CommunicationUtility::makeEvent(name, sm->owner->getServiceName(), data));
+}
+
+void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data, string id) {
+	this->runCommand(name, data.toString(true), id);
+}
+
+string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &data, string id) {
+	this->runCommandSync(name, data.toString(true), id);
+}
+
 void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data) {
 	runCommand(name, data, "");
 }
+
 string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &data) {
 	return runCommandSync(name, data, "");
 }
 
 void CommunicationMediator::runCallback(string name, datatypes::DTStruct &data, string id) {
-	sm->send(CommunicationUtility::makeCallback(name, id, sm->owner->getServiceName(), data.toString(true)));
+	this->runCallback(name, data.toString(true), id);
 }
 
 void CommunicationMediator::runEvent(string name, datatypes::DTStruct &data) {
-	sm->send(CommunicationUtility::makeEvent(name, sm->owner->getServiceName(), data.toString(true)));
+	this->runEvent(name, data.toString(true));
 }
+
+//op
 void CommunicationMediator::registerEvent(string name) {
-	sm->send(CommunicationUtility::makeCommand("registerEvent", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("registerEvent", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [\"" + name + "\"]}"));
 }
+
 void CommunicationMediator::removeEvent(string name) {
-	sm->send(CommunicationUtility::makeCommand("removeEvent", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("removeEvent", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [\"" + name + "\"]}"));
 }
+
 void CommunicationMediator::registerCommand(string name) {
-	sm->send(CommunicationUtility::makeCommand("registerCommand", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("registerCommand", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [\"" + name + "\"]}"));
 }
+
 void CommunicationMediator::removeCommand(string name) {
-	sm->send(CommunicationUtility::makeCommand("removeCommand", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("removeCommand", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [\"" + name + "\"]}"));
 }
+
 void CommunicationMediator::registerHook(string name) {
-	sm->send(CommunicationUtility::makeCommand("registerHook", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("registerHook", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [\"" + name + "\"]}"));
 }
+
 void CommunicationMediator::removeHook(string name) {
-	sm->send(CommunicationUtility::makeCommand("removeHook", "", sm->owner->getServiceName(), "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("removeHook", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [\"" + name + "\"]}"));
 }
 
 void zeitoon::utility::CommunicationMediator::errorReport(std::string node, std::string id, std::string desc) {
 	sm->send(
 			"{\"type\" : \"call\" , \"node\" : \"error\" , \"data\" : {\"node\" : \"" + node + "\" , \"id\" : \"" + id
-					+ "\" , \"description\" : \"" + desc + "\"} }");
+			+ "\" , \"description\" : \"" + desc + "\"} }");
 
 }
 

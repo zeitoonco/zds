@@ -216,8 +216,10 @@ public:
 	 * @param val objecti ke bayad ezaafe shavad.
 	 *
 	 */
-	virtual void add(T *val) {
+	virtual void add(T *val, bool unManagedMemory = false) {
 		DTMultiFieldType<T>::add(val);
+		if (unManagedMemory)
+			addAllocated(val);
 	}
 
 	/**add() dade ie ke be soorate string vared mishavad ra dar list zakhire mikonad.
@@ -231,7 +233,7 @@ public:
 	 */
 	virtual void add(string str) {
 		T *temp = new T("");
-		temp->fromString(str, RAW);
+		temp->fromString(str);
 		add(temp);
 		addAllocated(temp);
 	}
@@ -300,35 +302,15 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type = SerializationType::JSON) {
+	string toString() {
 		stringstream str;
-		switch (type) {
-			case JSON:
-				str << "[";
-				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-					str << (**i).toString(JSON);
-					if (i + 1 != this->list.end())
-						str << ",";
-				}
-				str << ']';
-				break;
-			case XML:
-				str << '<' << this->getName() << '>';
-				for (iterator i = this->list.begin(); i != this->list.end(); i++)
-					str << "<item>" << (**i).toString(XML) << "</item>";
-				str << "</" << this->getName() << ">";
-				break;
-			case RAW:
-				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-					str << (**i).toString(RAW);
-					if (i + 1 != this->list.end())
-						str << ",";
-				}
-				break;
-			default:
-				throw new invalidParameter(
-						"You've provided invalid type for string serialization type parameter.");
+		str << "[";
+		for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+			str << (**i).toString();
+			if (i + 1 != this->list.end())
+				str << ",";
 		}
+		str << ']';
 		return str.str();
 	}
 
@@ -341,27 +323,15 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type = SerializationType::JSON) {
+	void fromString(string data) {
 		size_t pos, rePos;
 		List tempList;
-		switch (type) {
-			case JSON:
-				pos = data.find('[');
-				rePos = data.rfind(']');
-				if (pos == string::npos || rePos == string::npos)
-					EXTcantParseString("can't find brackets");
-				parseRawString(data.substr(pos + 1, rePos - pos - 1), RAW,
-				               tempList);
-				break;
-			case RAW:
-				parseRawString(data, RAW, tempList);
-				break;
-			case XML:
-				EXTnotImplemented("XML not implemented yet");
-			default:
-				EXTinvalidParameter(
-						"You've provided invalid type for string serialization type parameter");
-		}
+
+		pos = data.find('[');
+		rePos = data.rfind(']');
+		if (pos == string::npos || rePos == string::npos)
+			EXTcantParseString("can't find brackets");
+		parseRawString(data.substr(pos + 1, rePos - pos - 1), tempList);
 		clear();
 		for (iterator i = tempList.begin(); i != tempList.end(); i++) {
 			add(*i);
@@ -379,19 +349,7 @@ public:
 	 */
 	DTBase &operator=(string str) {
 		str = Strings::trim(str);
-		SerializationType type;
-		switch (str[0]) {
-			case '[':
-				type = JSON;
-				break;
-			case '<':
-				type = XML;
-				break;
-			default:
-				type = RAW;
-				break;
-		}
-		fromString(str, type);
+		fromString(str);
 		return *this;
 	}
 
@@ -488,7 +446,7 @@ private:
 	 *@param list lsiti ke bayad object haayi ke data heye parse shode dar anha gharar darand ra zakhire konad.
 	 *
 	 */
-	void parseRawString(string str, SerializationType type, List &list) {
+	void parseRawString(string str, List &list) {
 		string parsed;
 		size_t q = 0, j = string::npos - 1;
 		bool ready = false;
@@ -521,7 +479,7 @@ private:
 			if (ready) {
 				T *temp = new T("");
 				try {
-					temp->fromString(parsed, type);
+					temp->fromString(parsed);
 				} catch (exceptionEx *ex) {
 					EXTcantParseStringI(
 							"Failed to parse string:\"" + parsed + "\" as '"
@@ -572,20 +530,20 @@ public:
 	 * @return version DTSruct.
 	 *
 	 */
-	virtual size_t getVersion() = 0;
+	virtual size_t getVersion() { return this->version; };
 
 	/**getMinSupportedVersion() minimom versione DTStruct ra barmigardand.
 	 *
 	 * @return minimom version DTSruct.
 	 *
 	 */
-	virtual size_t getMinSupportedVersion() = 0;
+	virtual size_t getMinSupportedVersion() { return this->minVersion; };
 
 	/**
 	 * getMinSupportedVersionWOConversation() kamterin versioni ke lazem ast taa tavabe seda zade shavand ra
 	 * barmigardanad
 	 */
-	virtual size_t getMinSupportedVersionWOConversation() = 0;
+	virtual size_t getMinSupportedVersionWOConversation() { return this->minVersionWOC; };
 
 	/**remove() yek naam daryaft mikonad va dar list object ba in naam ra peida mikonad va aan ra az list hazf mikonad.
 	 *
@@ -624,48 +582,21 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type = SerializationType::JSON) {
-		return this->toString(false, type);
+	string toString() {
+		return toString(false);
 	}
 
-	string toString(bool includeVersion = false, SerializationType type = SerializationType::JSON) {
+	string toString(bool includeVersion) {
 		stringstream str;
-		switch (type) {
-			case JSON:
-				str << "{";
-				if (includeVersion)
-					str << "\"_version\":" << this->getVersion() << ",";
-				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-					str << '"' << (*i)->getName() << "\":" << (*i)->toString(JSON);
-					if (i + 1 != list.end())
-						str << ',';
-				}
-				str << '}';
-				break;
-			case XML:
-				str << '<' << this->getName() << '>';
-				if (includeVersion)
-					str << "<_version>" << this->getVersion() << "</_version>";
-				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-					str << '<' << (*i)->getName() << '>' << (*i)->toString(XML)
-					<< "</" << (*i)->getName() << '>';
-					if (i + 1 != list.end())
-						str << ',';
-				}
-				str << "</" << this->getName() << '>';
-				break;
-			case RAW:
-				str << this->getVersion() << ",";
-				for (iterator i = this->list.begin(); i != this->list.end(); i++) {
-					str << (**i).toString(RAW);
-					if (i + 1 != this->list.end())
-						str << ",";
-				}
-				break;
-			default:
-				throw new invalidParameter(
-						"You've provided invalid type for string serialization type parameter.");
+		str << "{";
+		if (includeVersion)
+			str << "\"_version\":" << this->getVersion() << ",";
+		for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+			str << '"' << (*i)->getName() << "\":" << (*i)->toString();
+			if (i + 1 != list.end())
+				str << ',';
 		}
+		str << '}';
 		return str.str();
 	}
 
@@ -679,43 +610,29 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type = SerializationType::JSON) {
-		string backup = toString(RAW);
+	void fromString(string data) {
+		string backup = toString();
 		exceptionEx *ex = NULL;
 		size_t ver;
-		switch (type) {
-			case JSON:
-			case RAW:
-				try {
-					if (type == RAW)
-						ver = parseRawString(data);
-					else
-						ver = parseJSONString(data);
-				} catch (exception &excp) {
-					ex = EXcantParseStringI("Failed.",
-					                        EXunknownExceptionI("", excp));
-				} catch (exceptionEx *excp) {
-					ex = EXcantParseStringI("Failed.", excp);
-				} catch (...) {
-					ex = EXcantParseString("Unknown error occurred.");
-				}
-				if (ver != string::npos && ver < getMinSupportedVersion())
-					ex =
-							EXobsolete(
-									"This version (" + Strings::itoa(ver) + ") of '"
-									+ this->getNameAndType()
-									+ ") struct, is not supported anymore. Minimum supported version : "
-									+ Strings::itoa(
-											this->getMinSupportedVersion()));
-				break;
-			case XML:
-				throw new notImplemented("XML not implemented yet.");
-			default:
-				throw new invalidParameter(
-						"You've provided invalid type for string serialization type parameter.");
+
+		try {
+			ver = parseJSONString(data);
+		} catch (exception &excp) {
+			ex = EXcantParseStringI("Failed.",
+			                        EXunknownExceptionI("", excp));
+		} catch (exceptionEx *excp) {
+			ex = EXcantParseStringI("Failed.", excp);
+		} catch (...) {
+			ex = EXcantParseString("Unknown error occurred.");
 		}
+		if (ver != string::npos && ver < getMinSupportedVersion())
+			ex = EXobsolete(
+					"This version (" + Strings::itoa(ver) + ") of '" + this->getNameAndType()
+					+ ") struct, is not supported anymore. Minimum supported version : "
+					+ Strings::itoa(this->getMinSupportedVersion()));
+
 		if (ex != NULL) {
-			fromString(backup, RAW);
+			fromString(backup);
 			throw ex;
 		}
 	}
@@ -750,19 +667,7 @@ public:
 	 */
 	DTBase &operator=(string str) {
 		str = Strings::trim(str);
-		SerializationType type;
-		switch (str[0]) {
-			case '{':
-				type = JSON;
-				break;
-			case '<':
-				type = XML;
-				break;
-			default:
-				type = RAW;
-				break;
-		}
-		fromString(str, type);
+		fromString(str);
 		return *this;
 	}
 
@@ -779,7 +684,7 @@ public:
 	 */
 	DTBase &operator=(DTBase &dtvar) {
 		DTStruct *temp;
-		string backup = this->toString(RAW);
+		string backup = this->toString();
 		temp = dynamic_cast<DTStruct *>(&dtvar);
 		if (temp) {
 			if (temp->getVersion() < this->getMinSupportedVersion())
@@ -819,7 +724,7 @@ public:
 											+ "' failed. Unknown error occurred.");
 						}
 						if (ex) {
-							fromString(backup, RAW);
+							fromString(backup);
 							throw ex;
 						}
 					}
@@ -899,75 +804,6 @@ private:
 	 * @param str stringi ke data dar khod zakhire shode ast.
 	 *
 	 */
-	size_t parseRawString(string str) {
-		string parsed;
-		size_t q = 0, cc = 0, ver = string::npos, j = string::npos - 1;
-		bool ready = false;
-		for (size_t i = 0; i < str.size(); i++) {
-			if (str[i] == '"') {
-				j = JSONUtility::getEndOfString(str, i);
-			} else if (str[i] == '{') {
-				j = JSONUtility::getEndOfStruct(str, i);
-			} else if (str[i] == '[') {
-				j = JSONUtility::getEndOfArray(str, i);
-			} else if (str[i] == ',') {
-				parsed = str.substr(q, i - q);
-				ready = true;
-				q = i + 1;
-			}
-			if (!ready) {
-				if (j == string::npos)
-					EXTcantParseString(
-							"syntax error at column" + Strings::itoa(i)
-							+ " : can't find end of region");
-				else if (j != string::npos - 1) {
-					i = j;
-					j = string::npos - 1;
-				}
-			}
-			if (i >= str.size() - 1) {
-				parsed = str.substr(q);
-				ready = true;
-			}
-			if (ready) {
-				if (cc == 0) //version
-					ver = stoi(parsed);
-				else {
-					try {
-						this->list[cc - 1]->fromString(parsed, RAW);
-					} catch (exception &excp) {
-						EXTcantParseStringI(
-								"Parsing string '" + parsed + "' as '"
-								+ this->list[cc - 1]->getNameAndType()
-								+ "' failed",
-								EXunknownExceptionI("", excp));
-					} catch (exceptionEx *excp) {
-						EXTcantParseStringI(
-								"Parsing string '" + parsed + "' as '"
-								+ this->list[cc - 1]->getNameAndType()
-								+ "' failed", excp);
-					} catch (...) {
-						EXTcantParseString(
-								"Parsing string '" + parsed + "' as '"
-								+ this->list[cc - 1]->getNameAndType()
-								+ "' failed");
-					}
-				}
-				cc++;
-				ready = false;
-			}
-		}
-		return ver;
-	}
-
-	/**parseRawString()
-	 *
-	 * dar in taabe stringi ke migirad ra parse mikonad va data haayi ra ke be dast miavarad ra be
-	 * fromString objecthaa midahad ta aan data ha ra dar khod zakhire konand.
-	 *
-	 * @param str stringi ke data dar khod zakhire shode ast.
-	 *
-	 */
 	size_t parseJSONString(string str) {
 		size_t pos, rePos, ver = string::npos, j = string::npos - 1;
 		pos = str.find('{');
@@ -1027,7 +863,7 @@ private:
 					ver = stoi(value);
 				else if ((*this).contains(name)) {
 					try {
-						(*this)[name]->fromString(value, JSON);
+						(*this)[name]->fromString(value);
 					} catch (exception &excp) {
 						EXTcantParseStringI(
 								"Parsing string '" + value + "' as '"

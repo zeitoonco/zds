@@ -68,47 +68,12 @@ int DTTableString::fieldSize(int tupleNumber, int columnNumber) {
 	}
 }
 
-std::string DTTableString::toString(SerializationType type) {
-
-	switch (type) {
-		case SerializationType::BINARY:
-			EXTnotImplemented("Not Implemented");
-
-		case SerializationType::JSON:
-			return jsonData.toString();
-
-		case SerializationType::RAW:
-			EXTnotImplemented("Not Implemented");
-
-		case SerializationType::XML:
-			EXTnotImplemented("Not Implemented");
-
-		default:
-			EXTdataTypeMismatch("Invalid type entered");
-
-	}
-	EXTunknownException("end of switch");
+std::string DTTableString::toString() {
+	return jsonData.toString();
 }
 
-void DTTableString::fromString(std::string data, SerializationType type) {
-	switch (type) {
-		case SerializationType::BINARY:
-			EXTnotImplemented("Not Implemented");
-
-		case SerializationType::JSON:
-			jsonData.fromString(data);
-			break;
-		case SerializationType::RAW:
-			EXTnotImplemented("Not Implemented");
-
-		case SerializationType::XML:
-			EXTnotImplemented("Not Implemented");
-
-		default:
-			EXTdataTypeMismatch("Invalid type entered");
-
-	}
-
+void DTTableString::fromString(std::string data) {
+	jsonData.fromString(data);
 }
 
 DTBase &DTTableString::operator=(std::string input) {

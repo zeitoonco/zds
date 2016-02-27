@@ -17,65 +17,28 @@ class DSString : public DTStruct {
 public:
 	DTString value = {"value"};
 
-	DSString() :
-			DTStruct("DSString") {
+	DSString() : DTStruct("DSString", 0, 0, 0) {
 		this->list.push_back(&value);
-	}
-
-	size_t getVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersionWOConversation() {
-		return 0;
 	}
 };
 
 class DSInteger : public DTStruct {
 public:
-	DTInteger<int> value = {"value"};
+	DTInteger<> value = {"value"};
 
 	DSInteger() :
-			DTStruct("DSInteger") {
+			DTStruct("DSInteger", 0, 0, 0) {
 		this->list.push_back(&value);
-	}
-
-	size_t getVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersionWOConversation() {
-		return 0;
 	}
 };
 
 class DSFloat : public DTStruct {
 public:
-	DTFloat<float> value = {"value"};
+	DTFloat<> value = {"value"};
 
 	DSFloat() :
-			DTStruct("DSFloat") {
+			DTStruct("DSFloat", 0, 0, 0) {
 		this->list.push_back(&value);
-	}
-
-	size_t getVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersionWOConversation() {
-		return 0;
 	}
 };
 
@@ -84,20 +47,8 @@ public:
 	DTBoolean value = {"value"};
 
 	DSBoolean() :
-			DTStruct("DSBoolean") {
+			DTStruct("DSBoolean", 0, 0, 0) {
 		this->list.push_back(&value);
-	}
-
-	size_t getVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersionWOConversation() {
-		return 0;
 	}
 };
 
@@ -106,20 +57,8 @@ public:
 	DTTableString value = {"value"};
 
 	DSDBTable() :
-			DTStruct("DSDBTable") {
+			DTStruct("DSDBTable", 0, 0, 0) {
 		this->list.push_back(&value);
-	}
-
-	size_t getVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersion() {
-		return 0;
-	}
-
-	size_t getMinSupportedVersionWOConversation() {
-		return 0;
 	}
 };
 
@@ -130,21 +69,25 @@ public:
 	public:
 		DTString name = {"name"};
 		DTString inputDatatype = {"inputDatatype"};
-		DTInteger inputDatatypeVersion = {"inputDatatypeVersion"};
+		DTInteger<> inputDatatypeVersion = {"inputDatatypeVersion"};
 		DTString outputDatatype = {"outputDatatype"};
-		DTInteger outputDatatypeVersion = {"inputDatatypeVersion"};
+		DTInteger<> outputDatatypeVersion = {"inputDatatypeVersion"};
 
-		DSCommandDetail(string iname, string inputDT, int inputDTVer, string outputDT, int outputDTVer) {
+		DSCommandDetail(string sname) : DSCommandDetail("", "", 0, "", 0) {
+		}
+
+		DSCommandDetail(string iname, string inputDT, int inputDTVer, string outputDT, int outputDTVer) :
+				DTStruct("DSCommandDetail", 0, 0, 0) {
 			name = iname;
 			inputDatatype = inputDT;
 			inputDatatypeVersion = inputDTVer;
 			outputDatatype = outputDT;
 			outputDatatypeVersion = outputDTVer;
-			this->list.push_back(name);
-			this->list.push_back(inputDatatype);
-			this->list.push_back(inputDatatypeVersion);
-			this->list.push_back(outputDatatype);
-			this->list.push_back(outputDatatypeVersion);
+			this->list.push_back(&name);
+			this->list.push_back(&inputDatatype);
+			this->list.push_back(&inputDatatypeVersion);
+			this->list.push_back(&outputDatatype);
+			this->list.push_back(&outputDatatypeVersion);
 		}
 	};
 
@@ -152,15 +95,19 @@ public:
 	public:
 		DTString name = {"name"};
 		DTString datatype = {"datatype"};
-		DTInteger datatypeVersion = {"datatypeVersion"};
+		DTInteger<> datatypeVersion = {"datatypeVersion"};
 
-		DSEventDetail(string iname, string DT, int DTVer) {
+		DSEventDetail(string sname) : DSEventDetail("", "", 0) {
+		}
+
+		DSEventDetail(string iname, string DT, int DTVer) :
+				DTStruct("DSEventDetail", 0, 0, 0) {
 			name = iname;
 			datatype = DT;
 			datatypeVersion = DTVer;
-			this->list.push_back(name);
-			this->list.push_back(datatype);
-			this->list.push_back(datatypeVersion);
+			this->list.push_back(&name);
+			this->list.push_back(&datatype);
+			this->list.push_back(&datatypeVersion);
 		}
 	};
 
@@ -168,67 +115,79 @@ public:
 	public:
 		DTString name = {"name"};
 		DTString datatype = {"datatype"};
-		DTInteger datatypeVersion = {"datatypeVersion"};
+		DTInteger<> datatypeVersion = {"datatypeVersion"};
 
-		DSHookDetail(string iname, string DT, int DTVer) {
+		DSHookDetail(string sname) : DSHookDetail("", "", 0) {
+		}
+
+		DSHookDetail(string iname, string DT, int DTVer) :
+				DTStruct("DSHookDetail", 0, 0, 0) {
 			name = iname;
 			datatype = DT;
 			datatypeVersion = DTVer;
-			this->list.push_back(name);
-			this->list.push_back(datatype);
-			this->list.push_back(datatypeVersion);
+			this->list.push_back(&name);
+			this->list.push_back(&datatype);
+			this->list.push_back(&datatypeVersion);
 		}
 	};
 
 	class DSInstallInfoCommandCallDetail : public DTStruct {
 	public:
 		DTString name = {"name"};
-		DTInteger inputDatatypeVersion = {"inputDatatypeVersion"};
-		DTInteger outputDatatypeVersion = {"outputDatatypeVersion"};
+		DTInteger<> inputDatatypeVersion = {"inputDatatypeVersion"};
+		DTInteger<> outputDatatypeVersion = {"outputDatatypeVersion"};
 
-		DSCommandCallDetail(string
-		iname,
-		int inDTVer,
-		int outDTVer
-		) {
+		DSInstallInfoCommandCallDetail(string sname) : DSInstallInfoCommandCallDetail("", 0, 0) {
+		}
+
+		DSInstallInfoCommandCallDetail(string iname, int inDTVer, int outDTVer) :
+				DTStruct("DSInstallInfoCommandCallDetail", 0, 0, 0) {
 			name = iname;
 			inputDatatypeVersion = inDTVer;
 			outputDatatypeVersion = outDTVer;
-			this->list.push_back(name);
-			this->list.push_back(inputDatatypeVersion);
-			this->list.push_back(outputDatatypeVersion);
+			this->list.push_back(&name);
+			this->list.push_back(&inputDatatypeVersion);
+			this->list.push_back(&outputDatatypeVersion);
 		}
 	};
 
 	class DSInstallInfoRequirementDetail : public DTStruct {
 	public:
 		DTString name = {"name"};
-		DTInteger version = {"version"};
+		DTInteger<> version = {"version"};
 
-		DSInstallInfoRequirementDetail(string iname, int iVer) {
+		DSInstallInfoRequirementDetail(string sname) : DSInstallInfoRequirementDetail("", 0) {
+		}
+
+		DSInstallInfoRequirementDetail(string iname, int iVer) :
+				DTStruct("DSInstallInfoRequirementDetail", 0, 0, 0) {
 			name = iname;
 			version = iVer;
-			this->list.push_back(name);
-			this->list.push_back(version);
+			this->list.push_back(&name);
+			this->list.push_back(&version);
 		}
 	};
 
 	class DSInstallInfoDatatypesDetail : public DTStruct {
 	public:
 		DTString name = {"name"};
-		DTInteger version = {"version"};
+		DTInteger<> version = {"version"};
 
-		DSInstallInfoDatatypesDetail(string iname, int iVer) {
+		DSInstallInfoDatatypesDetail(string sname) : DSInstallInfoDatatypesDetail("", 0) {
+		}
+
+		DSInstallInfoDatatypesDetail(string iname, int iVer) :
+				DTStruct("DSInstallInfoDatatypesDetail", 0, 0, 0) {
 			name = iname;
 			version = iVer;
-			this->list.push_back(name);
-			this->list.push_back(version);
+			this->list.push_back(&name);
+			this->list.push_back(&version);
 		}
 	};
 
 	DTString name = {"name"};
 	DTString title = {"title"};
-	DTInteger version = {"version"};
+	DTInteger<> serviceVersion = {"version"};
 	DTSet<DSCommandDetail> commands = {"commands"};
 	DTSet<DSEventDetail> events = {"events"};
 	DTSet<DSHookDetail> hooks = {"hooks"};
@@ -236,21 +195,21 @@ public:
 	DTSet<DSInstallInfoRequirementDetail> requirements = {"requirements"};
 	DTSet<DSInstallInfoDatatypesDetail> datatypes = {"datatypes"};
 
-	DSInstallInfo() : DTStruct("installInfo") {
-
+	DSInstallInfo(string iname, string ititle, int iver) : DTStruct("installInfo", 0, 0, 0) {
+		name = iname;
+		title = ititle;
+		serviceVersion = iver;
+		this->list.push_back(&name);
+		this->list.push_back(&title);
+		this->list.push_back(&serviceVersion);
+		this->list.push_back(&commands);
+		this->list.push_back(&events);
+		this->list.push_back(&hooks);
+		this->list.push_back(&calls);
+		this->list.push_back(&requirements);
+		this->list.push_back(&datatypes);
 	}
 
-	size_t getVersion() {
-		return 1;
-	}
-
-	size_t getMinSupportedVersion() {
-		return 1;
-	}
-
-	size_t getMinSupportedVersionWOConversation() {
-		return 1;
-	}
 };
 
 }}

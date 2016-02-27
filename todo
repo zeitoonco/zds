@@ -22,7 +22,6 @@ JsonParser:
   
   
   now #ajl:
-    use dtstruct as data field in mediators
     add Info.cpp
     #
     use DSQuery in DBMediator

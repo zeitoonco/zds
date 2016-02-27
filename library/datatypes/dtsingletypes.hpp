@@ -54,7 +54,7 @@ protected:
 		if (temp) {
 			return temp->getValue();
 		} else {
-			return this->parseString(temp->toString(RAW));
+			return this->parseString(temp->toString());
 		}
 	}
 
@@ -298,20 +298,6 @@ public:
 
 	/**toString ke _value object ra dar yek string zakhire mikond.
 	 *
-	 * ba tavajoh be type(json,xml,...),adad ra dar mabnaaye 10 dar string zakhire mikond va
-	 * string ra barmigardanad.
-	 *
-	 * @param type SerializationType(json,xml,....)
-	 *
-	 * @return stringi k dar aan _value zakhire mishavad.
-	 *
-	 */
-	string toString(SerializationType type = SerializationType::JSON) {
-		return toString(10, type);
-	}
-
-	/**toString ke _value object ra dar yek string zakhire mikond.
-	 *
 	 * ba tavajoh be type(json,xml,...), va base ke mabnaa ra moshakhs mikond dar string
 	 * zakhire mikonad.
 	 *
@@ -321,24 +307,12 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(int base, SerializationType type = SerializationType::JSON) {
-		stringstream str;
-		string data;
-		//char based[64];
-		//memset(based, 0, 64);
-		string based = Strings::toString((long long int) this->getValue());        //, based, base);
-		switch (type) {
-			case RAW:
-			case JSON:
-				str << based;
-				break;
-			case XML:
-				str << '<' << this->getName() << '>' << based << "</" << this->getName() << '>';
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
-		return str.str();
+	string toString() {
+		return toString(10);
+	}
+
+	string toString(int base) {
+		return Strings::toString(this->getValue(), base);
 	}
 
 	/**fromstring baraye khoondan adad az stringi k daryaft mikonad.
@@ -349,22 +323,8 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type = SerializationType::JSON) {
-		IntType val;
-		switch (type) {
-			case JSON:
-				val = parseString(data);
-				break;
-			case XML:
-				EXTnotImplemented("XML not implemented yet.");
-				break;
-			case RAW:
-				val = parseString(data);
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
-		this->setValue(val);
+	void fromString(string data) {
+		this->setValue(parseString(data));
 	}
 
 	/**overload operator =
@@ -533,7 +493,7 @@ protected:
 			val = temp->getValue();
 			isExact = true;
 		} else {
-			val = this->parseString(temp->toString(RAW), isExact);
+			val = this->parseString(temp->toString(), isExact);
 		}
 		return val;
 	}
@@ -653,22 +613,9 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type = SerializationType::JSON) {
+	string toString() {
 		stringstream str;
-		string data;
-		switch (type) {
-			case RAW:
-			case JSON:
-				str << setprecision(std::numeric_limits<double>::digits10 + 1) << this->getValue();
-				break;
-			case XML:
-				str << '<' << this->getName() << '>' <<
-				setprecision(std::numeric_limits<FloatType>::digits10 + 1) << this->getValue() << "</" <<
-				this->getName() << '>';
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
+		str << setprecision(std::numeric_limits<double>::digits10 + 1) << this->getValue();
 		return str.str();
 	}
 
@@ -680,24 +627,8 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type = SerializationType::JSON) {
-		FloatType val;
-		string name;
-		stringstream str(data);
-		switch (type) {
-			case JSON:
-				val = parseString(data);
-				break;
-			case XML:
-				EXTnotImplemented("XML not implemented yet.");
-				break;
-			case RAW:
-				val = parseString(data);
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
-		this->setValue(val);
+	void fromString(string data) {
+		this->setValue(parseString(data));
 	}
 
 	/**overload operator =
@@ -907,7 +838,7 @@ public:
 	 *
 	 */
 	void setValue(int val) {
-		setValue(!(val == 0));
+		DTSingleType::setValue(!(val == 0));
 	}
 
 	void setStringType(boolTxType type) {
@@ -927,20 +858,6 @@ public:
 
 	/**toString ke _value object ra dar yek string zakhire mikond.
 	 *
-	 * ba tavajoh be type(json,xml,...),adad ra dar string zakhire mikond va
-	 * string ra barmigardanad.
-	 *
-	 * @param type SerializationType(json,xml,....)
-	 *
-	 * @return stringi k dar aan _value zakhire mishavad.
-	 *
-	 */
-	string toString(SerializationType type = SerializationType::JSON) {
-		return toString(getStringType(), type);
-	}
-
-	/**toString ke _value object ra dar yek string zakhire mikond.
-	 *
 	 * ba tavajoh be type(json,xml,...), va txType ke foramt e zakhire ra moshakhas mikond(truefalse,...) dar string
 	 * zakhire mikonad.
 	 *
@@ -950,26 +867,15 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(boolTxType txType, SerializationType type = SerializationType::JSON) {
-		stringstream str;
-		switch (type) {
-			case RAW:
-				str << boolStr[txType][getInt()];
-				break;
-			case JSON:
-				if (_stringType == OneZero)
-					str << boolStr[txType][getInt()];
-				else
-					str << "\"" << boolStr[txType][getInt()] << "\"";
-				break;
-			case XML:
-				str << '<' << this->getName() << '>' << boolStr[txType][getInt()] << "</" << this->getName() <<
-				'>';
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
-		return str.str();
+	string toString() {
+		return toString(boolTxType::TrueFalse);
+	}
+
+	string toString(boolTxType txType) {
+		if (_stringType == OneZero)
+			return boolStr[txType][getInt()];
+		else
+			return "\"" + boolStr[txType][getInt()] + "\"";
 	}
 
 	/**fromstring baraye khoondan daade az stringi k daryaft mikonad.
@@ -980,21 +886,8 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type = SerializationType::JSON) {
-		bool val;
-		string name;
-		switch (type) {
-			case RAW:
-			case JSON:
-				val = parseString(data);
-				break;
-			case XML:
-				EXTnotImplemented("XML not implemented yet.");
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
-		this->setValue(val);
+	void fromString(string data) {
+		this->setValue(parseString(data));
 	}
 
 	void on() {
@@ -1188,22 +1081,8 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type = SerializationType::JSON) {
-		stringstream str;
-		switch (type) {
-			case JSON:
-				str << '"' << utility::JSONUtility::encodeString(this->getValue()) << '"';
-				break;
-			case XML:
-				str << '<' << this->getName() << '>' << this->getValue() << "</" << this->getName() << '>';
-				break;
-			case RAW:
-				str << this->getValue();
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
-		return str.str();
+	string toString() {
+		return '"' + utility::JSONUtility::encodeString(this->getValue()) + '"';
 	}
 
 	/**fromstring baraye khoondan daade az stringi k daryaft mikonad.
@@ -1218,27 +1097,15 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type = SerializationType::JSON) {
+	void fromString(string data) {
 		string str;
-		switch (type) {
-			case JSON: {
-				//we can't use trim because first character in string can be '"'
-				size_t x = data.find('"');
-				size_t y = data.rfind('"');
-				if (x == string::npos || y == string::npos)
-					EXTcantParseString("provided string is not enclosed with '\"'.");
-				str = data.substr(x + 1, y - x - 1);
-				str = parseString(utility::JSONUtility::decodeString(str));
-				break;
-			}
-			case XML:
-				EXTnotImplemented("XML not implemented yet.");
-			case RAW:
-				str = parseString(data);
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
+		//we can't use trim because first character in string can be '"'
+		size_t x = data.find('"');
+		size_t y = data.rfind('"');
+		if (x == string::npos || y == string::npos)
+			EXTcantParseString("provided string is not enclosed with '\"'.");
+		str = data.substr(x + 1, y - x - 1);
+		str = parseString(utility::JSONUtility::decodeString(str));
 		this->setValue(str);
 	}
 
@@ -1357,22 +1224,9 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString(SerializationType type = SerializationType::JSON) {
+	string toString() {
 		stringstream str;
-		switch (type) {
-			case JSON:
-				str << '"' << EnumType::typeString[this->getValue()] << '"';
-				break;
-			case XML:
-				str << '<' << this->getName() << '>' << EnumType::typeString[this->getValue()] << "</" <<
-				this->getName() << '>';
-				break;
-			case RAW:
-				str << EnumType::typeString[this->getValue()];
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
+		str << '"' << EnumType::typeString[this->getValue()] << '"';
 		return str.str();
 	}
 
@@ -1384,20 +1238,8 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data, SerializationType type = SerializationType::JSON) {
-		int val;
-		switch (type) {
-			case RAW:
-			case JSON:
-				val = parseString(data);
-				break;
-			case XML:
-				EXTnotImplemented("XML not implemented yet.");
-				break;
-			default:
-				EXTinvalidParameter("You've provided invalid type for string serialization type parameter.");
-		}
-		this->setValue(val);
+	void fromString(string data) {
+		this->setValue(parseString(data));
 	}
 
 	/**overload operator =

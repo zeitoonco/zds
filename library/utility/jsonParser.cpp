@@ -324,8 +324,8 @@ void JArray::remove(JValue* value) {
 		}
 }
 
-void JArray::removeAt(int index) {
-	if (index < 0 || index >= (int) fields.size())
+void JArray::removeAt(size_t index) {
+	if (index < 0 || index >= fields.size())
 		EXToutOfRange("Invalid index.");
 	fields.erase(fields.begin() + index);
 }

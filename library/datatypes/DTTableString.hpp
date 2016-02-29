@@ -29,23 +29,23 @@ public:
 
 	DTTableString(std::string receivedData, std::string name);
 
-	int rowCount();
+	size_t rowCount();
 
-	int columnCount();
+	size_t columnCount();
 
 	std::string columnName(int fieldNumber);
 
-	ColumnDataType::columndataTYPE columnDataType(int columnNumber);
+	ColumnDataType::columnDataType columnDataType(int columnNumber);
 
-	int columnDataSize(int columnNumber);
+	size_t columnDataSize(int columnNumber);
 
 	std::string fieldValue(int tupleNumber, int columnNumber);
 
 	bool fieldIsNull(int tupleNumber, int columnNumber);
 
-	int fieldSize(int tupleNumber, int columnNumber);
+	size_t fieldSize(int tupleNumber, int columnNumber);
 
-	std::string toString(); //no need to implement
+	std::string toString(); //no need to implement//todo:#NAVIDI wtf?
 	void fromString(std::string data);
 
 	DTBase &operator=(std::string);
@@ -58,13 +58,13 @@ public:
 
 	void columnRemove(string name);
 
-	void columnRemoveAt(int indx);
+	void columnRemoveAt(size_t index);
 
-	void columnAdd(string name, ColumnDataType::columndataTYPE dtype, int size);
+	void columnAdd(string name, ColumnDataType::columnDataType dtype, int size);
 
 	void rowAdd(std::vector<std::string>);
 
-	void rowRemove(int indx);
+	void rowRemove(size_t indx);
 
 	void clearRows();
 

@@ -22,14 +22,14 @@ class ColumnDataType {
 public:
 
 
-	enum columndataTYPE {
+	enum columnDataType {
 		TEXT, INTEGER, FLOAT, BINARY, BOOLEAN, __MAX
 	};
 	static std::string enumArray[__MAX];
 
-	static std::string toString(columndataTYPE);
+	static std::string toString(columnDataType);
 
-	static columndataTYPE fromString(std::string);
+	static columnDataType fromString(std::string);
 };
 
 class DTTable : public DTBase {
@@ -52,15 +52,15 @@ public:
 		return "DTTable";
 	}
 
-	virtual int rowCount() = 0;
+	virtual size_t rowCount() = 0;
 
-	virtual int columnCount() = 0;
+	virtual size_t columnCount() = 0;
 
 	virtual std::string columnName(int colNumber) = 0;
 
-	virtual ColumnDataType::columndataTYPE columnDataType(int colNumber) = 0;
+	virtual ColumnDataType::columnDataType columnDataType(int colNumber) = 0;
 
-	virtual int columnDataSize(int colNumber) = 0;
+	virtual size_t columnDataSize(int colNumber) = 0;
 
 	virtual std::string fieldValue(int rowNumber, int colNumber) = 0;
 

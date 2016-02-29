@@ -13,16 +13,16 @@ using namespace zeitoon::utility;
 namespace zeitoon {
 namespace datatypes {
 
-std::string ColumnDataType::toString(columndataTYPE type) {
+std::string ColumnDataType::toString(columnDataType type) {
 	return ColumnDataType::enumArray[type];
 
 }
 
-ColumnDataType::columndataTYPE ColumnDataType::fromString(std::string str) {
+ColumnDataType::columnDataType ColumnDataType::fromString(std::string str) {
 	str = Strings::trim(str, "\"");
-	for (int i = 0; i < ColumnDataType::columndataTYPE::__MAX; i++)
+	for (int i = 0; i < ColumnDataType::columnDataType::__MAX; i++)
 		if (!Strings::compare(str, ColumnDataType::enumArray[i], false))
-			return ( ColumnDataType::columndataTYPE ) i;
+			return ( ColumnDataType::columnDataType) i;
 	EXTcantParseStringO("Unknown constant passed to Enum :" + str, getNameAndType());
 }
 

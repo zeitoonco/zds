@@ -162,7 +162,7 @@ public:
 	void add(string value);
 	void addIgnored(string value);
 	void remove(JValue* value);
-	void removeAt(int index);
+	void removeAt(size_t index);
 	size_t size();
 	string toString();
 	void fromString(string str);

@@ -9,7 +9,6 @@
 #include "utility/exceptionex.hpp"
 #include "utility/jsonParser.hpp"
 #include "datatypes/dtmultifieldtypes.hpp"
-#include "datatypes/dtsingletypes.hpp"
 
 using namespace zeitoon::datatypes;
 using namespace zeitoon::utility;
@@ -28,12 +27,12 @@ DTTableString::~DTTableString() {
 
 }
 
-int DTTableString::rowCount() {
+size_t DTTableString::rowCount() {
 	return jsonData["rows"].size();
 
 }
 
-int DTTableString::columnCount() {
+size_t DTTableString::columnCount() {
 	return (jsonData["columns"].size());
 }
 
@@ -41,14 +40,14 @@ std::string DTTableString::columnName(int fieldNumber) { //field numbers start f
 	return jsonData["columns"][fieldNumber]["name"].getValue();
 }
 
-ColumnDataType::columndataTYPE DTTableString::columnDataType(int columnNumber) {
+ColumnDataType::columnDataType DTTableString::columnDataType(int columnNumber) {
 	return ColumnDataType::fromString(
 			jsonData["columns"][columnNumber]["datatype"].getValue());
 }
 
-int DTTableString::columnDataSize(int columnNumber) {
+size_t DTTableString::columnDataSize(int columnNumber) {
 //returns -1 for variable size fields.
-	return std::atoi(
+	return (size_t) std::atol(
 			(jsonData["columns"][columnNumber]["size"].getValue()).c_str());
 }
 
@@ -57,10 +56,10 @@ std::string DTTableString::fieldValue(int tupleNumber, int columnNumber) {
 }
 
 bool DTTableString::fieldIsNull(int tupleNumber, int columnNumber) {
-	return (this->fieldValue(tupleNumber, columnNumber) == "NULL" ? true : false);
+	return this->fieldValue(tupleNumber, columnNumber) == "NULL";
 }
 
-int DTTableString::fieldSize(int tupleNumber, int columnNumber) {
+size_t DTTableString::fieldSize(int tupleNumber, int columnNumber) {
 	if (this->columnDataType(columnNumber) == ColumnDataType::TEXT) {
 		return jsonData["rows"][tupleNumber][columnNumber].size();
 	} else {
@@ -136,15 +135,15 @@ void DTTableString::columnRemove(
 	}
 	if (index == -1)
 		EXTinvalidName("Invalid given column name.");
-	columnRemoveAt(index);
+	columnRemoveAt((size_t)index);
 }
 
-void DTTableString::columnRemoveAt(int indx) {
+void DTTableString::columnRemoveAt(size_t index) {
 	//Calls Clear if theres only one column , and the command is to remove that particular col ;
 	JArray &cols = (JArray &) jsonData["columns"];
 	JArray &tupples = (JArray &) jsonData["rows"];
 	try {
-		cols.removeAt(indx);
+		cols.removeAt(index);
 		if (cols.size() < 1) {
 			this->clear();
 		}
@@ -154,12 +153,12 @@ void DTTableString::columnRemoveAt(int indx) {
 
 	for (unsigned int rowIter = 0; rowIter < tupples.size(); rowIter++) {
 		JArray &tuppleTemp = (JArray &) tupples[rowIter];
-		tuppleTemp.removeAt(indx);
+		tuppleTemp.removeAt(index);
 	}
 
 }
 
-void DTTableString::columnAdd(string name, ColumnDataType::columndataTYPE dtype, int size) {
+void DTTableString::columnAdd(string name, ColumnDataType::columnDataType dtype, int size) {
 	JArray &cols = (JArray &) jsonData["columns"];
 	JArray &tupples = (JArray &) jsonData["rows"];
 	JStruct colStruct;
@@ -181,21 +180,21 @@ void DTTableString::rowAdd(std::vector<std::string> newTupple) {
 	tupples.add(JArray(newTupple).getValue());
 }
 
-void DTTableString::rowRemove(int indx) {
+void DTTableString::rowRemove(size_t indx) {
 	JArray &tupples = (JArray &) jsonData["rows"];
 	tupples.removeAt(indx);
 }
 
 void DTTableString::clearRows() {
 	JArray &tupples = (JArray &) jsonData["rows"];
-	for (int iter = (tupples.size() - 1); iter > -1; iter--) {
+	for (size_t iter = (tupples.size() - 1); iter > -1; iter--) {
 		tupples.removeAt(iter);
 	}
 }
 
 void DTTableString::clear() {
 	JArray &cols = (JArray &) jsonData["columns"];
-	for (int iter = (cols.size() - 1); iter > -1; iter--) {
+	for (size_t iter = (cols.size() - 1); iter > -1; iter--) {
 		this->columnRemoveAt(iter);
 	}
 	this->clearRows();

@@ -123,8 +123,8 @@ std::string DTTableString::getNameAndType() {
 
 }
 
-void DTTableString::columnRemove(
-		string name) { //Call Clear if theres only one row , and the command is to remove that particular row ;
+void DTTableString::columnRemove(string name) {
+	//Call Clear if there's only one row , and the command is to remove that particular row ;
 	JArray &cols = (JArray &) jsonData["columns"];
 	int index = -1;
 	for (unsigned int colIter = 0; colIter < cols.size(); colIter++) {
@@ -139,7 +139,7 @@ void DTTableString::columnRemove(
 }
 
 void DTTableString::columnRemoveAt(size_t index) {
-	//Calls Clear if theres only one column , and the command is to remove that particular col ;
+	//Calls Clear if there's only one column , and the command is to remove that particular col ;
 	JArray &cols = (JArray &) jsonData["columns"];
 	JArray &tupples = (JArray &) jsonData["rows"];
 	try {

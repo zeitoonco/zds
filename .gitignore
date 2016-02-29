@@ -14,7 +14,7 @@ build
 Release
 obj\Debug
 obj\Release
-
+.idea\workspace.xml
 
 # Packages #
 ############

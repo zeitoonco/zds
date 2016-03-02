@@ -1,0 +1,141 @@
+//------------------------users
+
+CREATE TABLE users
+(
+  id serial NOT NULL,
+  username character varying(32),
+  password character varying(255),
+  name character varying(255),
+  banned boolean default false,
+  banreason character varying(255) default NULL,
+  avatar character varying(255) default NULL,
+  CONSTRAINT users_pkey PRIMARY KEY (id),
+  CONSTRAINT users_username_key UNIQUE (username)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE users
+  OWNER TO postgres;
+
+
+
+//-----------------------groups
+
+
+CREATE TABLE groups
+(
+  id serial NOT NULL,
+  title character varying(64),
+  parentid integer,
+  description character varying(4096),
+  CONSTRAINT groups_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE groups
+  OWNER TO postgres;
+
+//-----------------------------Permission
+
+CREATE TABLE permission
+(
+  id serial NOT NULL,
+  parentid integer default NULL,
+  name character varying(64) UNIQUE NOT NULL,
+  title character varying(64) default NULL,
+  description character varying(1024) default NULL,
+  CONSTRAINT permission_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE permission
+  OWNER TO postgres;
+
+//----------------------group permission
+
+
+CREATE TABLE grouppermission
+(
+  permissionid integer,
+  groupid integer,
+  state integer,
+  CONSTRAINT grouppermission_groupid_fkey FOREIGN KEY (groupid)
+      REFERENCES groups (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT grouppermission_permissionid_fkey FOREIGN KEY (permissionid)
+      REFERENCES permission (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE grouppermission
+  OWNER TO postgres;
+
+//--------------------service permission
+
+
+CREATE TABLE servicepermission
+(
+  id serial NOT NULL,
+  service character varying(64),
+  permissionid integer,
+  CONSTRAINT servicepermission_pkey PRIMARY KEY (id),
+  CONSTRAINT servicepermission_permissionid_fkey FOREIGN KEY (permissionid)
+      REFERENCES permission (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE servicepermission
+  OWNER TO postgres;
+
+
+//-------------------------------user peermission
+
+
+CREATE TABLE userpermission
+(
+  userid integer,
+  permissionid integer,
+  state integer,
+  CONSTRAINT userpermission_permissionid_fkey FOREIGN KEY (permissionid)
+      REFERENCES permission (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT userpermission_userid_fkey FOREIGN KEY (userid)
+      REFERENCES users (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE userpermission
+  OWNER TO postgres;
+
+
+//------------------------------------------usergroup
+
+
+
+CREATE TABLE usergroup
+(
+  userid integer,
+  groupid integer,
+  CONSTRAINT usergroup_groupid_fkey FOREIGN KEY (groupid)
+      REFERENCES groups (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT usergroup_userid_fkey FOREIGN KEY (userid)
+      REFERENCES users (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE usergroup
+  OWNER TO postgres;
+
+

@@ -36,7 +36,7 @@ usergroupInfo::usergroupInfo(int groupIDn, UMCore* instance) :
 		EXTDBErrorIO("Unable to fetch usergroupInfo from database " + std::to_string(groupID), getNameAndType(), errorInfo);
 	}
 
-	for (int i = 0; i < result.rowCount(); i++) {
+	for (size_t i = 0; i < result.rowCount(); i++) {
 		permissions[std::stoi(result.fieldValue(i, 0))] = std::stoi(result.fieldValue(i, 1)); //atoi(PQgetvalue(result, i, 1));
 	}
 }

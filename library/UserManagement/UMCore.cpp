@@ -409,7 +409,7 @@ std::vector<zeitoon::datatypes::DTString> UMCore::listUsers() {
 		return allUsers;
 	}
 
-	for (int i = 0; i < result.rowCount(); i++) {
+	for (size_t i = 0; i < result.rowCount(); i++) {
 		zeitoon::datatypes::DTString temp("tempUsrList");
 		temp.setValue(result.fieldValue(i, 0));
 		allUsers.push_back(temp);
@@ -430,7 +430,7 @@ std::vector<zeitoon::datatypes::DTString> UMCore::listUsersByGroup(int groupID) 
 		return allUsersOfSpecificGroup;
 	}
 
-	for (int i = 0; i < result.rowCount(); i++) {
+	for (size_t i = 0; i < result.rowCount(); i++) {
 		zeitoon::datatypes::DTString temp("tempUsersByGrp");
 		temp.setValue(result.fieldValue(i, 0));
 		allUsersOfSpecificGroup.push_back(result.fieldValue(i, 0));
@@ -447,7 +447,7 @@ std::vector<zeitoon::datatypes::DTString> UMCore::listPermissions() {
 		EXTDBErrorIO("Unable to fetch  permission names from database", getNameAndType(), errorInfo);
 		return allPermissions;
 	}
-	for (int i = 0; i < result.rowCount(); i++) {
+	for (size_t i = 0; i < result.rowCount(); i++) {
 		zeitoon::datatypes::DTString temp("tempPermList");
 		temp.setValue(result.fieldValue(i, 0));
 		allPermissions.push_back(temp);
@@ -465,7 +465,7 @@ std::vector<zeitoon::datatypes::DTString> UMCore::listUsergroups() {
 		EXTDBErrorIO("Unable to fetch all usergroup titles from database", getNameAndType(), errorInfo);
 		return allGroups;
 	}
-	for (int i = 0; i < result.rowCount(); i++) {
+	for (size_t i = 0; i < result.rowCount(); i++) {
 		zeitoon::datatypes::DTString temp("tempUsrGrpList");
 		temp.setValue(result.fieldValue(i, 0));
 		allGroups.push_back(temp);

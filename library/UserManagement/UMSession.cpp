@@ -50,7 +50,7 @@ void UMSession::updatePermissionsCache() {
 		EXTDBErrorIO("Failed to updatePermissionCache", getNameAndType(), errorInfo);
 	}
 	if (result.rowCount() > 1) {
-		for (int i = 0; i < result.rowCount(); i++) {
+		for (size_t i = 0; i < result.rowCount(); i++) {
 			permissionsCache[std::stoi(result.fieldValue(i, 0))] = std::stoi(result.fieldValue(i, 1));
 		}
 	}
@@ -92,7 +92,7 @@ void UMSession::updateUsergroups() {
 		EXTDBErrorIO("Failed to update usergroup IDs", getNameAndType(), errorInfo);
 	}
 	if (result.rowCount() > 0) {
-		for (int i = 0; i < result.rowCount(); i++) {
+		for (size_t i = 0; i < result.rowCount(); i++) {
 			usergruops.push_back(std::stoi(result.fieldValue(i, 0)));
 		}
 	}

@@ -88,7 +88,6 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 		} else if (!Strings::compare(node, commandInfo::listUsers, true)) {
 			DSUserList usersList(userMngrInterface.listUsers());
 			sm.communication.runCallback(from, usersList.toString(true), id);
-			return;
 		} else if (!Strings::compare(node, commandInfo::listUsersByGroup, true)) {
 			DSInteger groupID;
 			groupID.fromString(data);
@@ -132,7 +131,7 @@ void UmCHI::onEvent(string node, string data, string from) {
 
 }
 
-void UmCHI::onInstall(string id) { //checkk is tables exist;
+void UmCHI::onInstall(string id) {
 	this->serviceID = id; //keeps serviceID in a member variable
 	std::ofstream outFile;
 	outFile.open("UmCHIConfig", std::ofstream::out);
@@ -158,6 +157,20 @@ void UmCHI::onInstall(string id) { //checkk is tables exist;
 }
 
 void UmCHI::onEnable() {
+	std::string temp = "";
+	size_t length = insInfo.commands.length();
+	for (size_t i = 0; i < length; i++) {
+		temp += (i == 0 ? "" : ",") + insInfo.commands[i]->name.toString();
+	}
+	sm.communication.registerCommand(temp);
+std::cout <<temp<<endl;
+	length = insInfo.events.length();
+	temp ="";
+	for (size_t i = 0; i < length; i++) {
+		temp += (i == 0 ? "" : ",") + insInfo.events[i]->name.toString();
+	}
+	sm.communication.registerEvent(temp);
+	std::cout <<temp<<endl;
 }
 
 void UmCHI::onDisable() {
@@ -205,7 +218,7 @@ string UmCHI::getInstallID() {
 		std::fstream inFile("UmCHIConfig");
 		std::string line;
 		if (not inFile) {
-			//exc no conf file found
+			return "";
 		}
 		while (std::getline(inFile, line)) {
 			std::string::size_type tempServiceID = line.find("serviceID = ");
@@ -229,23 +242,26 @@ std::size_t UmCHI::getServiceVersion() {
 }
 
 string UmCHI::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion, int& newVersion) {
+	return "";
 }
 
 void UmCHI::onError(string node, string id, string description) {
+	std::cerr << "Error";
 }
 
 void UmCHI::onWarning(string level, string node, string id, string description) {
+	std::cerr << "Warning";
 }
 
 void UmCHI::checkDBTables() {
-	//Finding executable path
+//Finding executable path
 	char buf[1000];
 	ssize_t s = readlink("/proc/self/exe", buf, 1000);
 	buf[s] = 0;
 	std::string temp = buf;
 	size_t lastSlash = temp.find_last_of("/");
 	temp.erase(lastSlash + 1, std::string::npos);
-	//Addressing the file
+//Addressing the file
 	temp += "DBTableScripts.sql";
 	std::cout << temp << endl;
 	std::ifstream t(temp);
@@ -260,7 +276,7 @@ void UmCHI::pong(string id, int miliseconds) {
 }
 void UmCHI::setInstallInfo() {
 
-	//---------set available commands info
+//---------set available commands info
 
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::login, DSLoginInfo::getStructName(), DSLoginInfo::getStructVersion(),
@@ -273,7 +289,7 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSCommandDetail(commandInfo::addUser, DSAddUser::getStructName(), DSAddUser::getStructVersion(), DSInteger::getStructName(),
 					DSInteger::getStructVersion()), true);
 	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::modifyUser, DSModifyUser::getStructName(), DSModifyUser::getStructVersion(), "", 0),
-			true);
+	true);
 	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removeUser, DSInteger::getStructName(), DSInteger::getStructVersion(), "", 0), true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::getUserInfo, DSInteger::getStructName(), DSInteger::getStructVersion(), DSUserInfo::getStructName(),
@@ -285,17 +301,17 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSCommandDetail(commandInfo::updatePermission, DSUpdatePermission::getStructName(), DSUpdatePermission::getStructVersion(), "",
 					0), true);
 	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removePermission, DSInteger::getStructName(), DSInteger::getStructVersion(), "", 0),
-			true);
+	true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::registerUsergroup, DSRegUsrGrp::getStructName(), DSRegUsrGrp::getStructVersion(),
 					DSInteger::getStructName(), DSInteger::getStructVersion()), true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::updateUsergroup, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion(), "", 0), true);
 	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removeUsergroup, DSInteger::getStructName(), DSInteger::getStructVersion(), "", 0),
-			true);
+	true);
 	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::listUsers, "", 0, DSUserList::getStructName(), DSUserList::getStructVersion()), true);
 	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::listUsersByGroup, "", 0, DSUserList::getStructName(), DSUserList::getStructVersion()),
-			true);
+	true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::listPermissions, "", 0, DSPermissionsList::getStructName(), DSPermissionsList::getStructVersion()),
 			true);
@@ -315,16 +331,8 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserPermission, DSUserPermission::getStructName(), DSUserPermission::getStructVersion(), "",
 					0), true);
 
-	//--------set available events info
+//--------set available events info
 
-	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupRemoved, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupAdded, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion()),
-			true);
-	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionRemoved, DSUserPermission::getStructName(), DSUserPermission::getStructVersion()), true);
-	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionAdded, DSUserPermission::getStructName(), DSUserPermission::getStructVersion()), true);
 	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::loggedIn, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
 	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::loggedOut, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
 	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userAdded, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
@@ -338,30 +346,38 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSEventDetail(eventInfo::permissionRemoved, DSUpdatePermission::getStructName(), DSUpdatePermission::getStructVersion()), true);
 	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupAdded, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion()), true);
 	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupModified, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion()),
-			true);
+	true);
 	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupRemoved, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion()),
-			true);
+	true);
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupRemoved, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupAdded, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion()),
+	true);
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionRemoved, DSUserPermission::getStructName(), DSUserPermission::getStructVersion()), true);
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionAdded, DSUserPermission::getStructName(), DSUserPermission::getStructVersion()), true);
 
-	//-------set calls
+//-------set calls
 
 	insInfo.calls.add(
-			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::database::commandInfo::query, zeitoon::database::DSDBQuery::getStructName(),
-					zeitoon::database::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSDBTable::getStructName(),
-					zeitoon::datatypes::DSDBTable::getStructVersion()), true);
+			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::query, zeitoon::pgdatabase::DSDBQuery::getStructName(),
+					zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::pgdatabase::DSDBTable::getStructName(),
+					zeitoon::pgdatabase::DSDBTable::getStructVersion()), true);
 	insInfo.calls.add(
-			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::database::commandInfo::execute, zeitoon::database::DSDBQuery::getStructName(),
-					zeitoon::database::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSInteger::getStructName(),
+			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::execute, zeitoon::pgdatabase::DSDBQuery::getStructName(),
+					zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSInteger::getStructName(),
 					zeitoon::datatypes::DSInteger::getStructVersion()), true);
 	insInfo.calls.add(
-			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::database::commandInfo::singlefieldquery, zeitoon::database::DSDBQuery::getStructName(),
-					zeitoon::database::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSString::getStructName(),
+			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::singlefieldquery, zeitoon::pgdatabase::DSDBQuery::getStructName(),
+					zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSString::getStructName(),
 					zeitoon::datatypes::DSString::getStructVersion()), true);
 
-	//------set requirements
+//------set requirements
 
 	insInfo.requirements.add(new DSInstallInfo::DSInstallInfoRequirementDetail("PGdatabase", 1), true);
 
-	//------set datatype names
+//------set datatype names
 
 	insInfo.datatypes.add(
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(zeitoon::usermanagement::DSLoginInfo::getStructName(),

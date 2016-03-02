@@ -64,7 +64,7 @@ void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data, s
 }
 
 string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &data, string id) {
-	this->runCommandSync(name, data.toString(true), id);
+	return this->runCommandSync(name, data.toString(true), id);
 }
 
 void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data) {

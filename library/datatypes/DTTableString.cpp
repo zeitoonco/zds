@@ -9,6 +9,7 @@
 #include "utility/exceptionex.hpp"
 #include "utility/jsonParser.hpp"
 #include "datatypes/dtmultifieldtypes.hpp"
+#include "datatypes/dtsingletypes.hpp"
 
 using namespace zeitoon::datatypes;
 using namespace zeitoon::utility;

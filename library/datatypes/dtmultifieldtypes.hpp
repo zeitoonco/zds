@@ -234,10 +234,16 @@ public:
 	virtual void add(string str) {
 		T *temp = new T("");
 		temp->fromString(str);
-		add(temp);
-		addAllocated(temp);
+		add(temp,true);
 	}
 
+	virtual void addRange(std::vector<T> iVector){
+		for (size_t iter = 0; iter < iVector.size(); iter++){
+			T *temp = new T("");
+			(*temp)=iVector[iter];
+			add(temp,true);
+		}
+	}
 	/**insert baraye ezafe kardane objecte voroodi dar makaane moshakhas dar liste DTMultiType
 	 *
 	 * @param val objecti ke bayad be list ezafe shavad.

@@ -4,8 +4,8 @@
  *  Created on: Feb 22, 2016
  *      Author: inf
  */
-#ifndef DTSTRUCTS_HPP_
-#define DTSTRUCTS_HPP_
+#ifndef UTIL_DTSTRUCTS_HPP_
+#define UTIL_DTSTRUCTS_HPP_
 
 #include "datatypes/dtmultifieldtypes.hpp"
 #include "datatypes/dtsingletypes.hpp"
@@ -17,7 +17,14 @@ class DSString : public DTStruct {
 public:
 	DTString value = {"value"};
 
-	DSString() : DTStruct("DSString", 0, 0, 0) {
+	static std::string getStructName() {
+		return "DSString";
+	}
+	static int getStructVersion() {
+		return 1;
+	}
+	DSString() :
+			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
 	}
 };
@@ -26,8 +33,14 @@ class DSInteger : public DTStruct {
 public:
 	DTInteger<> value = {"value"};
 
+	static std::string getStructName() {
+		return "DSInteger";
+	}
+	static int getStructVersion() {
+		return 1;
+	}
 	DSInteger() :
-			DTStruct("DSInteger", 0, 0, 0) {
+			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
 	}
 };
@@ -36,8 +49,14 @@ class DSFloat : public DTStruct {
 public:
 	DTFloat<> value = {"value"};
 
+	static std::string getStructName() {
+		return "DSFloat";
+	}
+	static int getStructVersion() {
+		return 1;
+	}
 	DSFloat() :
-			DTStruct("DSFloat", 0, 0, 0) {
+			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
 	}
 };
@@ -45,9 +64,14 @@ public:
 class DSBoolean : public DTStruct {
 public:
 	DTBoolean value = {"value"};
-
+	static std::string getStructName() {
+		return "DSBoolean";
+	}
+	static int getStructVersion() {
+		return 1;
+	}
 	DSBoolean() :
-			DTStruct("DSBoolean", 0, 0, 0) {
+			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
 	}
 };
@@ -55,9 +79,14 @@ public:
 class DSDBTable : public DTStruct {
 public:
 	DTTableString value = {"value"};
-
+	static std::string getStructName() {
+		return "DSDBTable";
+	}
+	static int getStructVersion() {
+		return 1;
+	}
 	DSDBTable() :
-			DTStruct("DSDBTable", 0, 0, 0) {
+			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
 	}
 };
@@ -134,19 +163,25 @@ public:
 	class DSInstallInfoCommandCallDetail : public DTStruct {
 	public:
 		DTString name = {"name"};
+		DTString inputDatatype = {"inputDatatype"};
 		DTInteger<> inputDatatypeVersion = {"inputDatatypeVersion"};
-		DTInteger<> outputDatatypeVersion = {"outputDatatypeVersion"};
+		DTString outputDatatype = {"outputDatatype"};
+		DTInteger<> outputDatatypeVersion = {"inputDatatypeVersion"};
 
-		DSInstallInfoCommandCallDetail(string sname) : DSInstallInfoCommandCallDetail("", 0, 0) {
+		DSInstallInfoCommandCallDetail(string sname) : DSInstallInfoCommandCallDetail("", "", 0, "", 0) {
 		}
 
-		DSInstallInfoCommandCallDetail(string iname, int inDTVer, int outDTVer) :
+		DSInstallInfoCommandCallDetail(string iname, string inputDT, int inputDTVer, string outputDT, int outputDTVer) :
 				DTStruct("DSInstallInfoCommandCallDetail", 0, 0, 0) {
 			name = iname;
-			inputDatatypeVersion = inDTVer;
-			outputDatatypeVersion = outDTVer;
+			inputDatatype = inputDT;
+			inputDatatypeVersion = inputDTVer;
+			outputDatatype = outputDT;
+			outputDatatypeVersion = outputDTVer;
 			this->list.push_back(&name);
+			this->list.push_back(&inputDatatype);
 			this->list.push_back(&inputDatatypeVersion);
+			this->list.push_back(&outputDatatype);
 			this->list.push_back(&outputDatatypeVersion);
 		}
 	};

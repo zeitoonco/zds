@@ -7,9 +7,9 @@
 #include "utility/exceptionex.hpp"
 #include <cryptopp/sha.h>
 #include <cryptopp/hex.h>
-#include <UserManagement/UMCore.hpp>
-#include "UserManagement/UmCHI.hpp"
-#include "UserManagement/DSStructs.hpp"
+#include <executables/UserManagement/UMCore.hpp>
+#include "executables/UserManagement/UmCHI.hpp"
+#include "executables/UserManagement/DTStructs.hpp"
 
 namespace zeitoon{
 namespace usermanagement{

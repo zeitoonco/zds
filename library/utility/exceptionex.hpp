@@ -12,7 +12,7 @@ using namespace std;
 namespace zeitoon {
 namespace utility {
 
-class exceptionEx: public exception {
+class exceptionEx {
 protected:
 	exceptionEx *_innerException;
 	string _message;
@@ -21,9 +21,7 @@ protected:
 	int _line;
 	string _file;
 public:
-	exceptionEx(string imessage, string owner = "", string file = "", int line =
-			-1, exceptionEx *iinnerException =
-	NULL) :
+	exceptionEx(string imessage, string owner = "", string file = "", int line =			-1, exceptionEx *iinnerException =	NULL) :
 			exceptionEx(getDefTitle(), imessage, owner, file, line,
 					iinnerException) {
 	}
@@ -43,7 +41,7 @@ public:
 	virtual string getDefTitle() {
 		return "Exception occurred";
 	}
-	virtual const char * what() const throw () {
+	virtual const string what() const throw () {
 		stringstream msg;
 		msg << getTitle();
 		if (_owner.length() > 0 || _file.length() > 0 || _line >= 0)
@@ -55,7 +53,7 @@ public:
 		msg << " : " << getMessage();
 		if (getInnerException() != NULL)
 			msg << endl << "Innerexception : " << getInnerException()->what();
-		return msg.str().c_str();
+		return msg.str();
 	}
 	virtual void setMessage(string msg) {
 		_message = msg;
@@ -205,7 +203,7 @@ public:
 		return "Unknown exception occurred.";
 	}
 
-	virtual const char * what() const throw () {
+	virtual const string what() const throw () {
 		stringstream msg;
 		msg << getTitle() << " : " << getMessage();
 		if (hasEx)

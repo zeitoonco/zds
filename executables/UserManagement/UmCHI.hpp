@@ -10,7 +10,7 @@
 
 #include "utility/DTStructs.hpp"
 #include <mediator/CommunicationHandlerInterface.hpp>
-#include "UserManagement/UMCore.hpp"
+#include "executables/UserManagement/UMCore.hpp"
 #include <string>
 
 namespace zeitoon {

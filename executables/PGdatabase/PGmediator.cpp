@@ -23,12 +23,12 @@ PGmediator::PGmediator(string serverIP, int serverPort, std::string pgAdminUserN
 
 void PGmediator::onCommand(string node, string data, string id, string from) {
 	try {
-		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query, true)) {
+		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), true)) {
 			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
 			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
-		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute, true)) {
+		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), true)) {
 			this->sm.communication.runCallback(from, std::to_string(conMgr.execute(from, data)), id);
-		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery, true)) {
+		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), true)) {
 			this->sm.communication.runCallback(from, conMgr.singleFieldQuery(from, data), id);
 		}
 	} catch (exceptionEx *errorInfo) {
@@ -158,19 +158,24 @@ void PGmediator::setInstallInfo() {
 	//---------set available commands info
 
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::query, DSDBQuery::getStructName(), DSDBQuery::getStructVersion(), DSDBTable::getStructName(),
-					DSDBTable::getStructVersion()), true);
+			new DSInstallInfo::DSCommandDetail(commandInfo::query(), DSDBQuery::getStructName(),
+			                                   DSDBQuery::getStructVersion(), DSDBTable::getStructName(),
+			                                   DSDBTable::getStructVersion()), true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::execute, DSDBQuery::getStructName(), DSDBQuery::getStructVersion(), DSInteger::getStructName(),
-					DSInteger::getStructVersion()), true);
+			new DSInstallInfo::DSCommandDetail(commandInfo::execute(), DSDBQuery::getStructName(),
+			                                   DSDBQuery::getStructVersion(), DSInteger::getStructName(),
+			                                   DSInteger::getStructVersion()), true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::singlefieldquery, DSDBQuery::getStructName(), DSDBQuery::getStructVersion(),
-					DSString::getStructName(), DSString::getStructVersion()), true);
+			new DSInstallInfo::DSCommandDetail(commandInfo::singlefieldquery(), DSDBQuery::getStructName(),
+			                                   DSDBQuery::getStructVersion(),
+			                                   DSString::getStructName(), DSString::getStructVersion()), true);
 
 	//--------set available events info
 
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::newUser, DSString::getStructName(), DSString::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userLogin, DSString::getStructName(), DSString::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::newUser(), DSString::getStructName(),
+	                                                    DSString::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userLogin(), DSString::getStructName(),
+	                                                    DSString::getStructVersion()), true);
 
 	//------set datatype names
 

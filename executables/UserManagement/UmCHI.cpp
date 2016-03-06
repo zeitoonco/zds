@@ -4,15 +4,15 @@
  *  Created on: Feb 18, 2016
  *      Author: inf
  */
-#include <UserManagement/UmCHI.hpp>
+#include <executables/UserManagement/UmCHI.hpp>
 #include <fstream>
-#include "UMCore.hpp"
-#include "DSStructs.hpp"
-#include "PGdatabase/DTStructs.hpp"
-#include "PGdatabase/pgutility.hpp"
-
+#include <unistd.h>
+#include "executables/PGdatabase/DTStructs.hpp"
+#include "executables/PGdatabase/pgutility.hpp"
+#include <deque>
 #include "datatypes/dtsingletypes.hpp"
-
+#include "UManagementUtility.hpp"
+#include "DTStructs.hpp"
 namespace zeitoon {
 namespace usermanagement {
 
@@ -23,7 +23,7 @@ UmCHI::UmCHI(std::string serverIP, int serverPort) :
 
 void UmCHI::onCommand(string node, string data, string id, string from) {
 	try {
-		if (!Strings::compare(node, commandInfo::login, true)) {
+		if (!Strings::compare(node, commandInfo::login(), true)) {
 			DSLoginInfo logInfo(data);
 			int sessionID;
 			std::string description;
@@ -31,86 +31,86 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 					description)];
 			DSLoginResult logResult(UMlogResString, description, sessionID);
 			sm.communication.runCallback(from, logResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::logout, true)) {
+		} else if (!Strings::compare(node, commandInfo::logout(), true)) {
 			DSInteger sessionID;
 			sessionID.fromString(data);
 			userMngrInterface.logout(sessionID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::checkpermission, true)) {
+		} else if (!Strings::compare(node, commandInfo::checkpermission(), true)) {
 			DSChkPermission checkInfo(data);
 			DSBoolean checkResult;
 			checkResult.value = userMngrInterface.checkPermission(checkInfo.sessionID.getValue(), checkInfo.permissionID.getValue());
 			sm.communication.runCallback(from, checkResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::addUser, true)) {
+		} else if (!Strings::compare(node, commandInfo::addUser(), true)) {
 			DSAddUser adUsrInfo(data);
 			DSInteger addResult;
 			addResult.value = userMngrInterface.addUser(adUsrInfo.username.getValue(), adUsrInfo.password.getValue(), adUsrInfo.name.getValue());
-		} else if (!Strings::compare(node, commandInfo::modifyUser, true)) {
+		} else if (!Strings::compare(node, commandInfo::modifyUser(), true)) {
 			DSModifyUser userInfo(data);
 			userMngrInterface.modifyUser(userInfo.userID.getValue(), userInfo.username.getValue(), userInfo.password.getValue(), userInfo.name.getValue());
-		} else if (!Strings::compare(node, commandInfo::removeUser, true)) {
+		} else if (!Strings::compare(node, commandInfo::removeUser(), true)) {
 			DSInteger userID;
 			userID.fromString(data);
 			userMngrInterface.removeUser(userID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::getUserInfo, true)) {
+		} else if (!Strings::compare(node, commandInfo::getUserInfo(), true)) {
 			DSInteger userId;
 			userId.fromString(data);
 			UMUserInfo temp = userMngrInterface.getUserInfo(userId.value.getValue());
 			DSUserInfo userInfo(temp.id, temp.username, temp.name, temp.banned, temp.banReason);
 			sm.communication.runCallback(from, userInfo.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::registerPermission, true)) {
+		} else if (!Strings::compare(node, commandInfo::registerPermission(), true)) {
 			DSRegPermission permissionInfo(data);
 			DSInteger regResult;
 			regResult.value = userMngrInterface.registerPermission(permissionInfo.name.value(), permissionInfo.title.getValue(),
 					permissionInfo.description.getValue(), permissionInfo.parentID.getValue());
 			sm.communication.runCallback(from, regResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::updatePermission, true)) {
+		} else if (!Strings::compare(node, commandInfo::updatePermission(), true)) {
 			DSUpdatePermission updateInfo(data);
 			userMngrInterface.updatePermission(updateInfo.permissiosnID.getValue(), updateInfo.name.getValue(), updateInfo.title.getValue(),
 					updateInfo.description.getValue(), updateInfo.parentID.getValue());
-		} else if (!Strings::compare(node, commandInfo::removePermission, true)) {
+		} else if (!Strings::compare(node, commandInfo::removePermission(), true)) {
 			DSInteger removeID;
 			removeID.fromString(data);
 			userMngrInterface.removePermission(removeID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::registerUsergroup, true)) {
+		} else if (!Strings::compare(node, commandInfo::registerUsergroup(), true)) {
 			DSRegUsrGrp usrGrpInfo(data);
 			DSInteger regResult;
 			regResult.value = userMngrInterface.registerUsergroup(usrGrpInfo.title.getValue(), usrGrpInfo.parentID.getValue(),
 					usrGrpInfo.description.getValue());
 			sm.communication.runCallback(from, regResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::updateUsergroup, true)) {
+		} else if (!Strings::compare(node, commandInfo::updateUsergroup(), true)) {
 			DSUpdateUsrGrp usrGrpInfo(data);
 			userMngrInterface.updateUsergroup(usrGrpInfo.usergroupID.getValue(), usrGrpInfo.title.getValue(), usrGrpInfo.parentID.getValue(),
 					usrGrpInfo.description.getValue());
-		} else if (!Strings::compare(node, commandInfo::removeUsergroup, true)) {
+		} else if (!Strings::compare(node, commandInfo::removeUsergroup(), true)) {
 			DSInteger usrGrpID;
 			usrGrpID.fromString(data);
 			userMngrInterface.removeUsergroup(usrGrpID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::listUsers, true)) {
+		} else if (!Strings::compare(node, commandInfo::listUsers(), true)) {
 			DSUserList usersList(userMngrInterface.listUsers());
 			sm.communication.runCallback(from, usersList.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::listUsersByGroup, true)) {
+		} else if (!Strings::compare(node, commandInfo::listUsersByGroup(), true)) {
 			DSInteger groupID;
 			groupID.fromString(data);
 			DSUserList usrListByGrp(userMngrInterface.listUsersByGroup(groupID.value.getValue()));
 			sm.communication.runCallback(from, usrListByGrp.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::listPermissions, true)) {
+		} else if (!Strings::compare(node, commandInfo::listPermissions(), true)) {
 			DSPermissionsList permsList(userMngrInterface.listPermissions());
 			sm.communication.runCallback(from, permsList.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::listUsergroups, true)) {
+		} else if (!Strings::compare(node, commandInfo::listUsergroups(), true)) {
 			DSUserGroupsList usrGrpList(userMngrInterface.listUsergroups());
 			sm.communication.runCallback(from, usrGrpList.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::addUserUsergroup, true)) {
+		} else if (!Strings::compare(node, commandInfo::addUserUsergroup(), true)) {
 			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
 			userMngrInterface.addUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
 
-		} else if (!Strings::compare(node, commandInfo::removeUserUsergroup, true)) {
+		} else if (!Strings::compare(node, commandInfo::removeUserUsergroup(), true)) {
 			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
 			userMngrInterface.removeUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
 
-		} else if (!Strings::compare(node, commandInfo::addUserPermission, true)) {
+		} else if (!Strings::compare(node, commandInfo::addUserPermission(), true)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
 			userMngrInterface.addUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(), regInfo.permissionState.getValue());
-		} else if (!Strings::compare(node, commandInfo::removeUserPermission, true)) {
+		} else if (!Strings::compare(node, commandInfo::removeUserPermission(), true)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
 			userMngrInterface.removeUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(), regInfo.permissionState.getValue());
 		}
@@ -279,103 +279,146 @@ void UmCHI::setInstallInfo() {
 //---------set available commands info
 
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::login, DSLoginInfo::getStructName(), DSLoginInfo::getStructVersion(),
-					DSLoginResult::getStructName(), DSLoginResult::getStructVersion()), true);
-	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::logout, DSInteger::getStructName(), DSInteger::getStructVersion(), "", 0), true);
+			new DSInstallInfo::DSCommandDetail(commandInfo::login(), DSLoginInfo::getStructName(),
+			                                   DSLoginInfo::getStructVersion(),
+			                                   DSLoginResult::getStructName(), DSLoginResult::getStructVersion()), true);
+	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::logout(), DSInteger::getStructName(),
+	                                                        DSInteger::getStructVersion(), "", 0), true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::checkpermission, DSChkPermission::getStructName(), DSChkPermission::getStructVersion(),
-					DSBoolean::getStructName(), DSBoolean::getStructVersion()), true);
+			new DSInstallInfo::DSCommandDetail(commandInfo::checkpermission(), DSChkPermission::getStructName(),
+			                                   DSChkPermission::getStructVersion(),
+			                                   DSBoolean::getStructName(), DSBoolean::getStructVersion()), true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::addUser, DSAddUser::getStructName(), DSAddUser::getStructVersion(), DSInteger::getStructName(),
-					DSInteger::getStructVersion()), true);
-	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::modifyUser, DSModifyUser::getStructName(), DSModifyUser::getStructVersion(), "", 0),
+			new DSInstallInfo::DSCommandDetail(commandInfo::addUser(), DSAddUser::getStructName(),
+			                                   DSAddUser::getStructVersion(), DSInteger::getStructName(),
+			                                   DSInteger::getStructVersion()), true);
+	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::modifyUser(), DSModifyUser::getStructName(),
+	                                                        DSModifyUser::getStructVersion(), "", 0),
+	                     true);
+	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removeUser(), DSInteger::getStructName(),
+	                                                        DSInteger::getStructVersion(), "", 0), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::getUserInfo(), DSInteger::getStructName(),
+			                                   DSInteger::getStructVersion(), DSUserInfo::getStructName(),
+			                                   DSUserInfo::getStructVersion()), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::registerPermission(), DSRegPermission::getStructName(),
+			                                   DSRegPermission::getStructVersion(),
+			                                   DSInteger::getStructName(), DSInteger::getStructVersion()), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::updatePermission(), DSUpdatePermission::getStructName(),
+			                                   DSUpdatePermission::getStructVersion(), "",
+			                                   0), true);
+	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removePermission(), DSInteger::getStructName(),
+	                                                        DSInteger::getStructVersion(), "", 0),
+	                     true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::registerUsergroup(), DSRegUsrGrp::getStructName(),
+			                                   DSRegUsrGrp::getStructVersion(),
+			                                   DSInteger::getStructName(), DSInteger::getStructVersion()), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::updateUsergroup(), DSUpdateUsrGrp::getStructName(),
+			                                   DSUpdateUsrGrp::getStructVersion(), "", 0), true);
+	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removeUsergroup(), DSInteger::getStructName(),
+	                                                        DSInteger::getStructVersion(), "", 0),
 	true);
-	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removeUser, DSInteger::getStructName(), DSInteger::getStructVersion(), "", 0), true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::getUserInfo, DSInteger::getStructName(), DSInteger::getStructVersion(), DSUserInfo::getStructName(),
-					DSUserInfo::getStructVersion()), true);
+			new DSInstallInfo::DSCommandDetail(commandInfo::listUsers(), "", 0, DSUserList::getStructName(),
+			                                   DSUserList::getStructVersion()), true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::registerPermission, DSRegPermission::getStructName(), DSRegPermission::getStructVersion(),
-					DSInteger::getStructName(), DSInteger::getStructVersion()), true);
-	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::updatePermission, DSUpdatePermission::getStructName(), DSUpdatePermission::getStructVersion(), "",
-					0), true);
-	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removePermission, DSInteger::getStructName(), DSInteger::getStructVersion(), "", 0),
+			new DSInstallInfo::DSCommandDetail(commandInfo::listUsersByGroup(), "", 0, DSUserList::getStructName(),
+			                                   DSUserList::getStructVersion()),
 	true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::registerUsergroup, DSRegUsrGrp::getStructName(), DSRegUsrGrp::getStructVersion(),
-					DSInteger::getStructName(), DSInteger::getStructVersion()), true);
-	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::updateUsergroup, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion(), "", 0), true);
-	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::removeUsergroup, DSInteger::getStructName(), DSInteger::getStructVersion(), "", 0),
-	true);
-	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::listUsers, "", 0, DSUserList::getStructName(), DSUserList::getStructVersion()), true);
-	insInfo.commands.add(new DSInstallInfo::DSCommandDetail(commandInfo::listUsersByGroup, "", 0, DSUserList::getStructName(), DSUserList::getStructVersion()),
-	true);
-	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::listPermissions, "", 0, DSPermissionsList::getStructName(), DSPermissionsList::getStructVersion()),
+			new DSInstallInfo::DSCommandDetail(commandInfo::listPermissions(), "", 0,
+			                                   DSPermissionsList::getStructName(),
+			                                   DSPermissionsList::getStructVersion()),
 			true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::listUsergroups, DSUserGroupsList::getStructName(), DSUserGroupsList::getStructVersion(), "", 0),
+			new DSInstallInfo::DSCommandDetail(commandInfo::listUsergroups(), DSUserGroupsList::getStructName(),
+			                                   DSUserGroupsList::getStructVersion(), "", 0),
 			true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::addUserUsergroup, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion(), "", 0),
+			new DSInstallInfo::DSCommandDetail(commandInfo::addUserUsergroup(), DSUserUsergroup::getStructName(),
+			                                   DSUserUsergroup::getStructVersion(), "", 0),
 			true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserUsergroup, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion(), "", 0),
+			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserUsergroup(), DSUserUsergroup::getStructName(),
+			                                   DSUserUsergroup::getStructVersion(), "", 0),
 			true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::addUserPermission, DSUserPermission::getStructName(), DSUserPermission::getStructVersion(), "", 0),
+			new DSInstallInfo::DSCommandDetail(commandInfo::addUserPermission(), DSUserPermission::getStructName(),
+			                                   DSUserPermission::getStructVersion(), "", 0),
 			true);
 	insInfo.commands.add(
-			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserPermission, DSUserPermission::getStructName(), DSUserPermission::getStructVersion(), "",
-					0), true);
+			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserPermission(), DSUserPermission::getStructName(),
+			                                   DSUserPermission::getStructVersion(), "",
+			                                   0), true);
 
 //--------set available events info
 
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::loggedIn, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::loggedOut, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userAdded, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userModified, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userRemoved, DSUserInfo::getStructName(), DSUserInfo::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::loggedIn(), DSUserInfo::getStructName(),
+	                                                    DSUserInfo::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::loggedOut(), DSUserInfo::getStructName(),
+	                                                    DSUserInfo::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userAdded(), DSUserInfo::getStructName(),
+	                                                    DSUserInfo::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userModified(), DSUserInfo::getStructName(),
+	                                                    DSUserInfo::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::userRemoved(), DSUserInfo::getStructName(),
+	                                                    DSUserInfo::getStructVersion()), true);
 	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::permissionAdded, DSUpdatePermission::getStructName(), DSUpdatePermission::getStructVersion()), true);
+			new DSInstallInfo::DSEventDetail(eventInfo::permissionAdded(), DSUpdatePermission::getStructName(),
+			                                 DSUpdatePermission::getStructVersion()), true);
 	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::permissionModified, DSUpdatePermission::getStructName(), DSUpdatePermission::getStructVersion()), true);
+			new DSInstallInfo::DSEventDetail(eventInfo::permissionModified(), DSUpdatePermission::getStructName(),
+			                                 DSUpdatePermission::getStructVersion()), true);
 	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::permissionRemoved, DSUpdatePermission::getStructName(), DSUpdatePermission::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupAdded, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupModified, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion()),
+			new DSInstallInfo::DSEventDetail(eventInfo::permissionRemoved(), DSUpdatePermission::getStructName(),
+			                                 DSUpdatePermission::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupAdded(), DSUpdateUsrGrp::getStructName(),
+	                                                    DSUpdateUsrGrp::getStructVersion()), true);
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupModified(), DSUpdateUsrGrp::getStructName(),
+	                                                    DSUpdateUsrGrp::getStructVersion()),
 	true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupRemoved, DSUpdateUsrGrp::getStructName(), DSUpdateUsrGrp::getStructVersion()),
+	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usergroupRemoved(), DSUpdateUsrGrp::getStructName(),
+	                                                    DSUpdateUsrGrp::getStructVersion()),
+	                   true);
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupRemoved(), DSUserUsergroup::getStructName(),
+			                                 DSUserUsergroup::getStructVersion()), true);
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupAdded(), DSUserUsergroup::getStructName(),
+			                                 DSUserUsergroup::getStructVersion()),
 	true);
 	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupRemoved, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion()), true);
-	insInfo.events.add(new DSInstallInfo::DSEventDetail(eventInfo::usersUsergroupAdded, DSUserUsergroup::getStructName(), DSUserUsergroup::getStructVersion()),
-	true);
+			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionRemoved(), DSUserPermission::getStructName(),
+			                                 DSUserPermission::getStructVersion()), true);
 	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionRemoved, DSUserPermission::getStructName(), DSUserPermission::getStructVersion()), true);
-	insInfo.events.add(
-			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionAdded, DSUserPermission::getStructName(), DSUserPermission::getStructVersion()), true);
+			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionAdded(), DSUserPermission::getStructName(),
+			                                 DSUserPermission::getStructVersion()), true);
 
 //-------set calls
 
 	insInfo.calls.add(
-			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::query, zeitoon::pgdatabase::DSDBQuery::getStructName(),
-					zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::pgdatabase::DSDBTable::getStructName(),
-					zeitoon::pgdatabase::DSDBTable::getStructVersion()), true);
+			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::query(),
+			                                                  zeitoon::pgdatabase::DSDBQuery::getStructName(),
+			                                                  zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::pgdatabase::DSDBTable::getStructName(),
+			                                                  zeitoon::pgdatabase::DSDBTable::getStructVersion()), true);
 	insInfo.calls.add(
-			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::execute, zeitoon::pgdatabase::DSDBQuery::getStructName(),
-					zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSInteger::getStructName(),
-					zeitoon::datatypes::DSInteger::getStructVersion()), true);
+			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::execute(),
+			                                                  zeitoon::pgdatabase::DSDBQuery::getStructName(),
+			                                                  zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSInteger::getStructName(),
+			                                                  zeitoon::datatypes::DSInteger::getStructVersion()), true);
 	insInfo.calls.add(
-			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::singlefieldquery, zeitoon::pgdatabase::DSDBQuery::getStructName(),
-					zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSString::getStructName(),
-					zeitoon::datatypes::DSString::getStructVersion()), true);
+			new DSInstallInfo::DSInstallInfoCommandCallDetail(zeitoon::pgdatabase::commandInfo::singlefieldquery(),
+			                                                  zeitoon::pgdatabase::DSDBQuery::getStructName(),
+			                                                  zeitoon::pgdatabase::DSDBQuery::getStructVersion(), zeitoon::datatypes::DSString::getStructName(),
+			                                                  zeitoon::datatypes::DSString::getStructVersion()), true);
 
 //------set requirements
 
-	insInfo.requirements.add(new DSInstallInfo::DSInstallInfoRequirementDetail("PGdatabase", 1), true);
+	insInfo.requirements.add(new DSInstallInfo::DSInstallInfoRequirementDetail("PGDatabase", 1), true);
 
 //------set datatype names
 

@@ -4,9 +4,9 @@
  *  Created on: Feb 21, 2016
  *      Author: inf
  */
-#include <UserManagement/UMSession.hpp>
+#include <executables/UserManagement/UMSession.hpp>
 #include "utility/exceptionex.hpp"
-#include <UserManagement/UMCore.hpp>
+#include <executables/UserManagement/UMCore.hpp>
 
 using namespace zeitoon::utility;
 

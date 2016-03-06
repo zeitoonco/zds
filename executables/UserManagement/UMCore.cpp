@@ -65,7 +65,9 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 			desc = "";
 			try {
 				sessionID = sessionManager.newSession(userID);
-				umCHI->sm.communication.runEvent(eventInfo::loggedIn, zeitoon::usermanagement::DSUserInfo(userID, username, name, banned, desc).toString(true));
+				umCHI->sm.communication.runEvent(eventInfo::loggedIn(),
+				                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, banned,
+				                                                                     desc).toString(true));
 				//##Event fired
 			} catch (exceptionEx *errorInfo) {
 				EXTDBErrorIO("Login: unable to register the session for " + username, getNameAndType(), errorInfo);
@@ -117,8 +119,9 @@ void UMCore::logout(int sessionID) {
 	std::string username = sessionManager.sessionList.find(sessionID)->second.username;
 	sessionManager.removeSession(sessionID);
 	int userID = this->sessionManager.sessionList.at(sessionID).userID;
-	umCHI->sm.communication.runEvent(eventInfo::loggedOut,
-			zeitoon::usermanagement::DSUserInfo(userID, this->sessionManager.sessionList.at(sessionID).username, "", false, "").toString(
+	umCHI->sm.communication.runEvent(eventInfo::loggedOut(),
+	                                 zeitoon::usermanagement::DSUserInfo(userID, this->sessionManager.sessionList.at(
+			                                 sessionID).username, "", false, "").toString(
 			true));
 	//##Event Fired
 	systemLog.log(getNameAndType(), username + " [" + std::to_string(sessionID) + "] " + "Logged out", LogLevels::note);
@@ -204,7 +207,9 @@ int UMCore::addUser(std::string username, std::string password, std::string name
 	} catch (exceptionEx * errorInfo) {
 		systemLog.log(getNameAndType(), "Unable to fetch userID of user[ " + username + " ]. " + errorInfo->what(), LogLevels::trace);
 	}
-	umCHI->sm.communication.runEvent(eventInfo::userAdded, zeitoon::usermanagement::DSUserInfo(userID, username, name, false, "").toString(true));
+	umCHI->sm.communication.runEvent(eventInfo::userAdded(),
+	                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, false, "").toString(
+			                                 true));
 	//##Event Fired
 	systemLog.log(getNameAndType(), "New user[" + username + "] added", LogLevels::note);
 	return userID;
@@ -230,8 +235,10 @@ void UMCore::removeUser(int userID) {
 			EXTDBErrorI("Unable to remove user's all permissions from DB", errorInfo);
 		}
 
-		umCHI->sm.communication.runEvent(eventInfo::userRemoved,
-				zeitoon::usermanagement::DSUserInfo(userID, sessionManager.sessionList.at(sessionManager.getSessionIDbyUserID(userID)).username, "", false, "").toString(
+		umCHI->sm.communication.runEvent(eventInfo::userRemoved(),
+		                                 zeitoon::usermanagement::DSUserInfo(userID, sessionManager.sessionList.at(
+				                                 sessionManager.getSessionIDbyUserID(userID)).username, "", false,
+		                                                                     "").toString(
 				true));
 		//##Event Fired
 		systemLog.log(getNameAndType(), "User account[" + std::to_string(userID) + "] removed.", LogLevels::note);
@@ -252,7 +259,9 @@ void UMCore::modifyUser(int userID, std::string username, std::string password, 
 	}
 	if (executeResult == 1) {
 		sessionManager.sessionList.at(userID).username = username;		//update username in umSession-->(info of active users)
-		umCHI->sm.communication.runEvent(eventInfo::userModified, zeitoon::usermanagement::DSUserInfo(userID, username, name, false, "").toString(true));
+		umCHI->sm.communication.runEvent(eventInfo::userModified(),
+		                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, false,
+		                                                                     "").toString(true));
 		//##Event Fired
 		systemLog.log(getNameAndType(), "User[" + std::to_string(userID) + "] modified.", LogLevels::note);
 	}
@@ -282,7 +291,9 @@ int UMCore::registerPermission(std::string name, std::string title, std::string 
 		systemLog.log(getNameAndType(), "Unable to fetch ID for permission[" + name + "] from database." + std::string(errorInfo->what()), LogLevels::trace);
 		EXTDBErrorIO("Unable to fetch ID for permission[" + name + "] from database.", getNameAndType(), errorInfo);
 	}
-	umCHI->sm.communication.runEvent(eventInfo::permissionAdded, zeitoon::usermanagement::DSUpdatePermission(permissionID, name, title, desc, parent).toString(true));
+	umCHI->sm.communication.runEvent(eventInfo::permissionAdded(),
+	                                 zeitoon::usermanagement::DSUpdatePermission(permissionID, name, title, desc,
+	                                                                             parent).toString(true));
 	//##Event Fired
 	systemLog.log(getNameAndType(), "Permission[" + name + ", ID:" + std::to_string(permissionID) + "] registered.", LogLevels::note);
 	return permissionID;
@@ -302,8 +313,9 @@ void UMCore::updatePermission(int permissionID, std::string name, std::string ti
 	}
 	if (executeResult == 1) {
 		sessionManager.permissionParentCacheLoader(permissionID);		//reinitialize permissionParentCache with new parent ID for it.
-		umCHI->sm.communication.runEvent(eventInfo::permissionModified,
-				zeitoon::usermanagement::DSUpdatePermission(permissionID, name, title, desc, parentID).toString(true));
+		umCHI->sm.communication.runEvent(eventInfo::permissionModified(),
+		                                 zeitoon::usermanagement::DSUpdatePermission(permissionID, name, title, desc,
+		                                                                             parentID).toString(true));
 		//##Event Fired
 		systemLog.log(getNameAndType(), "Permission[ID:" + std::to_string(permissionID) + " ] updated.", LogLevels::note);
 	}
@@ -331,7 +343,9 @@ void UMCore::removePermission(int permissionID) {
 	}
 	sessionManager.permissionParentCache.erase(permissionID);
 
-	umCHI->sm.communication.runEvent(eventInfo::permissionRemoved, zeitoon::usermanagement::DSUpdatePermission(permissionID, "", "", "", -2).toString(true));
+	umCHI->sm.communication.runEvent(eventInfo::permissionRemoved(),
+	                                 zeitoon::usermanagement::DSUpdatePermission(permissionID, "", "", "", -2).toString(
+			                                 true));
 	//##Event Fired
 	systemLog.log(getNameAndType(), "Permission[ID:" + std::to_string(permissionID) + " ] removed", LogLevels::note);
 }
@@ -357,7 +371,9 @@ int UMCore::registerUsergroup(std::string title, int parentID, std::string desc)
 		EXTDBErrorIO("unable to fetch groupID for [" + title + "] from database.", getNameAndType(), errorInfo);
 	}
 	if (usergroupID > 0) {
-		umCHI->sm.communication.runEvent(eventInfo::usergroupAdded, zeitoon::usermanagement::DSUpdateUsrGrp(usergroupID, title, parentID, desc).toString(true));
+		umCHI->sm.communication.runEvent(eventInfo::usergroupAdded(),
+		                                 zeitoon::usermanagement::DSUpdateUsrGrp(usergroupID, title, parentID,
+		                                                                         desc).toString(true));
 		//##Event Fired
 		systemLog.log(getNameAndType(), "Usergroup[ID: " + std::to_string(usergroupID) + "] registered.", LogLevels::note);
 	}
@@ -370,7 +386,9 @@ void UMCore::updateUsergroup(int usergroupID, std::string title, int parentID, s
 				"update groups set title='" + title + "', description='" + desc + "', parentid=" + std::to_string(parentID) + " where id="
 						+ std::to_string(usergroupID));
 		sessionManager.userGroupParentCache.at(usergroupID) = parentID;
-		umCHI->sm.communication.runEvent(eventInfo::usergroupModified, zeitoon::usermanagement::DSUpdateUsrGrp(usergroupID, title, parentID, desc).toString(true));
+		umCHI->sm.communication.runEvent(eventInfo::usergroupModified(),
+		                                 zeitoon::usermanagement::DSUpdateUsrGrp(usergroupID, title, parentID,
+		                                                                         desc).toString(true));
 		//##Event Fired
 		systemLog.log(getNameAndType(), "Usergroup[ID:" + std::to_string(usergroupID) + "] modified.", LogLevels::note);
 	} catch (exceptionEx *errorInfo) {
@@ -388,7 +406,9 @@ void UMCore::removeUsergroup(int usergroupID) {
 				"delete from groups where id= " + GrID + "; delete from usergroup where groupid=" + GrID + "; end;");
 		sessionManager.usergroupCache.erase(usergroupID);	// remove details from cache
 		sessionManager.userGroupParentCache.erase(usergroupID);	//remove usergrp details from parent cchache
-		umCHI->sm.communication.runEvent(eventInfo::usergroupRemoved, zeitoon::usermanagement::DSUpdateUsrGrp(usergroupID, "", -2, "").toString(true));
+		umCHI->sm.communication.runEvent(eventInfo::usergroupRemoved(),
+		                                 zeitoon::usermanagement::DSUpdateUsrGrp(usergroupID, "", -2, "").toString(
+				                                 true));
 		//##Event Fired
 		systemLog.log(getNameAndType(), "Usergroup[ID: " + std::to_string(usergroupID) + "] removed.", LogLevels::note);
 	} catch (exceptionEx *errorInfo) {
@@ -711,7 +731,8 @@ void UMCore::addUserUsergroup(int userID, int groupID) {
 	} catch (exceptionEx *errorInfo) {
 		EXTDBErrorI("Unable to addUserUsergroup", errorInfo);
 	}
-	umCHI->sm.communication.runEvent(eventInfo::usersUsergroupAdded, zeitoon::usermanagement::DSUserUsergroup(userID, groupID).toString(true));
+	umCHI->sm.communication.runEvent(eventInfo::usersUsergroupAdded(),
+	                                 zeitoon::usermanagement::DSUserUsergroup(userID, groupID).toString(true));
 }
 
 void UMCore::removeUserUsergroup(int userID, int groupID) {
@@ -720,7 +741,8 @@ void UMCore::removeUserUsergroup(int userID, int groupID) {
 	}catch(exceptionEx *errorInfo){
 		EXTDBErrorI("Unable to remove from usergroup table", errorInfo);
 	}
-	umCHI->sm.communication.runEvent(eventInfo::usersUsergroupRemoved, zeitoon::usermanagement::DSUserUsergroup(userID, groupID).toString(true));
+	umCHI->sm.communication.runEvent(eventInfo::usersUsergroupRemoved(),
+	                                 zeitoon::usermanagement::DSUserUsergroup(userID, groupID).toString(true));
 }
 
 void UMCore::addUserPermission(int userID, int permissionID, int state) {
@@ -729,7 +751,9 @@ void UMCore::addUserPermission(int userID, int permissionID, int state) {
 	}catch(exceptionEx *errorInfo){
 		EXTDBErrorI("Unable to add the permission for the user", errorInfo);
 	}
-	umCHI->sm.communication.runEvent(eventInfo::usersPermissionAdded,zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(true));
+	umCHI->sm.communication.runEvent(eventInfo::usersPermissionAdded(),
+	                                 zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(
+			                                 true));
 }
 
 void UMCore::removeUserPermission(int userID, int permissionID, int state) {
@@ -738,7 +762,9 @@ void UMCore::removeUserPermission(int userID, int permissionID, int state) {
 	}catch(exceptionEx * errorInfo){
 		EXTDBErrorI("Unable to remove user's permission",errorInfo);
 	}
-	umCHI->sm.communication.runEvent(eventInfo::usersPermissionRemoved,zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(true));
+	umCHI->sm.communication.runEvent(eventInfo::usersPermissionRemoved(),
+	                                 zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(
+			                                 true));
 }
 
 }//usermanagement

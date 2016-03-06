@@ -11,26 +11,34 @@
 #include <string>
 
 namespace zeitoon {
-namespace pgdatabase {
+	namespace pgdatabase {
 
-class eventInfo {
-public:
-	eventInfo() {
+		class eventInfo {
+		public:
+			eventInfo() {
+			}
+
+			//-------------------Set Event Names
+			static std::string newUser() { return "database.newUser"; }
+
+			static std::string userLogin() { return "database.userLogin"; }
+
+		};
+
+		class commandInfo {
+		public:
+			commandInfo() {
+			}
+
+			//------------------Set Command Names
+			static std::string query() { return "database.query"; }
+
+			static std::string execute() { return "database.execute"; }
+
+			static std::string singlefieldquery() { return "database.singlefieldquery"; }
+		};
+
 	}
-	static std::string newUser;
-	static std::string userLogin;
-
-};
-class commandInfo {
-public:
-	commandInfo() {
-	}
-	static std::string query;
-	static std::string execute;
-	static std::string singlefieldquery;
-};
-
-}
 }
 
 #endif /* PGDATABASE_PGUTILITY_HPP_ */

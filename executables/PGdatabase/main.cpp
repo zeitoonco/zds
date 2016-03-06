@@ -7,6 +7,7 @@
 
 using namespace zeitoon::pgdatabase;
 
+//todo: Avoid termination of this program while ...
 int main(int argc, char *argv[]) {
 	std::cout << "Server Addr:\t" << argv[1] << "\tPort:\t" << argv[2] << std::endl;
 	std::cout << "Database Addr:\t" << argv[5] << "\tPort:\t" << argv[6] << std::endl;

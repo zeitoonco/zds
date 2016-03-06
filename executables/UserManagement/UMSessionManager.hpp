@@ -7,8 +7,9 @@
 
 #ifndef USERMANAGEMENT_UMSESSIONMANAGER_HPP_
 #define USERMANAGEMENT_UMSESSIONMANAGER_HPP_
-#include <UserManagement/usergroupInfo.hpp>
-#include <UserManagement/UMSession.hpp>
+
+#include <executables/UserManagement/usergroupInfo.hpp>
+#include <executables/UserManagement/UMSession.hpp>
 #include <string>
 #include <map>
 

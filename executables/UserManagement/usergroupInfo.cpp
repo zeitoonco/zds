@@ -5,8 +5,8 @@
  *  Created on: Feb 21, 2016
  *      Author: inf
  */
-#include <UserManagement/usergroupInfo.hpp>
-#include <UserManagement/UMCore.hpp>
+#include <executables/UserManagement/usergroupInfo.hpp>
+#include <executables/UserManagement/UMCore.hpp>
 #include "utility/exceptionex.hpp"
 
 using namespace zeitoon::utility;

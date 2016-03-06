@@ -5,4 +5,4 @@
 #	PARENT_SCOPE
 #)
 
-AddSourceFiles(UManagementUtility.cpp UmCHI.cpp UMCore.cpp UMSession.cpp UMSessionManager.cpp usergroupinfo.cpp)
+AddSourceFiles(UManagementUtility.cpp UmCHI.cpp UMCore.cpp UMSession.cpp UMSessionManager.cpp usergroupInfo.cpp main.cpp)

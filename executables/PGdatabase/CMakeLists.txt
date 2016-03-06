@@ -17,7 +17,6 @@ set_target_properties(${moduleName}
     OUTPUT_NAME ${moduleName}
 ) #set output directory & binary file name
 
-target_link_libraries(${moduleName} pq)
 
 SET(moduleLib "${executablesTestLibPrefx}${moduleName}")
 add_library(${moduleLib} ${PROJECT_SOURCE_FILES})
@@ -38,3 +37,6 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${testsDir}")
 	#add test subDirectory
 	add_subdirectory(${testsDir})
 endif()
+
+# libs
+target_link_libraries(${moduleName} pq)

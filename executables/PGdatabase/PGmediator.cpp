@@ -4,11 +4,12 @@
  *  Created on: Feb 14, 2016
  *      Author: inf
  */
-#include <PGdatabase/PGmediator.hpp>
+#include <executables/PGdatabase/PGmediator.hpp>
 #include "utility/exceptionex.hpp"
-#include "PGdatabase/DTStructs.hpp"
+#include "executables/PGdatabase/DTStructs.hpp"
 #include <fstream>
-#include "PGdatabase/pgutility.hpp"
+#include <deque>
+#include "executables/PGdatabase/pgutility.hpp"
 
 namespace zeitoon {
 namespace pgdatabase {

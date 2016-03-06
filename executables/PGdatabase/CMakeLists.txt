@@ -17,6 +17,8 @@ set_target_properties(${moduleName}
     OUTPUT_NAME ${moduleName}
 ) #set output directory & binary file name
 
+target_link_libraries(${moduleName} pq)
+
 SET(moduleLib "${executablesTestLibPrefx}${moduleName}")
 add_library(${moduleLib} ${PROJECT_SOURCE_FILES})
 set_target_properties( ${moduleLib}

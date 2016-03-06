@@ -40,19 +40,18 @@ DTTablePostgres::DTTablePostgres(PGconn* connection, std::string sql, std::strin
 	if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
 		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
-
-			EXTDBError(PQresStatus(PQresultStatus(result)));
+			EXTDBError(std::string(PQerrorMessage(conn)) + "  " + PQresStatus(PQresultStatus(result)));
 		}
 	}
 }
 
 size_t DTTablePostgres::rowCount() {
-	return PQntuples(result);
+	return (size_t) PQntuples(result);
 }
 
 size_t DTTablePostgres::columnCount() {
 
-	return PQnfields(result);
+	return (size_t) PQnfields(result);
 }
 
 std::string DTTablePostgres::columnName(int columnNumber) {
@@ -84,7 +83,7 @@ size_t DTTablePostgres::columnDataSize(int columnNumber) { //returns -1 for varc
 	if (PQfsize(result, columnNumber) == 0) {
 		EXToutOfRange("columnDataSize");
 	}
-	return PQfsize(result, columnNumber);
+	return (size_t) PQfsize(result, columnNumber);
 }
 
 std::string DTTablePostgres::fieldValue(int tupleNumber, int columnNumber) {
@@ -98,7 +97,7 @@ bool DTTablePostgres::fieldIsNull(int tupleNumber, int columnNumber) {
 	if ((tupleNumber + 1) > PQntuples(result) || tupleNumber < 0 || (columnNumber + 1) > PQnfields(result) || columnNumber < 0) {
 		EXToutOfRange("fieldIsNull");
 	}
-	return PQgetisnull(result, tupleNumber, columnNumber);
+	return (bool) PQgetisnull(result, tupleNumber, columnNumber);
 }
 
 int DTTablePostgres::fieldSize(int tupleNumber, int columnNumber) {

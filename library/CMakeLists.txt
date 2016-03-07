@@ -13,3 +13,5 @@ set_target_properties( ${libName}
     ARCHIVE_OUTPUT_DIRECTORY "${binDir}/${libDir}"
     LIBRARY_OUTPUT_DIRECTORY "${binDir}/${libDir}"
 ) #set library destination
+
+TARGET_LINK_LIBRARIES(${libName} uv.a pthread)

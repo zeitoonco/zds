@@ -258,6 +258,17 @@ public:
 		return "Duplicate Name";
 	}
 };
+class networkFailure: public exceptionEx {
+public:
+	networkFailure(string imessage = "", string owner = "", string file = "",
+	          int line = -1, exceptionEx *iinnerException = NULL) :
+			exceptionEx(getDefTitle(), imessage, owner, file, line,
+			            iinnerException) {
+	}
+	string getDefTitle() {
+		return "Network Failure";
+	}
+};
 //exceptionEx
 #define EXexceptionEx(msg) new exceptionEx(msg,this->getNameAndType(),__FILE__,__LINE__)
 #define EXTexceptionEx(msg) throw EXexceptionEx(msg)
@@ -384,6 +395,15 @@ public:
 #define EXTnullValueI(msg,inner) throw EXnullValueI(msg,inner)
 #define EXnullValueIO(msg,owner,inner) new nullValue(msg,owner,__FILE__,__LINE__,inner)
 #define EXTnullValueIO(msg,owner,inner) throw EXnullValueIO(msg,owner,inner)
+//networkFailure
+#define EXnetworkFailure(msg) new networkFailure(msg,this->getNameAndType(),__FILE__,__LINE__)
+#define EXTnetworkFailure(msg) throw EXnetworkFailure(msg)
+#define EXnetworkFailureO(msg,owner) new networkFailure(msg,owner,__FILE__,__LINE__)
+#define EXTnetworkFailureO(msg,owner) throw EXnetworkFailureO(msg,owner)
+#define EXnetworkFailureI(msg,inner) new networkFailure(msg,this->getNameAndType(),__FILE__,__LINE__,inner)
+#define EXTnetworkFailureI(msg,inner) throw EXnetworkFailureI(msg,inner)
+#define EXnetworkFailureIO(msg,owner,inner) new networkFailure(msg,owner,__FILE__,__LINE__,inner)
+#define EXTnetworkFailureIO(msg,owner,inner) throw EXnetworkFailureIO(msg,owner,inner)
 
 }
 }

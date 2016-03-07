@@ -72,10 +72,11 @@ public:
 		for (iterator i = list.begin(); i != list.end(); i++)
 			if (*i == val) {
 				list.erase(i);
-				if (del)
-					delete *i;
 				break;
 			}
+		if (del)
+			delete val;
+
 	}
 
 	/**clear list ra khali mikonad va tamame objecthaye list ra az list hazf mikonad.

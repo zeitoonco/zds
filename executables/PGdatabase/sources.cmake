@@ -5,4 +5,4 @@
 #	PARENT_SCOPE
 #)
 
-AddSourceFiles(Connection.cpp ConnectionManager.cpp DTTablePostgres.cpp PGmediator.cpp pgutility.cpp)
+AddSourceFiles(Connection.cpp ConnectionManager.cpp DTTablePostgres.cpp PGmediator.cpp main.cpp)

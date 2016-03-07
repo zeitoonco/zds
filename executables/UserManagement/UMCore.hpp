@@ -8,8 +8,8 @@
 #ifndef USERMANAGEMENT_UMCORE_HPP_
 #define USERMANAGEMENT_UMCORE_HPP_
 
-#include <UserManagement/UManagementUtility.hpp>
-#include <UserManagement/UMSessionManager.hpp>
+#include <executables/UserManagement/UManagementUtility.hpp>
+#include <executables/UserManagement/UMSessionManager.hpp>
 #include "datatypes/DTTableString.hpp"
 #include "datatypes/dtsingletypes.hpp"
 #include "utility/logger.hpp"

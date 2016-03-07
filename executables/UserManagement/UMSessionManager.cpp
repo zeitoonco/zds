@@ -4,8 +4,8 @@
  *  Created on: Feb 21, 2016
  *      Author: inf
  */
-#include <UserManagement/UMCore.hpp>
-#include <UserManagement/UMSessionManager.hpp>
+#include <executables/UserManagement/UMCore.hpp>
+#include <executables/UserManagement/UMSessionManager.hpp>
 #include "utility/exceptionex.hpp"
 
 using namespace zeitoon::utility;
@@ -170,7 +170,7 @@ int UMSessionManager::getSessionIDbyUserID(int userID) {
 	return activeSessions.find(userID)->second;
 }
 int UMSessionManager::uniqueIdGenerator() {
-	return clock();
+	return (int) clock();
 }
 std::string UMSessionManager::getNameAndType() {
 	return "[UMSessionManager]";

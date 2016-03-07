@@ -8,7 +8,7 @@
 namespace zeitoon {
 namespace utility {
 
-TCPClient::TCPClient() : addr(NULL) {
+TCPClient::TCPClient() : addr(NULL), _connected(false) {
 	int r;
 	r = uv_loop_init(&loop);
 	uvEXT(r, "uv_loop_init failed")
@@ -46,6 +46,10 @@ void TCPClient::disconnect() {
 	uv_close((uv_handle_t *) &this->server, NULL);//todo:check more about disconnecting/ed
 }
 
+bool TCPClient::isConnected() {
+	return _connected;
+}
+
 void TCPClient::joinOnConnectionThread() {
 	listenTrd->join();
 }
@@ -60,6 +64,7 @@ void TCPClient::_listen() {
 void TCPClient::on_connect(uv_connect_t *req, int status) {
 	TCPClient *c = (TCPClient *) req->data;
 	uvEXTO(status, "New connection error", c->getNameAndType());
+	c->_connected = true;
 	fprintf(stderr, "Connected.\n");
 	uv_read_start((uv_stream_t *) &c->server, TCPClient::alloc_buffer, TCPClient::on_client_read);
 }
@@ -76,6 +81,7 @@ void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 				c->_onMessage(c->buff);
 			c->buff = "";
 		}*/
+		c->_connected = false;
 		if (c->_onDisconnect != NULL)
 			c->_onDisconnect();
 	}

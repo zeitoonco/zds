@@ -6,20 +6,18 @@
  */
 
 #include "ServerMediator.hpp"
-#include "utility/utility.hpp"
 #include "CommunicationHandlerInterface.hpp"
-#include "utility/jsonParser.hpp"
 
 namespace zeitoon {
 namespace utility {
 
-ServerMediator::ServerMediator(CommunicationHandlerInterface* chi) :
+ServerMediator::ServerMediator(CommunicationHandlerInterface *chi) :
 		owner(chi), communication(this), setting(this), database(this) {
-	net.registerReceiveFunc((void*) this, ServerMediator::dataReceivedRouter);
-} //todo:#LT: Introduce auto connect constructor ( auto-detect server )
+	tcpc.registerOnMessageCB(std::bind(&ServerMediator::dataReceived,this,placeholders::_1));
+} //todo:#LT: we need auto connect constructor ( auto-detect server )
 
-ServerMediator::ServerMediator(CommunicationHandlerInterface* chi,
-		string address, int port) :
+ServerMediator::ServerMediator(CommunicationHandlerInterface *chi,
+                               string address, int port) :
 		ServerMediator(chi) {
 	connect(address, port);
 }
@@ -29,19 +27,19 @@ ServerMediator::~ServerMediator() {
 }
 
 void ServerMediator::connect() {
-	net.connect();
+	tcpc.connect();
 }
+
 void ServerMediator::connect(string address, int port) {
-	NetClient client;
-	client.ip = address;
-	client.port = port;
-	net.connect(client);
+	tcpc.connect(address,port);
 }
+
 void ServerMediator::disconnect() {
-	net.disconnect();
+	tcpc.disconnect();
 }
+
 bool ServerMediator::isConnected() {
-	return net.isConnected();
+	return tcpc.isConnected();
 }
 
 void ServerMediator::dataReceived(string data) {
@@ -51,9 +49,8 @@ void ServerMediator::dataReceived(string data) {
 	if (!Strings::compare(type, "internal") && !Strings::compare(node, "ping")) {
 		send("{\"type\" : \"internal\" , \"node\" : \"pong\" , \"id\" : \"" + js["id"].getValue() + "\"}");
 	} else {
-		if (!Strings::compare(type, "callback"))
-			if (communication.dataReceive(data))
-				return;
+		if (!Strings::compare(type, "callback")) if (communication.dataReceive(data))
+			return;
 		owner->datareceive(data);
 	}
 
@@ -62,8 +59,9 @@ void ServerMediator::dataReceived(string data) {
 void ServerMediator::sendCmd(string node, string id, string data) {
 	send(CommunicationUtility::makeCommand(node, id, owner->getServiceName(), data));
 }
+
 void ServerMediator::send(string data) {
-	net.send(data);
+	tcpc.send(data);
 }
 
 } /* namespace utility */

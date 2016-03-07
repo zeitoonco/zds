@@ -32,6 +32,8 @@ public:
 
 	void disconnect();
 
+	bool isConnected();
+
 	void joinOnConnectionThread();
 
 	void send(std::string msg);
@@ -73,6 +75,7 @@ private:
 	onConnectDLG _onConnect;
 	onConnectDLG _onDisconnect;
 	std::string buff;
+	bool _connected;
 
 	void _listen();
 

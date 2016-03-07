@@ -9,7 +9,7 @@
 #define MEDIATOR_SERVERMEDIATOR_HPP_
 
 #include "utility/utility.hpp"
-#include "network/Network_client.h"
+#include "network/TCPClient.hpp"
 #include "DatabaseMediator.hpp"
 #include "SettingMediator.hpp"
 #include "CommunicationMediator.hpp"
@@ -23,7 +23,7 @@ class ServerMediator {
 	friend class CommunicationMediator;
 	private:
 	CommunicationHandlerInterface *owner;
-	NetworkHub_Client net;
+	TCPClient tcpc;
 
 public:
 	CommunicationMediator communication;
@@ -41,9 +41,9 @@ public:
 	bool isConnected();
 
 	void dataReceived(string data);
-	static void dataReceivedRouter(void* owner, string data) {
-		((ServerMediator*) owner)->dataReceived(data);
-	}
+//	static void dataReceivedRouter(void* owner, string data) {
+//		((ServerMediator*) owner)->dataReceived(data);
+//	}
 
 	void sendCmd(string node, string id, string data);
 	void send(string data);

@@ -23,12 +23,12 @@ PGmediator::PGmediator(string serverIP, int serverPort, std::string pgAdminUserN
 
 void PGmediator::onCommand(string node, string data, string id, string from) {
 	try {
-		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), true)) {
+		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), false)) {
 			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
 			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
-		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), true)) {
+		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), false)) {
 			this->sm.communication.runCallback(from, std::to_string(conMgr.execute(from, data)), id);
-		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), true)) {
+		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), false)) {
 			this->sm.communication.runCallback(from, conMgr.singleFieldQuery(from, data), id);
 		}
 	} catch (exceptionEx *errorInfo) {

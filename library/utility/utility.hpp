@@ -439,7 +439,7 @@ public:
 	}
 };
 
-class FileSystem {
+class FileSystemUtility {
 public:
 	static string getAppPath() {
 		char buf[1000];

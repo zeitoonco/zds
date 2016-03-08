@@ -20,6 +20,7 @@
       <sourceFolder url="file://$MODULE_DIR$/library/datatypes/DTTable.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/datatypes/DTTableString.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/datatypes/tests/DTTableString_colMod.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/datatypes/tests/dtsetString.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/datatypes/tests/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/datatypes/DTTable.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/datatypes/sources.cmake" isTestSource="false" />

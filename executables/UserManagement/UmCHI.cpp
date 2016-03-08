@@ -25,7 +25,7 @@ UmCHI::UmCHI(std::string serverIP, int serverPort) :
 
 void UmCHI::onCommand(string node, string data, string id, string from) {
 	try {
-		if (!Strings::compare(node, commandInfo::login(), true)) {
+		if (!Strings::compare(node, commandInfo::login(), false)) {
 			DSLoginInfo logInfo(data);
 			int sessionID;
 			std::string description;
@@ -35,36 +35,34 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			                                                                               description)];
 			DSLoginResult logResult(UMlogResString, description, sessionID);
 			sm.communication.runCallback(from, logResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::logout(), true)) {
+		} else if (!Strings::compare(node, commandInfo::logout(), false)) {
 			DSInteger sessionID;
 			sessionID.fromString(data);
 			userMngrInterface.logout(sessionID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::checkpermission(), true)) {
+		} else if (!Strings::compare(node, commandInfo::checkpermission(), false)) {
 			DSChkPermission checkInfo(data);
 			DSBoolean checkResult;
 			checkResult.value = userMngrInterface.checkPermission(checkInfo.sessionID.getValue(),
 			                                                      checkInfo.permissionID.getValue());
 			sm.communication.runCallback(from, checkResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::addUser(), true)) {
+		} else if (!Strings::compare(node, commandInfo::addUser(), false)) {
 			DSAddUser adUsrInfo(data);
 			DSInteger addResult;
-			addResult.value = userMngrInterface.addUser(adUsrInfo.username.getValue(), adUsrInfo.password.getValue(),
-			                                            adUsrInfo.name.getValue());
-		} else if (!Strings::compare(node, commandInfo::modifyUser(), true)) {
+			addResult.value = userMngrInterface.addUser(adUsrInfo.username.getValue(), adUsrInfo.password.getValue(), adUsrInfo.name.getValue());
+		} else if (!Strings::compare(node, commandInfo::modifyUser(), false)) {
 			DSModifyUser userInfo(data);
-			userMngrInterface.modifyUser(userInfo.userID.getValue(), userInfo.username.getValue(),
-			                             userInfo.password.getValue(), userInfo.name.getValue());
-		} else if (!Strings::compare(node, commandInfo::removeUser(), true)) {
+			userMngrInterface.modifyUser(userInfo.userID.getValue(), userInfo.username.getValue(), userInfo.password.getValue(), userInfo.name.getValue());
+		} else if (!Strings::compare(node, commandInfo::removeUser(), false)) {
 			DSInteger userID;
 			userID.fromString(data);
 			userMngrInterface.removeUser(userID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::getUserInfo(), true)) {
+		} else if (!Strings::compare(node, commandInfo::getUserInfo(), false)) {
 			DSInteger userId;
 			userId.fromString(data);
 			UMUserInfo temp = userMngrInterface.getUserInfo(userId.value.getValue());
 			DSUserInfo userInfo(temp.id, temp.username, temp.name, temp.banned, temp.banReason);
 			sm.communication.runCallback(from, userInfo.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::registerPermission(), true)) {
+		} else if (!Strings::compare(node, commandInfo::registerPermission(), false)) {
 			DSRegPermission permissionInfo(data);
 			DSInteger regResult;
 			regResult.value = userMngrInterface.registerPermission(permissionInfo.name.value(),
@@ -72,58 +70,55 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			                                                       permissionInfo.description.getValue(),
 			                                                       permissionInfo.parentID.getValue());
 			sm.communication.runCallback(from, regResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::updatePermission(), true)) {
+		} else if (!Strings::compare(node, commandInfo::updatePermission(), false)) {
 			DSUpdatePermission updateInfo(data);
-			userMngrInterface.updatePermission(updateInfo.permissiosnID.getValue(), updateInfo.name.getValue(),
-			                                   updateInfo.title.getValue(),
-			                                   updateInfo.description.getValue(), updateInfo.parentID.getValue());
-		} else if (!Strings::compare(node, commandInfo::removePermission(), true)) {
+			userMngrInterface.updatePermission(updateInfo.permissiosnID.getValue(), updateInfo.name.getValue(), updateInfo.title.getValue(),
+					updateInfo.description.getValue(), updateInfo.parentID.getValue());
+		} else if (!Strings::compare(node, commandInfo::removePermission(), false)) {
 			DSInteger removeID;
 			removeID.fromString(data);
 			userMngrInterface.removePermission(removeID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::registerUsergroup(), true)) {
+		} else if (!Strings::compare(node, commandInfo::registerUsergroup(), false)) {
 			DSRegUsrGrp usrGrpInfo(data);
 			DSInteger regResult;
 			regResult.value = userMngrInterface.registerUsergroup(usrGrpInfo.title.getValue(),
 			                                                      usrGrpInfo.parentID.getValue(),
 			                                                      usrGrpInfo.description.getValue());
 			sm.communication.runCallback(from, regResult.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::updateUsergroup(), true)) {
+		} else if (!Strings::compare(node, commandInfo::updateUsergroup(), false)) {
 			DSUpdateUsrGrp usrGrpInfo(data);
-			userMngrInterface.updateUsergroup(usrGrpInfo.usergroupID.getValue(), usrGrpInfo.title.getValue(),
-			                                  usrGrpInfo.parentID.getValue(),
-			                                  usrGrpInfo.description.getValue());
-		} else if (!Strings::compare(node, commandInfo::removeUsergroup(), true)) {
+			userMngrInterface.updateUsergroup(usrGrpInfo.usergroupID.getValue(), usrGrpInfo.title.getValue(), usrGrpInfo.parentID.getValue(),
+					usrGrpInfo.description.getValue());
+		} else if (!Strings::compare(node, commandInfo::removeUsergroup(), false)) {
 			DSInteger usrGrpID;
 			usrGrpID.fromString(data);
 			userMngrInterface.removeUsergroup(usrGrpID.value.getValue());
-		} else if (!Strings::compare(node, commandInfo::listUsers(), true)) {
+		} else if (!Strings::compare(node, commandInfo::listUsers(), false)) {
 			DSUserList usersList(userMngrInterface.listUsers());
 			sm.communication.runCallback(from, usersList.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::listUsersByGroup(), true)) {
+		} else if (!Strings::compare(node, commandInfo::listUsersByGroup(), false)) {
 			DSInteger groupID;
 			groupID.fromString(data);
 			DSUserList usrListByGrp(userMngrInterface.listUsersByGroup(groupID.value.getValue()));
 			sm.communication.runCallback(from, usrListByGrp.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::listPermissions(), true)) {
+		} else if (!Strings::compare(node, commandInfo::listPermissions(), false)) {
 			DSPermissionsList permsList(userMngrInterface.listPermissions());
 			sm.communication.runCallback(from, permsList.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::listUsergroups(), true)) {
+		} else if (!Strings::compare(node, commandInfo::listUsergroups(), false)) {
 			DSUserGroupsList usrGrpList(userMngrInterface.listUsergroups());
 			sm.communication.runCallback(from, usrGrpList.toString(true), id);
-		} else if (!Strings::compare(node, commandInfo::addUserUsergroup(), true)) {
+		} else if (!Strings::compare(node, commandInfo::addUserUsergroup(), false)) {
 			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
 			userMngrInterface.addUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
 
-		} else if (!Strings::compare(node, commandInfo::removeUserUsergroup(), true)) {
+		} else if (!Strings::compare(node, commandInfo::removeUserUsergroup(), false)) {
 			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
 			userMngrInterface.removeUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
 
-		} else if (!Strings::compare(node, commandInfo::addUserPermission(), true)) {
+		} else if (!Strings::compare(node, commandInfo::addUserPermission(), false)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
-			userMngrInterface.addUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(),
-			                                    regInfo.permissionState.getValue());
-		} else if (!Strings::compare(node, commandInfo::removeUserPermission(), true)) {
+			userMngrInterface.addUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(), regInfo.permissionState.getValue());
+		} else if (!Strings::compare(node, commandInfo::removeUserPermission(), false)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
 			userMngrInterface.removeUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(),
 			                                       regInfo.permissionState.getValue());
@@ -251,7 +246,8 @@ std::size_t UmCHI::getServiceVersion() {
 	return 1;
 }
 
-string UmCHI::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion, int &newVersion) {
+	string UmCHI::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
+	                                    int &newVersion) {
 	return "";
 }
 

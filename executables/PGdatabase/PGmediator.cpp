@@ -14,22 +14,22 @@
 namespace zeitoon {
 namespace pgdatabase {
 
-PGmediator::PGmediator(string serverIP, int serverPort, std::string pgAdminUserName, std::string pgAdminPassWord,
-                       std::string pgAdminHost, int pgAdminPort, std::string pgAdminDbname) :
-		CommunicationHandlerInterface(this, serverIP, serverPort),
-		conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
-		insInfo("PGDatabase", "PostgresDatabase", 1) {
+	PGmediator::PGmediator(string serverIP, int serverPort, std::string pgAdminUserName, std::string pgAdminPassWord,
+	                       std::string pgAdminHost, int pgAdminPort, std::string pgAdminDbname) :
+			CommunicationHandlerInterface(this, serverIP, serverPort),
+			conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
+			insInfo("PGDatabase", "PostgresDatabase", 1) {
 	this->setInstallInfo();
 }
 
 void PGmediator::onCommand(string node, string data, string id, string from) {
 	try {
-		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), true)) {
+		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), false)) {
 			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
 			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
-		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), true)) {
+		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), false)) {
 			this->sm.communication.runCallback(from, std::to_string(conMgr.execute(from, data)), id);
-		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), true)) {
+		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), false)) {
 			this->sm.communication.runCallback(from, conMgr.singleFieldQuery(from, data), id);
 		}
 	} catch (exceptionEx *errorInfo) {
@@ -141,8 +141,8 @@ size_t PGmediator::getServiceVersion() {
 	return 1;
 }
 
-string PGmediator::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
-                                         int &newVersion) {
+	string PGmediator::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
+	                                         int &newVersion) {
 	return "";
 }
 

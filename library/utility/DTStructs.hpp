@@ -27,6 +27,16 @@ public:
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
 	}
+
+	DSString(std::string data, bool isJSON) :
+			DSString() {
+		if (isJSON) {
+			this->fromString(data);
+		} else {
+			value = data;
+			this->list.push_back(&value);
+		}
+	}
 };
 
 class DSInteger : public DTStruct {
@@ -246,6 +256,28 @@ public:
 	}
 
 };
+
+
+		class DatatypesUtility {
+		public:
+			static zeitoon::datatypes::DTSet<zeitoon::datatypes::DTString> toDTStringSet(
+					std::vector<std::string> iVector) {
+				zeitoon::datatypes::DTSet<DTString> temp("");
+				for (size_t iter = 0; iter < iVector.size(); iter++) {
+					temp.add(new DTString("", iVector[iter]), true);
+				}
+				return temp;
+			}
+
+			static std::vector<zeitoon::datatypes::DTString> toDTStringList(std::vector<std::string> iVector) {
+				std::vector<zeitoon::datatypes::DTString> temp;
+				for (size_t iter = 0; iter < iVector.size(); iter++) {
+					temp.push_back(DTString("", iVector[iter]));
+				}
+				return temp;
+			}
+		};
+
 
 }}
 #endif /* DTSTRUCTS_HPP_ */

@@ -439,16 +439,16 @@ public:
 	}
 };
 
-class FileSystemUtility {
-public:
-	static string getAppPath() {
-		char buf[1000];
-		ssize_t s = readlink("/proc/self/exe", buf, 1000);
-		buf[s] = 0;
-		std::string temp = buf;
-		size_t lastSlash = temp.find_last_of("/");
-		temp.erase(lastSlash + 1, std::string::npos);
-		return temp;
+	class FileSystemUtility {
+	public:
+		static string getAppPath() {
+			char buf[1000];
+			ssize_t s = readlink("/proc/self/exe", buf, 1000);
+			buf[s] = 0;
+			std::string temp = buf;
+			size_t lastSlash = temp.find_last_of("/");
+			temp.erase(lastSlash + 1, std::string::npos);
+			return temp;
 	}
 };
 

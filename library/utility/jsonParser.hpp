@@ -24,7 +24,7 @@ enum JTypes {
 	JTstruct, JTarray, JTvariable, JTignored
 };
 
-class JValue {
+	class JValue {
 public:
 	virtual ~JValue() {
 	}
@@ -33,32 +33,32 @@ public:
 
 	virtual void fromString(string str) = 0;
 
-	static JValue *praseString(string str);
+		static JValue *praseString(string str);
 
-	friend std::ostream &operator<<(std::ostream &stream, JValue &jv) {
+		friend std::ostream &operator<<(std::ostream &stream, JValue &jv) {
 		stream << jv.toString();
 		return stream;
 	}
 
-	virtual JTypes getType() = 0;
+		virtual JTypes getType() = 0;
 
-	JValue &operator[](int i);
+		JValue &operator[](int i);
 
-	JValue &operator[](string name);
+		JValue &operator[](string name);
 
-	virtual size_t size() = 0;
+		virtual size_t size() = 0;
 
-	virtual string getValue() = 0;
+		virtual string getValue() = 0;
 
 	inline string getNameAndType() {
 		return "JValue";
 	}
 
-	inline bool operator==(const string &rhs) {
+		inline bool operator==(const string &rhs) {
 		return (getValue() == rhs);
 	}
 
-	inline bool operator!=(const string &rhs) {
+		inline bool operator!=(const string &rhs) {
 		return !(getValue() == rhs);
 	}
 };
@@ -124,9 +124,9 @@ public:
 	}
 };
 
-class JStruct : public JValue {
+	class JStruct : public JValue {
 public:
-	vector<JItem *> fields;
+		vector<JItem *> fields;
 
 	JStruct() {
 	}
@@ -139,7 +139,7 @@ public:
 
 	void add(string name, string value);
 
-	void add(string name, JValue *value);
+		void add(string name, JValue *value);
 
 	void addIgnored(string name, string value);
 
@@ -147,18 +147,18 @@ public:
 
 	void fromString(string str);
 
-	friend std::ostream &operator<<(std::ostream &stream, JStruct &jv) {
+		friend std::ostream &operator<<(std::ostream &stream, JStruct &jv) {
 		stream << jv.toString();
 		return stream;
 	}
 
-	JValue &operator[](int i);
+		JValue &operator[](int i);
 
-	JValue &operator[](string name);
+		JValue &operator[](string name);
 
-	JItem *getField(string name);
+		JItem *getField(string name);
 
-	bool contains(string name);
+		bool contains(string name);
 
 	size_t size();
 
@@ -172,18 +172,18 @@ public:
 		return "JStruct";
 	}
 
-	inline bool operator==(const string &rhs) {
+		inline bool operator==(const string &rhs) {
 		return (getValue() == rhs);
 	}
 
-	inline bool operator!=(const string &rhs) {
+		inline bool operator!=(const string &rhs) {
 		return !(getValue() == rhs);
 	}
 };
 
-class JArray : public JValue {
+	class JArray : public JValue {
 public:
-	vector<JValue *> fields;
+		vector<JValue *> fields;
 
 	JArray() {
 	}
@@ -192,56 +192,56 @@ public:
 		this->fromString(json);
 	}
 
-	JArray(vector<string> list) {
+		JArray(vector<string> list) {
 		for (size_t i = 0; i < list.size(); i++)
 			add(list[i]);
 	}
 
-	virtual ~JArray();
+		virtual ~JArray();
 
 	void add(string value);
 
-	void addIgnored(string value);
+		void addIgnored(string value);
 
-	void remove(JValue *value);
+		void remove(JValue *value);
 
 	void removeAt(size_t index);
 
-	size_t size();
+		size_t size();
 
-	string toString();
+		string toString();
 
-	void fromString(string str);
+		void fromString(string str);
 
-	friend std::ostream &operator<<(std::ostream &stream, JArray &jv) {
+		friend std::ostream &operator<<(std::ostream &stream, JArray &jv) {
 		stream << jv.toString();
 		return stream;
 	}
 
-	JValue &operator[](int i) {
+		JValue &operator[](int i) {
 		return *(fields[i]);
 	}
 
-	JTypes getType() {
+		JTypes getType() {
 		return JTypes::JTarray;
 	}
 
-	string getValue();
+		string getValue();
 
 	inline string getNameAndType() {
 		return "JArray";
 	}
 
-	inline bool operator==(const string &rhs) {
+		inline bool operator==(const string &rhs) {
 		return (getValue() == rhs);
 	}
 
-	inline bool operator!=(const string &rhs) {
+		inline bool operator!=(const string &rhs) {
 		return !(getValue() == rhs);
 	}
 };
 
-class JVariable : public JValue {
+	class JVariable : public JValue {
 protected:
 	string value;
 
@@ -250,46 +250,46 @@ public:
 		fromString(ivalue);
 	}
 
-	bool isNull();
+		bool isNull();
 
-	bool isInt();
+		bool isInt();
 
-	bool isFloat();
+		bool isFloat();
 
-	bool isBoolian();
+		bool isBoolian();
 
-	long long int toInt();
+		long long int toInt();
 
-	unsigned long long int toUInt();
+		unsigned long long int toUInt();
 
-	long double toFloat();
+		long double toFloat();
 
-	bool toBoolian();
+		bool toBoolian();
 
-	string getValue();
+		string getValue();
 
-	void setValue(string val);
+		void setValue(string val);
 
-	void setValue(long long int val);
+		void setValue(long long int val);
 
-	void setValue(unsigned long long int val);
+		void setValue(unsigned long long int val);
 
-	void setValue(long double val);
+		void setValue(long double val);
 
-	void setValue(bool val);
+		void setValue(bool val);
 
-	string toString();
+		string toString();
 
-	void fromString(string str);
+		void fromString(string str);
 
-	friend std::ostream &operator<<(std::ostream &stream, JVariable &jv) {
+		friend std::ostream &operator<<(std::ostream &stream, JVariable &jv) {
 		stream << jv.toString();
 		return stream;
 	}
 
-	size_t size();
+		size_t size();
 
-	JTypes getType() {
+		JTypes getType() {
 		return JTypes::JTvariable;
 	}
 
@@ -297,16 +297,16 @@ public:
 		return "JVariable";
 	}
 
-	inline bool operator==(const string &rhs) {
+		inline bool operator==(const string &rhs) {
 		return (getValue() == rhs);
 	}
 
-	inline bool operator!=(const string &rhs) {
+		inline bool operator!=(const string &rhs) {
 		return !(getValue() == rhs);
 	}
 };
 
-class JIgnored : public JValue {
+	class JIgnored : public JValue {
 public:
 	string value;
 
@@ -314,32 +314,32 @@ public:
 		fromString(ivalue);
 	}
 
-	string toString();
+		string toString();
 
-	void fromString(string str);
+		void fromString(string str);
 
-	friend std::ostream &operator<<(std::ostream &stream, JIgnored &jv) {
+		friend std::ostream &operator<<(std::ostream &stream, JIgnored &jv) {
 		stream << jv.toString();
 		return stream;
 	}
 
-	size_t size();
+		size_t size();
 
-	JTypes getType() {
+		JTypes getType() {
 		return JTypes::JTignored;
 	}
 
-	string getValue();
+		string getValue();
 
 	inline string getNameAndType() {
 		return "JIgnored";
 	}
 
-	inline bool operator==(const string &rhs) {
+		inline bool operator==(const string &rhs) {
 		return (getValue() == rhs);
 	}
 
-	inline bool operator!=(const string &rhs) {
+		inline bool operator!=(const string &rhs) {
 		return !(getValue() == rhs);
 	}
 };

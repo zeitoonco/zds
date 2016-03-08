@@ -5,19 +5,20 @@
  *      Author: inf
  */
 #include <executables/PGdatabase/PGmediator.hpp>
-#include "utility/exceptionex.hpp"
 #include "executables/PGdatabase/DTStructs.hpp"
+#include "executables/PGdatabase/pgutility.hpp"
+#include "utility/exceptionex.hpp"
 #include <fstream>
 #include <deque>
-#include "executables/PGdatabase/pgutility.hpp"
 
 namespace zeitoon {
 namespace pgdatabase {
 
-PGmediator::PGmediator(string serverIP, int serverPort, std::string pgAdminUserName, std::string pgAdminPassWord, std::string pgAdminHost, int pgAdminPort,
-		std::string pgAdminDbname) :
-		CommunicationHandlerInterface(this, serverIP, serverPort), conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this), insInfo(
-				"PGDatabase", "PostgresDatabase", 1) {
+PGmediator::PGmediator(string serverIP, int serverPort, std::string pgAdminUserName, std::string pgAdminPassWord,
+                       std::string pgAdminHost, int pgAdminPort, std::string pgAdminDbname) :
+		CommunicationHandlerInterface(this, serverIP, serverPort),
+		conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
+		insInfo("PGDatabase", "PostgresDatabase", 1) {
 	this->setInstallInfo();
 }
 
@@ -45,9 +46,10 @@ void PGmediator::onEvent(string node, string data, string from) {
 }
 
 void PGmediator::onInstall(string id) {
+	string cpath = FileSystemUtility::getAppPath();
 	this->serviceID = id;
 	std::ofstream outFile;
-	outFile.open("pgMediatorConfig", std::ofstream::out);
+	outFile.open(cpath + "pgMediatorConfig", std::ofstream::out);
 	outFile << "serviceID : " + id << std::endl;
 	outFile.close();
 }
@@ -73,7 +75,8 @@ void PGmediator::onDisable() {
 }
 
 void PGmediator::onUninstall() { //remove Id from the configuration file
-	std::fstream inFile("pgMediatorConfig");
+	string cpath = FileSystemUtility::getAppPath();
+	std::fstream inFile(cpath + "pgMediatorConfig");
 	std::string line;
 	std::deque<std::string> deqTemp;
 	if (not inFile) {
@@ -90,7 +93,7 @@ void PGmediator::onUninstall() { //remove Id from the configuration file
 		}
 	}
 	std::ofstream outFile;
-	outFile.open("pgMediatorConfig", std::ofstream::trunc);
+	outFile.open(cpath + "pgMediatorConfig", std::ofstream::trunc);
 	for (std::deque<std::string>::iterator iter = deqTemp.begin(); iter != deqTemp.end(); iter++) {
 		outFile << *iter << std::endl;
 	}
@@ -98,9 +101,11 @@ void PGmediator::onUninstall() { //remove Id from the configuration file
 }
 
 void PGmediator::onConnect() {
+	std::cerr << "\n+PG Connected to server\n";
 }
 
 void PGmediator::onDisconnect() {
+	std::cerr << "\n-PG Disconnected from server\n";
 }
 
 string PGmediator::getInstallInfo() {
@@ -109,7 +114,8 @@ string PGmediator::getInstallInfo() {
 
 string PGmediator::getInstallID() {
 	if (serviceID == "") {
-		std::fstream inFile("pgMediatorConfig");
+		string cpath = FileSystemUtility::getAppPath();
+		std::fstream inFile(cpath + "pgMediatorConfig");
 		std::string line;
 		if (not inFile) {
 			return "";
@@ -135,7 +141,8 @@ size_t PGmediator::getServiceVersion() {
 	return 1;
 }
 
-string PGmediator::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion, int& newVersion) {
+string PGmediator::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
+                                         int &newVersion) {
 	return "";
 }
 
@@ -149,8 +156,9 @@ void PGmediator::onWarning(string level, string node, string id, string descript
 
 void PGmediator::pong(string id, int miliseconds) {
 	sm.send(
-			"{\"type\" : \"internal\" , \"node\" : \"ping\" , \"name\" : \"" + getServiceName() + "\" , \"version\" : \"1\""
-					+ (id.length() > 0 ? " , \"id\" : \"" + getInstallID() + "\"" : "") + "}");
+			"{\"type\" : \"internal\" , \"node\" : \"ping\" , \"name\" : \"" + getServiceName() +
+			"\" , \"version\" : \"1\""
+			+ (id.length() > 0 ? " , \"id\" : \"" + getInstallID() + "\"" : "") + "}");
 }
 
 void PGmediator::setInstallInfo() {
@@ -179,8 +187,12 @@ void PGmediator::setInstallInfo() {
 
 	//------set datatype names
 
-	insInfo.datatypes.add(new DSInstallInfo::DSInstallInfoDatatypesDetail(DSDBQuery::getStructName(), DSDBQuery::getStructVersion()), true);
-	insInfo.datatypes.add(new DSInstallInfo::DSInstallInfoDatatypesDetail(DSDBTable::getStructName(), DSDBTable::getStructVersion()), true);
+	insInfo.datatypes.add(
+			new DSInstallInfo::DSInstallInfoDatatypesDetail(DSDBQuery::getStructName(), DSDBQuery::getStructVersion()),
+			true);
+	insInfo.datatypes.add(
+			new DSInstallInfo::DSInstallInfoDatatypesDetail(DSDBTable::getStructName(), DSDBTable::getStructVersion()),
+			true);
 }
 }
 }

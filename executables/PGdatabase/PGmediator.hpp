@@ -21,9 +21,6 @@ private:
 	ConnectionManager conMgr;
 	zeitoon::datatypes::DSInstallInfo insInfo;
 	std::string serviceID = "";
-	std::string getNameAndType() {
-		return "PGmediator";
-	}
 public:
 
 	/**
@@ -143,6 +140,10 @@ public:
 	 */
 	void pong(string id, int miliseconds);
 	void setInstallInfo();
+
+	std::string getNameAndType() {
+		return "PGmediator";
+	}
 
 };
 }

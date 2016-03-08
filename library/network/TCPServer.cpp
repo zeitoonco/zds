@@ -66,6 +66,7 @@ void TCPServer::on_new_connection(uv_stream_t *server, int status) {
 	client->data = (void *) c;
 	int r = uv_accept(server, (uv_stream_t *) client);
 	if (r == 0) {
+		c->_isConnected = true;
 		uv_read_start((uv_stream_t *) client, TCPServer::alloc_buffer, TCPServer::on_client_read);
 	}
 	else {
@@ -86,6 +87,7 @@ void TCPServer::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 				c->_parent->_onMessage(c->_id, c->buff);
 			c->buff = "";
 		}*/
+		c->_isConnected = false;
 		if (c->_parent->_onClientDisconnect != NULL)
 			c->_parent->_onClientDisconnect(c->_id);
 	}

@@ -65,6 +65,8 @@ void TCPClient::on_connect(uv_connect_t *req, int status) {
 	TCPClient *c = (TCPClient *) req->data;
 	uvEXTO(status, "New connection error", c->getNameAndType());
 	c->_connected = true;
+	if (c->_onConnect != NULL)
+		c->_onConnect();
 	fprintf(stderr, "Connected.\n");
 	uv_read_start((uv_stream_t *) &c->server, TCPClient::alloc_buffer, TCPClient::on_client_read);
 }

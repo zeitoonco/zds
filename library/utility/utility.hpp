@@ -11,6 +11,7 @@
 #include <string>
 #include <string.h>
 #include <sstream>
+#include <unistd.h>
 
 using namespace std;
 
@@ -159,8 +160,8 @@ public:
  */
 class Strings {
 protected:
-	static const char* defIgnrChrs;
-	static const char* xBaseDigit;
+	static const char *defIgnrChrs;
+	static const char *xBaseDigit;
 
 public:
 
@@ -225,7 +226,7 @@ public:
 	 *
 	 */
 	static string crtrim(string a, string ignoreChars = " ") {
-		if (a.length()==0)
+		if (a.length() == 0)
 			return "";
 		for (uint i = a.length() - 1; i >= 0; i--)
 			if (ignoreChars.find(a[i]) == string::npos)
@@ -298,18 +299,23 @@ public:
 	static string itoa(long long int val) {
 		return toString(val);
 	}
+
 	static string itoa(long int val) {
 		return toString(val);
 	}
+
 	static string itoa(int val) {
 		return toString(val);
 	}
+
 	static string itoa(unsigned long long int val) {
 		return toString(val);
 	}
+
 	static string itoa(unsigned long int val) {
 		return toString(val);
 	}
+
 	static string itoa(unsigned int val) {
 		return toString(val);
 	}
@@ -317,9 +323,11 @@ public:
 	static string toString(int val, unsigned int base = 10) {
 		return toString((long long int) val, base);
 	}
+
 	static string toString(long int val, unsigned int base = 10) {
 		return toString((long long int) val, base);
 	}
+
 	static string toString(long long int val, unsigned int base = 10) {
 		string n = toString((unsigned long long int) val, base);
 		return (val < 0 ? "-" + n : n);
@@ -328,9 +336,11 @@ public:
 	static string toString(unsigned int val, unsigned int base = 10) {
 		return toString((unsigned long long int) val, base);
 	}
+
 	static string toString(unsigned long int val, unsigned int base = 10) {
 		return toString((unsigned long long int) val, base);
 	}
+
 	static string toString(unsigned long long int val, unsigned int base = 10) {
 		if (base == 10) {
 			return to_string(val);
@@ -356,12 +366,15 @@ public:
 	static string toString(long double val) {
 		return to_string(val);
 	}
+
 	static string toString(double val) {
 		return to_string(val);
 	}
+
 	static string toString(float val) {
 		return to_string(val);
 	}
+
 	static string toString(bool val) {
 		return string(val ? "true" : "false");
 	}
@@ -372,8 +385,9 @@ public:
 	enum MessageTypes_ {
 		MTFire, MTCall, MTCallback, __MAX
 	};
-	static const char* typeString[__MAX];
-	static const char* toString(MessageTypes_ value) {
+	static const char *typeString[__MAX];
+
+	static const char *toString(MessageTypes_ value) {
 		return typeString[value];
 	}
 };
@@ -388,36 +402,53 @@ public:
 	static string makeCommand(string node, string data) {
 		return makeCommand(node, "", "", data);
 	}
+
 	static string makeCommand(string node, string id, string data) {
 		return makeCommand(node, id, "", data);
 	}
+
 	static string makeCommand(string node, string id, string from, string data) {
 		return ("{\"type\" : \"call\" , \"node\" : \"" + node + "\" " +
-				(id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
-				(from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
-				(data.length() > 0 ? ", \"data\" : " + data + " " : "") +
-				"}");
+		        (id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
+		        (from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
+		        (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+		        "}");
 	}
 
 	static string makeCallback(string node, string data) {
 		return makeCallback(node, "", "", data);
 	}
+
 	static string makeCallback(string node, string id, string data) {
 		return makeCallback(node, id, "", data);
 	}
+
 	static string makeCallback(string node, string id, string from, string data) {
 		return ("{\"type\" : \"callback\" , \"node\" : \"" + node + "\" " +
-				(id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
-				(from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
-				(data.length() > 0 ? ", \"data\" : " + data + " " : "") +
-				"}");
+		        (id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
+		        (from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
+		        (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+		        "}");
 	}
 
 	static string makeEvent(string node, string from, string data) {
 		return ("{\"type\" : \"fire\" , \"node\" : \"" + node + "\" " +
-				(from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
-				(data.length() > 0 ? ", \"data\" : " + data + " " : "") +
-				"}");
+		        (from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
+		        (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+		        "}");
+	}
+};
+
+	class FileSystemUtility {
+	public:
+		static string getAppPath() {
+			char buf[1000];
+			ssize_t s = readlink("/proc/self/exe", buf, 1000);
+			buf[s] = 0;
+			std::string temp = buf;
+			size_t lastSlash = temp.find_last_of("/");
+			temp.erase(lastSlash + 1, std::string::npos);
+			return temp;
 	}
 };
 

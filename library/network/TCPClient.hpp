@@ -16,7 +16,7 @@ namespace utility {
 class TCPClient {
 public:
 	typedef std::function<void(std::string)> onMessageDLG;
-	typedef std::function<void()> onConnectDLG;
+	typedef std::function<void(void)> onConnectDLG;
 
 	TCPClient();
 

@@ -25,6 +25,9 @@ class ServerMediator {
 	CommunicationHandlerInterface *owner;
 	TCPClient tcpc;
 
+	void onNetConnect();
+
+	void onNetDisconnect();
 public:
 	CommunicationMediator communication;
 	SettingMediator setting;
@@ -48,6 +51,9 @@ public:
 	void sendCmd(string node, string id, string data);
 	void send(string data);
 
+		void joinNet() {
+			tcpc.joinOnConnectionThread();
+		}
 	string getNameAndType() {
 		return "ServerMediator";
 	}

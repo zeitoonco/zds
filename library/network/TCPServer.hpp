@@ -21,6 +21,7 @@ public:
 	class clientCollection {
 		friend class TCPServer;
 
+	public:
 		class client {
 			friend class clientCollection;
 
@@ -32,21 +33,47 @@ public:
 			uv_tcp_t *_client;
 			std::string buff;
 			TCPServer *_parent;
+			bool _isConnected;
 
 			client(TCPServer *parent, size_t id, uv_tcp_t *client) : _id(id), _client(client),
-			                                                         _parent(parent), buff("") {
-			}
+			                                                         _parent(parent), buff(""), _isConnected(false) { }
 
 		public:
 			void send(std::string data);
 
 			void stop();
 
+			bool isConnected() {
+				return _isConnected;
+			}
+
 			std::string getNameAndType() {
 				return this->_parent->getNameAndType() + "::client[" + std::to_string(this->_id) + "]";
 			}
 		};
 
+		virtual client *operator[](size_t index) {
+			auto i = clients.find(index);
+			if (i == clients.end())
+				EXToutOfRange("operator[] failed. id '" + std::to_string(index) + "' is not valid");
+			return i->second;
+		}
+
+		virtual size_t getIdAt(size_t index) {
+			ccmap::iterator it = clients.begin();
+			for (int i = 0; i < index; i++, it++);
+			return it->first;
+		}
+
+		virtual size_t size() {
+			return clients.size();
+		}
+
+		std::string getNameAndType() {
+			return this->_parent->getNameAndType() + "::clientCollection";
+		}
+
+	private:
 		typedef std::map<size_t, client *> ccmap;
 		ccmap clients;
 		TCPServer *_parent;
@@ -79,28 +106,6 @@ public:
 				}
 		}
 
-	public:
-
-		virtual client *operator[](size_t index) {
-			auto i = clients.find(index);
-			if (i == clients.end())
-				EXToutOfRange("operator[] failed. id '" + std::to_string(index) + "' is not valid");
-			return i->second;
-		}
-
-		virtual size_t getIdAt(size_t index) {
-			ccmap::iterator it = clients.begin();
-			for (int i = 0; i < index; i++, it++);
-			return it->first;
-		}
-
-		virtual size_t size() {
-			return clients.size();
-		}
-
-		std::string getNameAndType() {
-			return this->_parent->getNameAndType() + "::clientCollection";
-		}
 	};
 
 	typedef std::function<void(size_t, std::string)> onMessageDLG;

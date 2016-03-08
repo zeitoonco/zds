@@ -30,7 +30,7 @@ namespace zeitoon {
 				adminConnection.connect(adminUserName, adminPassWord, adminHost, adminPort, adminDbname);
 
 			} catch (exceptionEx *errorInfo) {
-				if (adminConnection.isConnected())
+				if (!adminConnection.isConnected())
 					adminConnection.connect(adminUserName, adminPassWord, adminHost, adminPort, "");
 				if (adminConnection.isConnected()) {
 					try {

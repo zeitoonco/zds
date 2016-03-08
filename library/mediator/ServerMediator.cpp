@@ -14,6 +14,8 @@ namespace utility {
 ServerMediator::ServerMediator(CommunicationHandlerInterface *chi) :
 		owner(chi), communication(this), setting(this), database(this) {
 	tcpc.registerOnMessageCB(std::bind(&ServerMediator::dataReceived,this,placeholders::_1));
+	tcpc.registerOnClientConnectCB(std::bind(&ServerMediator::onNetConnect, this));
+	tcpc.registerOnClientDisconnectCB(std::bind(&ServerMediator::onNetDisconnect, this));
 } //todo:#LT: we need auto connect constructor ( auto-detect server )
 
 ServerMediator::ServerMediator(CommunicationHandlerInterface *chi,
@@ -62,6 +64,14 @@ void ServerMediator::sendCmd(string node, string id, string data) {
 
 void ServerMediator::send(string data) {
 	tcpc.send(data);
+}
+
+	void ServerMediator::onNetConnect() {
+		owner->onConnect();
+	}
+
+	void ServerMediator::onNetDisconnect() {
+		owner->onDisconnect();
 }
 
 } /* namespace utility */

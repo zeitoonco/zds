@@ -73,28 +73,31 @@ bool JItem::validateString(string str) {
 	return true;
 }
 
-JValue& JItem::operator [](int i) {
+JValue &JItem::operator[](int i) {
 	if (value == NULL)
 		EXTnullValue("Value is empty");
 	if (value->getType() != JTypes::JTarray
-			&& value->getType() != JTypes::JTstruct)
+	    && value->getType() != JTypes::JTstruct)
 		EXTdataTypeMismatch(
 				"index operator can only used on array and struct values");
 	if (value->getType() == JTypes::JTarray) {
-		return (*((JArray*) value))[i];
+		return (*((JArray *) value))[i];
 	} else { //if (value->getType() == JTypes::JTstruct) {
-		return (*((JStruct*) value))[i];
+		return (*((JStruct *) value))[i];
 	}
 }
-JValue& JItem::operator [](string name) {
+
+JValue &JItem::operator[](string name) {
 	if (value->getType() != JTypes::JTstruct)
 		EXTdataTypeMismatch(
 				"name index operator can only used on struct values");
-	return (*((JStruct*) value))[name];
+	return (*((JStruct *) value))[name];
 }
+
 size_t JItem::size() {
 	return value->size();
 }
+
 JItem::~JItem() {
 	delete value;
 }
@@ -102,10 +105,11 @@ JItem::~JItem() {
 string JItem::getValue() {
 	return this->value->getValue();
 }
+
 //-------------------------------jValue
-JValue* JValue::praseString(string str) {
+JValue *JValue::praseString(string str) {
 	string trimed = Strings::trim(str);
-	JValue* temp;
+	JValue *temp;
 	if (trimed[0] == '{') {
 		temp = new JStruct;
 		temp->fromString(trimed);
@@ -119,21 +123,23 @@ JValue* JValue::praseString(string str) {
 		return temp;
 	}
 }
-JValue& JValue::operator [](int i) {
+
+JValue &JValue::operator[](int i) {
 	if (getType() != JTypes::JTarray && getType() != JTypes::JTstruct)
 		EXTdataTypeMismatch(
 				"index operator can only used on array and struct values");
 	if (getType() == JTypes::JTarray) {
-		return (*((JArray*) this))[i];
+		return (*((JArray *) this))[i];
 	} else { //if (value->getType() == JTypes::JTstruct) {
-		return (*((JStruct*) this))[i];
+		return (*((JStruct *) this))[i];
 	}
 }
-JValue& JValue::operator [](string name) {
+
+JValue &JValue::operator[](string name) {
 	if (getType() != JTypes::JTstruct)
 		EXTdataTypeMismatch(
 				"named index operator can only used on struct values");
-	return (*((JStruct*) this))[name];
+	return (*((JStruct *) this))[name];
 }
 
 //-------------------------------jVariable
@@ -146,22 +152,24 @@ bool JVariable::isInt() {
 		return false;
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
-		if ((str[i] < 48 || str[i] > 57)	//Numbers
-		&& !((str[i] == 45 || str[i] == 43) && i == 0))	// ' ','-','+'
+		if ((str[i] < 48 || str[i] > 57)    //Numbers
+		    && !((str[i] == 45 || str[i] == 43) && i == 0))    // ' ','-','+'
 			return false;
 	return true;
 }
+
 bool JVariable::isFloat() { //TODO: make sure that 'e','E','.' r only used once?
 	if (value.length() == 0)
 		return false;
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
-		if ((str[i] < 48 || str[i] > 57)	//Numbers
-		&& str[i] != 46 && !((str[i] == 45 || str[i] == 43) && i == 0)	// '.','-','+'
-				&& str[i] != 101 && str[i] != 69)	//e & E
+		if ((str[i] < 48 || str[i] > 57)    //Numbers
+		    && str[i] != 46 && !((str[i] == 45 || str[i] == 43) && i == 0)    // '.','-','+'
+		    && str[i] != 101 && str[i] != 69)    //e & E
 			return false;
 	return true;
 }
+
 bool JVariable::isBoolian() {
 	if (value.length() == 0)
 		return false;
@@ -170,6 +178,7 @@ bool JVariable::isBoolian() {
 		return false;
 	return true;
 }
+
 long long int JVariable::toInt() {
 	if (!isInt())
 		EXTcantParseString("can't convert value to int");
@@ -179,6 +188,7 @@ long long int JVariable::toInt() {
 	str >> val;
 	return val;
 }
+
 unsigned long long int JVariable::toUInt() {
 	if (!isInt())
 		EXTcantParseString("can't convert value to int");
@@ -188,6 +198,7 @@ unsigned long long int JVariable::toUInt() {
 	str >> val;
 	return val;
 }
+
 long double JVariable::toFloat() {
 	if (!isFloat())
 		EXTcantParseString("can't convert value to float");
@@ -197,6 +208,7 @@ long double JVariable::toFloat() {
 	str >> val;
 	return val;
 }
+
 bool JVariable::toBoolian() {
 	if (!isBoolian())
 		EXTcantParseString("can't convert value to boolean");
@@ -208,21 +220,27 @@ bool JVariable::toBoolian() {
 	else
 		EXTcantParseString("can't parse value to boolean");
 }
+
 string JVariable::getValue() {
 	return value;
 }
+
 void JVariable::setValue(bool val) {
 	value = Strings::toString(val);
 }
+
 void JVariable::setValue(long long val) {
 	value = Strings::toString(val);
 }
+
 void JVariable::setValue(unsigned long long int val) {
 	value = Strings::toString(val);
 }
+
 void JVariable::setValue(long double val) {
 	value = Strings::toString(val);
 }
+
 void JVariable::setValue(string val) {
 	value = val;
 }
@@ -235,12 +253,14 @@ void JVariable::fromString(string str) {
 	}
 	value = str;
 }
+
 string JVariable::toString() {
 	if (this->isFloat() || this->isBoolian() || this->isNull())
 		return value;
 	else
 		return "\"" + JSONUtility::encodeString(value) + "\"";
 }
+
 size_t JVariable::size() {
 	if (isFloat() || isInt() || isBoolian())
 		return 1;
@@ -252,7 +272,7 @@ size_t JVariable::size() {
 string JArray::toString() {
 	stringstream str;
 	str << '[';
-	for (vector<JValue*>::iterator i = fields.begin(); i < fields.end(); i++) {
+	for (vector<JValue *>::iterator i = fields.begin(); i < fields.end(); i++) {
 		str << (*i)->toString();
 		if (i + 1 != fields.end())
 			str << ',';
@@ -262,7 +282,7 @@ string JArray::toString() {
 }
 
 JArray::~JArray() {
-	for (vector<JValue*>::iterator i = fields.begin(); i != fields.end(); i++)
+	for (vector<JValue *>::iterator i = fields.begin(); i != fields.end(); i++)
 		delete (*i);
 }
 
@@ -300,7 +320,7 @@ void JArray::fromString(string str) {
 			ready = true;
 		}
 		if (ready) {
-			JValue* temp;
+			JValue *temp;
 			temp = JValue::praseString(parsed);
 			fields.push_back(temp);
 		}
@@ -312,11 +332,12 @@ void JArray::fromString(string str) {
 void JArray::add(string value) {
 	fields.push_back(JValue::praseString(value));
 }
+
 void JArray::addIgnored(string value) {
-	fields.push_back((JValue*) new JIgnored(value));
+	fields.push_back((JValue *) new JIgnored(value));
 }
 
-void JArray::remove(JValue* value) {
+void JArray::remove(JValue *value) {
 	for (size_t i = 0; i < fields.size(); i++)
 		if (value == fields[i]) {
 			fields.erase(fields.begin() + i);
@@ -333,6 +354,7 @@ void JArray::removeAt(size_t index) {
 size_t JArray::size() {
 	return fields.size();
 }
+
 string JArray::getValue() {
 	return this->toString();
 }
@@ -344,7 +366,7 @@ string JArray::getValue() {
 string JStruct::toString() {
 	stringstream str;
 	str << '{';
-	for (vector<JItem*>::iterator i = fields.begin(); i != fields.end(); i++) {
+	for (vector<JItem *>::iterator i = fields.begin(); i != fields.end(); i++) {
 		str << (*i)->toString();
 		if (i + 1 != fields.end())
 			str << ',';
@@ -352,6 +374,7 @@ string JStruct::toString() {
 	str << '}';
 	return str.str();
 }
+
 void JStruct::fromString(string str) {
 	size_t pos, rePos, j = 0;
 	pos = str.find('{');
@@ -397,55 +420,69 @@ void JStruct::fromString(string str) {
 			if (y == string::npos) {
 				EXTcantParseString(
 						"Syntax error. Can't find character '\"' for name part of JSON field in '"
-								+ parsed + "'");
+						+ parsed + "'");
 			}
 			x = parsed.find(':', y + 1);
 			if (x == string::npos) {
 				EXTcantParseString(
 						"Syntax error. Can't find character ':' for JSON field in '"
-								+ parsed + "'");
+						+ parsed + "'");
 			}
 			fields.push_back(new JItem(parsed));
 		}
 		ready = false;
 	}
 }
-JValue& JStruct::operator [](int i) {
+
+JValue &JStruct::operator[](int i) {
 	return *(fields[i]->value);
 }
 
-JValue& JStruct::operator [](string name) {
+JValue &JStruct::operator[](string name) {
 	for (auto itm : fields) {
 		if (Strings::compare(itm->name, name, false) == 0)
 			return *(itm->value);
 	}
 	EXTinvalidName("cant find " + name);
 }
-JItem* JStruct::getField(string name) {
+
+JItem *JStruct::getField(string name) {
 	for (auto itm : fields) {
 		if (Strings::compare(itm->name, name, false) == 0)
 			return itm;
 	}
 	return NULL;
 }
+
+bool JStruct::contains(string name) {
+	for (auto itm : fields)
+		if (Strings::compare(itm->name, name, false) == 0)
+			return true;
+	return false;
+}
+
 size_t JStruct::size() {
 	return fields.size();
 }
+
 void JStruct::add(string name, string value) {
 	fields.push_back(new JItem(name, value, this));
 }
-void JStruct::add(string name, JValue* value) {
+
+void JStruct::add(string name, JValue *value) {
 	fields.push_back(new JItem(name, value, this));
 }
+
 void JStruct::addIgnored(string name, string value) {
-	fields.push_back(new JItem(name, (JValue*) new JIgnored(value), this));
+	fields.push_back(new JItem(name, (JValue *) new JIgnored(value), this));
 }
+
 string JStruct::getValue() {
 	return this->toString();
 }
 
 JStruct::~JStruct() {
-	for (vector<JItem*>::iterator i = fields.begin(); i != fields.end(); i++)
+	for (vector<JItem *>::iterator i = fields.begin(); i != fields.end(); i++)
 		delete (*i);
 }
 //-------------------------------jIgnored

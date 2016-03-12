@@ -148,11 +148,11 @@ string PGmediator::changeDatatypeVersion(string value, string datatype, int from
 }
 
 void PGmediator::onError(string node, string id, string description) {
-	std::cerr << "Error";
+	std::cerr << "Error:\t"<<description<<std::endl;
 }
 
 void PGmediator::onWarning(string level, string node, string id, string description) {
-	std::cerr << "Warning";
+	std::cerr << "Warning:\t"<<description<<std::endl;
 }
 
 void PGmediator::pong(string id, int miliseconds) {

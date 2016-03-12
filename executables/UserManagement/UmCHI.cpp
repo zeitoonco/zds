@@ -206,11 +206,11 @@ void UmCHI::onUninstall() {
 }
 
 void UmCHI::onConnect() {
-
+	std::cerr << "\n+UM Connected to server\n";
 }
 
 void UmCHI::onDisconnect() {
-
+	std::cerr << "\n-UM Disconnected from server\n";
 }
 
 string UmCHI::getInstallInfo() {
@@ -252,11 +252,11 @@ std::size_t UmCHI::getServiceVersion() {
 }
 
 void UmCHI::onError(string node, string id, string description) {
-	std::cerr << "Error";
+	std::cerr << "Error:\t"<<description<<std::endl;
 }
 
 void UmCHI::onWarning(string level, string node, string id, string description) {
-	std::cerr << "Warning";
+	std::cerr << "Warning:\t"<<description<<std::endl;
 }
 
 void UmCHI::checkDBTables() {

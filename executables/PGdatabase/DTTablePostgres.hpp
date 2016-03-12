@@ -36,56 +36,56 @@ public:
 	 * @return int tedaad e satr-haay e mojood dar "PGresult * result" ra barmigardaanad.
 	 */
 	DTTablePostgres(PGconn * connection, std::string sql, std::string name = "");
-	size_t rowCount();
+	size_t rowCount()const;
 	/**columnCount()
 	 * @return int tedaad e Sotoon-haay e mojood dar "PGresult * result" ra barmigardaanad.
 	 */
-	size_t columnCount();
+	size_t columnCount()const;
 	/**columnName()
 	 * @param fieldNumber int shomareye sotoon e mored nazar dar result."az 0 shoroo mishavad"
 	 * @return string naam sotoon e entekhab shode ra barmigardaanad.
 	 */
-	std::string columnName(int fieldNumber);
+	std::string columnName(int fieldNumber) const;
 	/**columnDataType() ba estefaade az function e columnODataType(), Noe (Data-Type) barmigardaanad.
 	 *@param fieldNumber int shomareye column e mored e nazar.
 	 * @return PG_Data-Type az noe string
 	 */
 
-	ColumnDataType::columnDataType columnDataType(int columnNumber);
+	ColumnDataType::columnDataType columnDataType(int columnNumber) const;
 	/**columnODataType() Oid e  marboot be sotoon e mored e nazar raa bar migardaanad
 	 * @param fieldNumber shomare sotoon e mored e nazar
 	 * @return Oid e sotoon e mored e nazar
 	 */
-	Oid columnODataType(int columnNumber);
+	Oid columnODataType(int columnNumber)const;
 	/**columnDataSize() Haafezzeye eshghaal shode dar database tavasote "field" ra barmigardaanad.
 	 * agar data-type e field e mored e nazar "varchar" bashad, "-1" barmigardaanad
 	 * @param fieldNumber int
 	 * @return int size
 	 */
-	size_t columnDataSize(int columnNumber);
+	size_t columnDataSize(int columnNumber)const;
 	/**fieldValue() meghdaar e field e morede nazar az *result ra be soorat e string barmigardaanad.
 	 * @param tupleNumber int shomaareye satr (az sefr)
 	 * @param fieldNumber int shomareye sotoon mored e nazar
 	 * @return string e meghdaar e field
 	 */
-	std::string fieldValue(int tupleNumber, int columnNumber);
+	std::string fieldValue(int tupleNumber, int columnNumber)const;
 	/**fieldIsNull()  field e mored e nazar raa baraye NULL boodan check mikonad.
 	 * @param tupleNumber int shomaareye satr (az sefr)
 	 * @param fieldNumber int shomareye sotoon mored e nazar
 	 * @return agar null baashad, true bar migardaanad
 	 */
-	bool fieldIsNull(int tupleNumber, int columnNumber);
+	bool fieldIsNull(int tupleNumber, int columnNumber)const;
 	/** fieldSize() tool e field raa ba meghiyaas e Byte barmigardaanad
 	 * @param tupleNumber int shomaareye satr (az sefr)
 	 * @param fieldNumber int shomareye sotoon mored e nazar
 	 * @return int tool e daadeye field e mored e nazar
 	 */
-	int fieldSize(int tupleNumber, int columnNumber);
+	int fieldSize(int tupleNumber, int columnNumber)const;
 	/** toString ba estefaade az SerializationType e voroodi.  PGresult * result raa be std::string result tabdil mikonad
 	 * @param type SerializationType
 	 * @return  string resultData
 	 */
-	std::string toString();
+	std::string toString()const;
 	/**fromString()
 	 * not implemented
 	 *
@@ -132,7 +132,7 @@ private:
 	 * @return string e etela'aat taa jayi ke mitavaanad.
 	 */
 
-	std::string getNameAndType();
+	std::string getNameAndType()const;
 
 	static std::map<Oid, int> mapPgCustomType; /**in map baraye gharaar daadan e kole data type-haaye motenaaseb ba mape HardcodedTypes mibasash */
 

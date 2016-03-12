@@ -14,12 +14,13 @@
 namespace zeitoon {
 namespace pgdatabase {
 
-	PGmediator::PGmediator(string serverIP, int serverPort, std::string pgAdminUserName, std::string pgAdminPassWord,
-	                       std::string pgAdminHost, int pgAdminPort, std::string pgAdminDbname) :
-			CommunicationHandlerInterface(this, serverIP, serverPort),
-			conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
-			insInfo("PGDatabase", "PostgresDatabase", 1) {
+PGmediator::PGmediator(std::string pgAdminUserName, std::string pgAdminPassWord,
+                       std::string pgAdminHost, int pgAdminPort, std::string pgAdminDbname) :
+		CommunicationHandlerInterface(this),
+		conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
+		insInfo("PGDatabase", "PostgresDatabase", 1) {
 	this->setInstallInfo();
+	serviceID = "";
 }
 
 void PGmediator::onCommand(string node, string data, string id, string from) {
@@ -45,7 +46,7 @@ void PGmediator::onCallback(string node, string data, string id, string from) {
 void PGmediator::onEvent(string node, string data, string from) {
 }
 
-void PGmediator::onInstall(string id) {
+void PGmediator::onInstall(string id) {//todo:didnt save InstallID to file
 	string cpath = FileSystemUtility::getAppPath();
 	this->serviceID = id;
 	std::ofstream outFile;
@@ -71,7 +72,7 @@ void PGmediator::onEnable() {
 }
 
 void PGmediator::onDisable() {
-
+	cerr<<"\nDisable!";
 }
 
 void PGmediator::onUninstall() { //remove Id from the configuration file
@@ -121,11 +122,11 @@ string PGmediator::getInstallID() {
 			return "";
 		}
 		while (std::getline(inFile, line)) { //if line[0]
-			std::string::size_type tempServiceID = line.find("serviceID = ");
+			std::string::size_type tempServiceID = line.find("serviceID : ");//todo: NEED FOR CONFIG MANAGER
 			if (tempServiceID != std::string::npos) {
 				if (line.find("#") < tempServiceID)
 					break;
-				serviceID = line.substr(line.find(" =") + 3);
+				serviceID = line.substr(line.find(" :") + 3);
 				return serviceID;
 			}
 		}
@@ -141,8 +142,8 @@ size_t PGmediator::getServiceVersion() {
 	return 1;
 }
 
-	string PGmediator::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
-	                                         int &newVersion) {
+string PGmediator::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
+                                         int &newVersion) {
 	return "";
 }
 

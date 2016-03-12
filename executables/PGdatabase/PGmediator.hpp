@@ -20,7 +20,7 @@ class PGmediator: public CommunicationHandlerInterface {
 private:
 	ConnectionManager conMgr;
 	zeitoon::datatypes::DSInstallInfo insInfo;
-	std::string serviceID = "";
+	std::string serviceID;
 public:
 
 	/**
@@ -35,14 +35,14 @@ public:
 	 * @param pgAdminPort int
 	 * @param pgAdminDbname string
 	 */
-	PGmediator(string serverIP, int serverPort, std::string pgAdminUserName, std::string pgAdminPassWord, std::string pgAdminHost, int pgAdminPort,
+	PGmediator(std::string pgAdminUserName, std::string pgAdminPassWord, std::string pgAdminHost, int pgAdminPort,
 			std::string pgAdminDbname);
 
 	~PGmediator() {
-
 	}
+
 	/**
-	 * onCommand() ba tavajoh be node e voroodi, "query", "execute" ya "fieldValue", va ba estefadde az sql e voroodi, result ra be callback be darkhaast konande
+	 * onCommand() ba tavajoh be node e voroodi, "query", "execute" ya "fieldValue", va ba estefadde az sql e voroodi, result ra be callbackList be darkhaast konande
 	 * baaz migardanand, agar node e mored e nazar moteghaazi gheyr az "3 node  e zekr shode" baashad, yek peyghaam e motenaaseb ba error be server ersaal mishavad
 	 * @param node string , naam e yeki az node haye zekr shode
 	 * @param data string , farmaan e sql e darkhaast konande
@@ -141,7 +141,7 @@ public:
 	void pong(string id, int miliseconds);
 	void setInstallInfo();
 
-	std::string getNameAndType() {
+	std::string getNameAndType() const{
 		return "PGmediator";
 	}
 

@@ -1,0 +1,74 @@
+/*
+ * Router.hpp
+ *
+ *  Created on: Sep 5, 2015
+ *      Author: ajl
+ */
+
+#ifndef CORE_ROUTER_HPP_
+#define CORE_ROUTER_HPP_
+
+#include <string>
+#include <mutex>
+#include <thread>
+#include <unordered_map>
+#include "Profiles.hpp"
+#include <vector>
+#include "utility/utility.hpp"
+#include "utility/jsonParser.hpp"
+#include "CommunicationManager.hpp"
+#include "ExtensionManager.hpp"
+#include "network/TCPServer.hpp"
+#include "database/sqliteDatabaseHub.h"
+
+namespace zeitoon {
+namespace _core {
+
+using namespace zeitoon::utility;
+
+class Router {
+private:
+	void _onDataReceive(size_t id, std::string data);
+
+	void _onClientDisconnect(size_t id);
+
+	void _onClientConnect(size_t id);
+
+public:
+	ExtensionManager extManager;
+	CommunicationManager comm;
+	TCPServer net;
+	utility::sqliteDatabaseHub db;
+
+	Router(int port);
+
+	virtual ~Router();
+
+	void packetReceived(string data, ExtensionProfile *ext);
+
+	void sendPacket(string &data, ExtensionProfile *extension);
+
+	void sendMessage(string extension, string source, string node, string &data, MessageTypes::MessageTypes_ msgT,
+	                 string id);
+
+	void callCommandLocal(string node, string &data, string from, string id); //s
+
+	void fireHookLocal(string node, string &data, string from); //s
+
+	void callCallbackLocal(string node, string &data, string from, string id); //s
+
+	void changeDatatypeVersion(string data, string extension, int vfrom, int vto);
+
+	//void sendMessage(string extension, string dest, string &data, MessageTypes msgT);
+	//void messageReceived(string extension, string dest, string &data, MessageTypes msgT);
+	//etc!
+	inline string getNameAndType() {
+		return "ExtensionManager";
+	}
+
+};
+
+} /* namespace Core */
+} /* namespace zeitoon */
+
+#endif /* CORE_ROUTER_HPP_ */

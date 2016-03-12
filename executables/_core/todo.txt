@@ -1,0 +1,7 @@
+-make a data storage for received Data fileds. to store them all there, to avoid data duplications, specially on big data
+-remove old callbackprofile`s
+-use references instead of names in lists in CommuniticationManager
+-check that no extension with reserved names (_CORE)
+-check dt conversations
+-in CommunicationManager use getXXX funcs in others, remove&register
+-in router, check privilage to remove event,cmd,hook & to register

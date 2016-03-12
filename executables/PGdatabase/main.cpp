@@ -16,7 +16,9 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
 	std::cout << "Server Addr:\t" << argv[1] << "\tPort:\t" << argv[2] << std::endl;
 	std::cout << "Database Addr:\t" << argv[5] << "\tPort:\t" << argv[6] << std::endl;
 	try {
-		PGmediator pg(argv[1], std::atoi(argv[2]), argv[3], argv[4], argv[5], std::atoi(argv[6]), argv[7]);
+		PGmediator pg(argv[3], argv[4], argv[5], std::atoi(argv[6]), argv[7]);
+		pg.connect(argv[1], std::atoi(argv[2]));
+		//cout<<pg.getInstallID();
 		pg.sm.joinNet();
 	} catch (exceptionEx *err) {
 		std::cerr << "ERROR:\n" << err->what();

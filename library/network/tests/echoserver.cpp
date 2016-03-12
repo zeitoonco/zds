@@ -28,6 +28,6 @@ int main() {
 }
 
 void onmsg(size_t id, std::string msg) {
-	std::cerr << "\nMSG reeceived from " << id << " l " << msg.size();
+	std::cerr << "\nMSG received from " << id << " l " << msg.size();
 	a.clients[id]->send("RPLY:" + msg);
 }

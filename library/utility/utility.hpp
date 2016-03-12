@@ -13,6 +13,8 @@
 #include <sstream>
 #include <unistd.h>
 
+#define seq(a, b) (zeitoon::utility::Strings::compare(a,b,false)==0)
+
 using namespace std;
 
 typedef unsigned int uint;
@@ -437,18 +439,26 @@ public:
 		        (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
 		        "}");
 	}
+
+	static string makeError(string node, string id, string desc) {
+		return ("{\"type\" : \"call\" , \"node\" : \"error\" , \"data\" : {\"node\" : \"" +
+		        node + "\" , \"id\" : \"" + id + "\" , \"description\" : \"" + desc + "\"} }");
+	}
 };
 
-	class FileSystemUtility {
-	public:
-		static string getAppPath() {
+class FileSystemUtility {
+public:
+	static string getAppPath() {
+		static string apath = "";
+		if (apath.length() == 0) {
 			char buf[1000];
 			ssize_t s = readlink("/proc/self/exe", buf, 1000);
 			buf[s] = 0;
 			std::string temp = buf;
 			size_t lastSlash = temp.find_last_of("/");
-			temp.erase(lastSlash + 1, std::string::npos);
-			return temp;
+			apath = temp.erase(lastSlash + 1, std::string::npos);
+		}
+		return apath;
 	}
 };
 

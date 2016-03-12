@@ -8,7 +8,7 @@
 #ifndef LOGGER_HPP_
 #define LOGGER_HPP_
 
-#include "database/databaseHub.h"
+#include <database/sqliteDatabaseHub.h>
 #include "sstream"
 
 namespace zeitoon {
@@ -18,12 +18,12 @@ namespace utility {
  * sotoohe mokhtalefe log
  */
 enum class LogLevels {
-	note = 0,		///<baraye mavaredi ke ahamiyati nadarand, va dar amalkard system tasiri nadaran
-	debug = 1,		///<mavaredi ke debugger va programmer be an niyaz darad
-	trace = 2,		///<mavaredi ke ehtemal darad moshkel ijad konad
-	warning = 3,	///<mavarede khatarnaki ke be khata nemirasad vali momken ast badan dar system ijade khata konad
-	error = 4,		///<khatahayi ke dar system rokh midahad, vali system an ra handle mikonad
-	fatal = 5		///<khatahayi ke dar system rokh midahad, vali system nemitavanad an ra handl konad
+	note = 0,        ///<baraye mavaredi ke ahamiyati nadarand, va dar amalkard system tasiri nadaran
+	debug = 1,        ///<mavaredi ke debugger va programmer be an niyaz darad
+	trace = 2,        ///<mavaredi ke ehtemal darad moshkel ijad konad
+	warning = 3,    ///<mavarede khatarnaki ke be khata nemirasad vali momken ast badan dar system ijade khata konad
+	error = 4,        ///<khatahayi ke dar system rokh midahad, vali system an ra handle mikonad
+	fatal = 5        ///<khatahayi ke dar system rokh midahad, vali system nemitavanad an ra handl konad
 };
 
 /**
@@ -31,7 +31,7 @@ enum class LogLevels {
  */
 class logger {
 private:
-	databaseHub dbh; //<database log ha
+	sqliteDatabaseHub dbh; //<database log ha
 
 public:
 	/**
@@ -42,8 +42,8 @@ public:
 		dbh.connect(logfile);
 		//if database is created, create tables
 		vector<vector<string> > results;
-		dbh.query("SELECT name FROM sqlite_master WHERE type='table' AND name='log';", results);
-		if (results.size() == 0) {
+		datatypes::DTTableString res = dbh.query("SELECT name FROM sqlite_master WHERE type='table' AND name='log';");
+		if (res.rowCount() == 0) {
 			dbh.execute(
 					"CREATE TABLE log ( ID INTEGER  PRIMARY KEY AUTOINCREMENT, timestamp DATETIME NOT NULL DEFAULT (  datetime('now', 'localtime') ), loglevel  INTEGER  NOT NULL DEFAULT ( 0 ), owner     TEXT NOT NULL DEFAULT(''),  message   TEXT  NOT NULL DEFAULT(''));");
 			dbh.execute("CREATE TABLE loglevel ( ID   INTEGER PRIMARY KEY, name TEXT    NOT NULL );");
@@ -68,15 +68,18 @@ public:
 	void log(string owner, string message, LogLevels level) {
 		stringstream ss;
 		ss << "insert into log(owner,message,loglevel) values('" << owner << "','" << message << "'," << (int) level
-				<< ");";
+		<< ");";
 		dbh.execute(ss.str());
 	}
+
 	void log(string owner, string message) {
 		log(owner, message, LogLevels::note);
 	}
+
 	void log(string message) {
 		log("", message, LogLevels::note);
 	}
+
 	void log(string message, LogLevels level) {
 		log("", message, level);
 	}

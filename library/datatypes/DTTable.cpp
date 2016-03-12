@@ -22,12 +22,12 @@ ColumnDataType::columnDataType ColumnDataType::fromString(std::string str) {
 	str = Strings::trim(str, "\"");
 	for (int i = 0; i < ColumnDataType::columnDataType::__MAX; i++)
 		if (!Strings::compare(str, ColumnDataType::enumArray[i], false))
-			return ( ColumnDataType::columnDataType) i;
+			return (ColumnDataType::columnDataType) i;
 	EXTcantParseStringO("Unknown constant passed to Enum :" + str, getNameAndType());
 }
 
-std::string ColumnDataType::enumArray[__MAX] = { "text", "integer", "float",
-		"binary", "boolean" };
+std::string ColumnDataType::enumArray[__MAX] = {"text", "integer", "float",
+                                                "binary", "boolean", "unknown"};
 
 }
 }

@@ -27,25 +27,27 @@ public:
 
 	DTTableString(std::string name);
 
+	DTTableString(const DTTableString &tbl);
+
 	DTTableString(std::string receivedData, std::string name);
 
-	size_t rowCount();
+	size_t rowCount()const;
 
-	size_t columnCount();
+	size_t columnCount()const;
 
-	std::string columnName(int fieldNumber);
+	std::string columnName(int fieldNumber)const;
 
-	ColumnDataType::columnDataType columnDataType(int columnNumber);
+	ColumnDataType::columnDataType columnDataType(int columnNumber)const;
 
-	size_t columnDataSize(int columnNumber);
+	size_t columnDataSize(int columnNumber)const;
 
-	std::string fieldValue(int tupleNumber, int columnNumber);
+	std::string fieldValue(int rowNumber, int colNumber)const;
 
-	bool fieldIsNull(int tupleNumber, int columnNumber);
+	bool fieldIsNull(int tupleNumber, int columnNumber)const;
 
-	size_t fieldSize(int tupleNumber, int columnNumber);
+	size_t fieldSize(int tupleNumber, int columnNumber)const;
 
-	std::string toString(); //no need to implement//todo:#NAVIDI wtf?
+	std::string toString() const; //no need to implement//todo:#NAVIDI wtf?
 	void fromString(std::string data);
 
 	DTBase &operator=(std::string);

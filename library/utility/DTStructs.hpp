@@ -20,9 +20,11 @@ public:
 	static std::string getStructName() {
 		return "DSString";
 	}
+
 	static int getStructVersion() {
 		return 1;
 	}
+
 	DSString() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
@@ -46,9 +48,11 @@ public:
 	static std::string getStructName() {
 		return "DSInteger";
 	}
+
 	static int getStructVersion() {
 		return 1;
 	}
+
 	DSInteger() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
@@ -62,9 +66,11 @@ public:
 	static std::string getStructName() {
 		return "DSFloat";
 	}
+
 	static int getStructVersion() {
 		return 1;
 	}
+
 	DSFloat() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
@@ -74,12 +80,15 @@ public:
 class DSBoolean : public DTStruct {
 public:
 	DTBoolean value = {"value"};
+
 	static std::string getStructName() {
 		return "DSBoolean";
 	}
+
 	static int getStructVersion() {
 		return 1;
 	}
+
 	DSBoolean() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
@@ -89,12 +98,15 @@ public:
 class DSDBTable : public DTStruct {
 public:
 	DTTableString value = {"value"};
+
 	static std::string getStructName() {
 		return "DSDBTable";
 	}
+
 	static int getStructVersion() {
 		return 1;
 	}
+
 	DSDBTable() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&value);
@@ -258,25 +270,25 @@ public:
 };
 
 
-		class DatatypesUtility {
-		public:
-			static zeitoon::datatypes::DTSet<zeitoon::datatypes::DTString> toDTStringSet(
-					std::vector<std::string> iVector) {
-				zeitoon::datatypes::DTSet<DTString> temp("");
-				for (size_t iter = 0; iter < iVector.size(); iter++) {
-					temp.add(new DTString("", iVector[iter]), true);
-				}
-				return temp;
-			}
+class DatatypesUtility {
+public:
+	static zeitoon::datatypes::DTSet<zeitoon::datatypes::DTString> toDTStringSet(
+			std::vector<std::string> iVector) {
+		zeitoon::datatypes::DTSet<DTString> temp("");
+		for (size_t iter = 0; iter < iVector.size(); iter++) {
+			temp.add(new DTString("", iVector[iter]), true);
+		}
+		return temp;
+	}
 
-			static std::vector<zeitoon::datatypes::DTString> toDTStringList(std::vector<std::string> iVector) {
-				std::vector<zeitoon::datatypes::DTString> temp;
-				for (size_t iter = 0; iter < iVector.size(); iter++) {
-					temp.push_back(DTString("", iVector[iter]));
-				}
-				return temp;
-			}
-		};
+	static std::vector<zeitoon::datatypes::DTString> toDTStringList(std::vector<std::string> iVector) {
+		std::vector<zeitoon::datatypes::DTString> temp;
+		for (size_t iter = 0; iter < iVector.size(); iter++) {
+			temp.push_back(DTString("", iVector[iter]));
+		}
+		return temp;
+	}
+};
 
 
 }}

@@ -31,12 +31,20 @@ public:
 
 			size_t _id;
 			uv_tcp_t *_client;
-			std::string buff;
+			std::string _buff;
+			size_t _lastPacketLen;
 			TCPServer *_parent;
 			bool _isConnected;
 
-			client(TCPServer *parent, size_t id, uv_tcp_t *client) : _id(id), _client(client),
-			                                                         _parent(parent), buff(""), _isConnected(false) { }
+			client(TCPServer *parent, size_t id, uv_tcp_t *client) :
+					_id(id), _client(client), _parent(parent), _buff(""), _lastPacketLen(0), _isConnected(false) { }
+
+			void _packetReceived() {
+				if (this->_parent->_onMessage != NULL)
+					this->_parent->_onMessage(this->_id, this->_buff);
+				this->_buff = "";
+				this->_lastPacketLen = 0;
+			}
 
 		public:
 			void send(std::string data);
@@ -110,6 +118,7 @@ public:
 
 	typedef std::function<void(size_t, std::string)> onMessageDLG;
 	typedef std::function<void(size_t)> onClientConnectDLG;
+	typedef std::function<void()> onConnectDLG;
 
 	clientCollection clients;
 
@@ -149,6 +158,22 @@ public:
 		_onClientDisconnect = NULL;
 	}
 
+	void registerOnConnectCB(onConnectDLG cb) {
+		_onConnect = cb;
+	}
+
+	void clearOnConnectCB() {
+		_onConnect = NULL;
+	}
+
+	void registerOnDisconnectCB(onConnectDLG cb) {
+		_onDisconnect = cb;
+	}
+
+	void clearOnDisconnectCB() {
+		_onDisconnect = NULL;
+	}
+
 	std::string getNameAndType() {
 		return std::string("TCPServer[") + std::to_string(_port) + "]";
 	}
@@ -161,6 +186,8 @@ private:
 	onMessageDLG _onMessage;
 	onClientConnectDLG _onClientConnect;
 	onClientConnectDLG _onClientDisconnect;
+	onConnectDLG _onConnect;
+	onConnectDLG _onDisconnect;
 
 	void _listen();
 

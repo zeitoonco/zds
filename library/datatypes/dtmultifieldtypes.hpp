@@ -129,6 +129,7 @@ template<typename T>
 class DTSet : public DTMultiFieldType<T> {
 public:
 	typedef typename vector<T *>::iterator iterator;
+	typedef typename vector<T *>::const_iterator citerator;
 	typedef vector<T *> List;
 protected:
 
@@ -235,16 +236,17 @@ public:
 	virtual void add(string str) {
 		T *temp = new T("");
 		temp->fromString(str);
-		add(temp,true);
+		add(temp, true);
 	}
 
-	virtual void addRange(std::vector<T> iVector){
-		for (size_t iter = 0; iter < iVector.size(); iter++){
+	virtual void addRange(std::vector<T> iVector) {
+		for (size_t iter = 0; iter < iVector.size(); iter++) {
 			T *temp = new T("");
-			(*temp)=iVector[iter];
-			add(temp,true);
+			(*temp) = iVector[iter];
+			add(temp, true);
 		}
 	}
+
 	/**insert baraye ezafe kardane objecte voroodi dar makaane moshakhas dar liste DTMultiType
 	 *
 	 * @param val objecti ke bayad be list ezafe shavad.
@@ -309,10 +311,10 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() {
+	string toString() const {
 		stringstream str;
 		str << "[";
-		for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+		for (citerator i = this->list.begin(); i != this->list.end(); i++) {
 			str << (**i).toString();
 			if (i + 1 != this->list.end())
 				str << ",";
@@ -520,6 +522,7 @@ protected:
 
 public:
 	typedef typename vector<DTBase *>::iterator iterator;
+	typedef typename vector<DTBase *>::const_iterator citerator;
 	typedef vector<DTBase *> List;
 
 	/**constructor baraye DTStruct.
@@ -537,7 +540,7 @@ public:
 	 * @return version DTSruct.
 	 *
 	 */
-	virtual size_t getVersion() { return this->version; };
+	virtual size_t getVersion() const { return this->version; };
 
 	/**getMinSupportedVersion() minimom versione DTStruct ra barmigardand.
 	 *
@@ -589,16 +592,16 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() {
+	string toString() const {
 		return toString(false);
 	}
 
-	string toString(bool includeVersion) {
+	string toString(bool includeVersion) const {
 		stringstream str;
 		str << "{";
 		if (includeVersion)
 			str << "\"_version\":" << this->getVersion() << ",";
-		for (iterator i = this->list.begin(); i != this->list.end(); i++) {
+		for (citerator i = this->list.begin(); i != this->list.end(); i++) {
 			str << '"' << (*i)->getName() << "\":" << (*i)->toString();
 			if (i + 1 != list.end())
 				str << ',';

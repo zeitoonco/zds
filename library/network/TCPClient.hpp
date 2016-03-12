@@ -68,13 +68,14 @@ public:
 
 private:
 	uv_loop_t loop;
-	uv_tcp_t server;
+	uv_tcp_t client;
 	sockaddr *addr;
 	std::thread *listenTrd;
 	onMessageDLG _onMessage;
 	onConnectDLG _onConnect;
 	onConnectDLG _onDisconnect;
-	std::string buff;
+	std::string _buff;
+	size_t _lastPacketLen;
 	bool _connected;
 
 	void _listen();
@@ -87,7 +88,12 @@ private:
 
 	static void on_client_write(uv_write_t *req, int status);
 
-
+	void _packetReceived() {
+		if (this->_onMessage != NULL)
+			this->_onMessage(this->_buff);
+		this->_buff = "";
+		this->_lastPacketLen = 0;
+	}
 };
 
 }//utility

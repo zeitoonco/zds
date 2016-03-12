@@ -21,26 +21,32 @@ class CommunicationHandlerInterface;
 
 class ServerMediator {
 	friend class CommunicationMediator;
-	private:
+
+private:
 	CommunicationHandlerInterface *owner;
 	TCPClient tcpc;
 
 	void onNetConnect();
 
 	void onNetDisconnect();
+
 public:
 	CommunicationMediator communication;
 	SettingMediator setting;
 	DatabaseMediator database;
 
-	ServerMediator(CommunicationHandlerInterface* chi);
-	ServerMediator(CommunicationHandlerInterface* chi,
-			string address, int port);
+	ServerMediator(CommunicationHandlerInterface *chi);
+
+	//ServerMediator(CommunicationHandlerInterface *chi, string address, int port);
+
 	~ServerMediator();
 
 	void connect();
+
 	void connect(string address, int port);
+
 	void disconnect();
+
 	bool isConnected();
 
 	void dataReceived(string data);
@@ -49,11 +55,13 @@ public:
 //	}
 
 	void sendCmd(string node, string id, string data);
+
 	void send(string data);
 
-		void joinNet() {
-			tcpc.joinOnConnectionThread();
-		}
+	void joinNet() {
+		tcpc.joinOnConnectionThread();
+	}
+
 	string getNameAndType() {
 		return "ServerMediator";
 	}

@@ -88,7 +88,7 @@ public:
 	 *
 	 * @return strinigi ke dar an meghdar moteghaeir zakhire shode ast.
 	 */
-	virtual string toString() = 0;
+	virtual string toString() const = 0;
 
 	/**fromString ke stringi raa ke migirad parse mikonad va aan string raa tabdil be meghdar moteghaeir mikond
 	 *
@@ -142,7 +142,7 @@ public:
 	 *
 	 * @return naame moteghaeir.
 	 */
-	virtual string getName() {
+	virtual string getName() const {
 		return _name;
 	}
 

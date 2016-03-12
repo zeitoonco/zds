@@ -18,11 +18,11 @@ ServerMediator::ServerMediator(CommunicationHandlerInterface *chi) :
 	tcpc.registerOnClientDisconnectCB(std::bind(&ServerMediator::onNetDisconnect, this));
 } //todo:#LT: we need auto connect constructor ( auto-detect server )
 
-ServerMediator::ServerMediator(CommunicationHandlerInterface *chi,
+/*ServerMediator::ServerMediator(CommunicationHandlerInterface *chi,
                                string address, int port) :
 		ServerMediator(chi) {
 	connect(address, port);
-}
+}*/
 
 ServerMediator::~ServerMediator() {
 	disconnect();

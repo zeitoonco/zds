@@ -111,7 +111,7 @@ public:
 	 *
 	 * @return _value
 	 */
-	virtual T getValue() {
+	virtual T getValue() const {
 		return _value;
 	}
 
@@ -307,11 +307,11 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() {
+	string toString() const {
 		return toString(10);
 	}
 
-	string toString(int base) {
+	string toString(int base) const {
 		return Strings::toString(this->getValue(), base);
 	}
 
@@ -540,7 +540,7 @@ protected:
 		stringstream data(str);
 		data >> y;
 		x = round(y);
-		isExact = (x == y ? true : false);
+		isExact = (x == y);
 		return x;
 	}
 };
@@ -613,7 +613,7 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() {
+	string toString() const {
 		stringstream str;
 		str << setprecision(std::numeric_limits<double>::digits10 + 1) << this->getValue();
 		return str.str();
@@ -852,7 +852,7 @@ public:
 	/**
 	 * getInt meghdar e object ra be soorat e 0 ya 1 barmigardanad.
 	 */
-	int getInt() {
+	int getInt() const {
 		return this->getValue() ? 1 : 0;
 	}
 
@@ -867,11 +867,11 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() {
+	string toString() const {
 		return toString(boolTxType::TrueFalse);
 	}
 
-	string toString(boolTxType txType) {
+	string toString(boolTxType txType) const {
 		if (_stringType == OneZero)
 			return boolStr[txType][getInt()];
 		else
@@ -1000,7 +1000,7 @@ public:
 	}
 
 	bool operator==(int val) {
-		return (!(val == 0)) == this->getValue();
+		return (val != 0) == this->getValue();
 	}
 
 	bool operator!=(int val) {
@@ -1081,7 +1081,7 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() {
+	string toString() const {
 		return '"' + utility::JSONUtility::encodeString(this->getValue()) + '"';
 	}
 
@@ -1224,7 +1224,7 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() {
+	string toString() const {
 		stringstream str;
 		str << '"' << EnumType::typeString[this->getValue()] << '"';
 		return str.str();

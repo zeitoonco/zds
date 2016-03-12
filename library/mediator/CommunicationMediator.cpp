@@ -85,40 +85,37 @@ void CommunicationMediator::runEvent(string name, datatypes::DTStruct &data) {
 
 //op
 void CommunicationMediator::registerEvent(string name) {
-	sm->send(CommunicationUtility::makeCommand("registerEvent", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("_core.registerEvent", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [" + name + "]}"));
 }
 
 void CommunicationMediator::removeEvent(string name) {
-	sm->send(CommunicationUtility::makeCommand("removeEvent", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("_core.removeEvent", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [" + name + "]}"));
 }
 
 void CommunicationMediator::registerCommand(string name) {
-	sm->send(CommunicationUtility::makeCommand("registerCommand", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("_core.registerCommand", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [" + name + "]}"));
 }
 
 void CommunicationMediator::removeCommand(string name) {
-	sm->send(CommunicationUtility::makeCommand("removeCommand", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("_core.removeCommand", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [" + name + "]}"));
 }
 
 void CommunicationMediator::registerHook(string name) {
-	sm->send(CommunicationUtility::makeCommand("registerHook", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("_core.registerHook", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [" + name + "]}"));
 }
 
 void CommunicationMediator::removeHook(string name) {
-	sm->send(CommunicationUtility::makeCommand("removeHook", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [\"" + name + "\"]}"));
+	sm->send(CommunicationUtility::makeCommand("_core.removeHook", "", sm->owner->getServiceName(),
+	                                           "{\"names\" : [" + name + "]}"));
 }
 
 void zeitoon::utility::CommunicationMediator::errorReport(std::string node, std::string id, std::string desc) {
-	sm->send(
-			"{\"type\" : \"call\" , \"node\" : \"error\" , \"data\" : {\"node\" : \"" + node + "\" , \"id\" : \"" + id
-			+ "\" , \"description\" : \"" + desc + "\"} }");
-
+	sm->send(CommunicationUtility::makeError(node, id, desc));
 }
 
 bool CommunicationMediator::dataReceive(string data) {

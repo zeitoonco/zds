@@ -19,6 +19,10 @@ DTTableString::DTTableString(std::string name) :
 	jsonData.fromString("{\"columns\":[],\"rows\":[]}");
 }
 
+DTTableString::DTTableString(const DTTableString &tbl) : DTTable(tbl.getName()) {
+	this->fromString(tbl.toString());
+}
+
 DTTableString::DTTableString(std::string receivedData, std::string name) :
 		DTTable(name) {
 	jsonData.fromString(receivedData);
@@ -28,39 +32,39 @@ DTTableString::~DTTableString() {
 
 }
 
-size_t DTTableString::rowCount() {
+size_t DTTableString::rowCount() const {
 	return jsonData["rows"].size();
 
 }
 
-size_t DTTableString::columnCount() {
+size_t DTTableString::columnCount() const {
 	return (jsonData["columns"].size());
 }
 
-std::string DTTableString::columnName(int fieldNumber) { //field numbers start from 0
+std::string DTTableString::columnName(int fieldNumber) const { //field numbers start from 0
 	return jsonData["columns"][fieldNumber]["name"].getValue();
 }
 
-ColumnDataType::columnDataType DTTableString::columnDataType(int columnNumber) {
+ColumnDataType::columnDataType DTTableString::columnDataType(int columnNumber) const {
 	return ColumnDataType::fromString(
 			jsonData["columns"][columnNumber]["datatype"].getValue());
 }
 
-size_t DTTableString::columnDataSize(int columnNumber) {
+size_t DTTableString::columnDataSize(int columnNumber) const {
 //returns -1 for variable size fields.
 	return (size_t) std::atol(
 			(jsonData["columns"][columnNumber]["size"].getValue()).c_str());
 }
 
-std::string DTTableString::fieldValue(int tupleNumber, int columnNumber) {
-	return jsonData["rows"][tupleNumber][columnNumber].getValue();
+std::string DTTableString::fieldValue(int rowNumber, int colNumber) const {//todo:maybe, change the order??
+	return jsonData["rows"][rowNumber][colNumber].getValue();
 }
 
-bool DTTableString::fieldIsNull(int tupleNumber, int columnNumber) {
+bool DTTableString::fieldIsNull(int tupleNumber, int columnNumber) const {
 	return this->fieldValue(tupleNumber, columnNumber) == "NULL";
 }
 
-size_t DTTableString::fieldSize(int tupleNumber, int columnNumber) {
+size_t DTTableString::fieldSize(int tupleNumber, int columnNumber) const {
 	if (this->columnDataType(columnNumber) == ColumnDataType::TEXT) {
 		return jsonData["rows"][tupleNumber][columnNumber].size();
 	} else {
@@ -68,7 +72,7 @@ size_t DTTableString::fieldSize(int tupleNumber, int columnNumber) {
 	}
 }
 
-std::string DTTableString::toString() {
+std::string DTTableString::toString() const {
 	return jsonData.toString();
 }
 
@@ -136,7 +140,7 @@ void DTTableString::columnRemove(string name) {
 	}
 	if (index == -1)
 		EXTinvalidName("Invalid given column name.");
-	columnRemoveAt((size_t)index);
+	columnRemoveAt((size_t) index);
 }
 
 void DTTableString::columnRemoveAt(size_t index) {

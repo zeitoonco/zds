@@ -14,7 +14,7 @@ using namespace zeitoon;
 using namespace utility;
 
 //-------------------------------jItem
-string JItem::toString() {
+string JItem::toString() const {
 	stringstream str;
 	if (name.length() > 0)
 		str << "\"" << name << "\":";
@@ -73,7 +73,7 @@ bool JItem::validateString(string str) {
 	return true;
 }
 
-JValue &JItem::operator[](int i) {
+JValue &JItem::operator[](int i) const {
 	if (value == NULL)
 		EXTnullValue("Value is empty");
 	if (value->getType() != JTypes::JTarray
@@ -87,7 +87,7 @@ JValue &JItem::operator[](int i) {
 	}
 }
 
-JValue &JItem::operator[](string name) {
+JValue &JItem::operator[](string name) const {
 	if (value->getType() != JTypes::JTstruct)
 		EXTdataTypeMismatch(
 				"name index operator can only used on struct values");
@@ -124,7 +124,7 @@ JValue *JValue::praseString(string str) {
 	}
 }
 
-JValue &JValue::operator[](int i) {
+JValue &JValue::operator[](int i) const {
 	if (getType() != JTypes::JTarray && getType() != JTypes::JTstruct)
 		EXTdataTypeMismatch(
 				"index operator can only used on array and struct values");
@@ -135,7 +135,7 @@ JValue &JValue::operator[](int i) {
 	}
 }
 
-JValue &JValue::operator[](string name) {
+JValue &JValue::operator[](string name) const {
 	if (getType() != JTypes::JTstruct)
 		EXTdataTypeMismatch(
 				"named index operator can only used on struct values");
@@ -143,11 +143,11 @@ JValue &JValue::operator[](string name) {
 }
 
 //-------------------------------jVariable
-bool JVariable::isNull() {
+bool JVariable::isNull() const {
 	return (Strings::compare("NULL", value) == 0);
 }
 
-bool JVariable::isInt() {
+bool JVariable::isInt() const {
 	if (value.length() == 0)
 		return false;
 	string str = Strings::trim(value, "\"");
@@ -158,7 +158,7 @@ bool JVariable::isInt() {
 	return true;
 }
 
-bool JVariable::isFloat() { //TODO: make sure that 'e','E','.' r only used once?
+bool JVariable::isFloat() const { //TODO: make sure that 'e','E','.' r only used once?
 	if (value.length() == 0)
 		return false;
 	string str = Strings::trim(value, "\"");
@@ -170,7 +170,7 @@ bool JVariable::isFloat() { //TODO: make sure that 'e','E','.' r only used once?
 	return true;
 }
 
-bool JVariable::isBoolian() {
+bool JVariable::isBoolian() const {
 	if (value.length() == 0)
 		return false;
 	string tval = Strings::toLower(Strings::trim(value, "\""));
@@ -179,7 +179,7 @@ bool JVariable::isBoolian() {
 	return true;
 }
 
-long long int JVariable::toInt() {
+long long int JVariable::toInt() const {
 	if (!isInt())
 		EXTcantParseString("can't convert value to int");
 	string tmp = Strings::trim(value, "\"");
@@ -189,7 +189,7 @@ long long int JVariable::toInt() {
 	return val;
 }
 
-unsigned long long int JVariable::toUInt() {
+unsigned long long int JVariable::toUInt() const {
 	if (!isInt())
 		EXTcantParseString("can't convert value to int");
 	string tmp = Strings::trim(value, "\"");
@@ -199,7 +199,7 @@ unsigned long long int JVariable::toUInt() {
 	return val;
 }
 
-long double JVariable::toFloat() {
+long double JVariable::toFloat() const {
 	if (!isFloat())
 		EXTcantParseString("can't convert value to float");
 	string tmp = Strings::trim(value, "\"");
@@ -209,7 +209,7 @@ long double JVariable::toFloat() {
 	return val;
 }
 
-bool JVariable::toBoolian() {
+bool JVariable::toBoolian() const {
 	if (!isBoolian())
 		EXTcantParseString("can't convert value to boolean");
 	string tval = Strings::toLower(Strings::trim(value, "\""));
@@ -221,7 +221,7 @@ bool JVariable::toBoolian() {
 		EXTcantParseString("can't parse value to boolean");
 }
 
-string JVariable::getValue() {
+string JVariable::getValue() const {
 	return value;
 }
 
@@ -254,7 +254,7 @@ void JVariable::fromString(string str) {
 	value = str;
 }
 
-string JVariable::toString() {
+string JVariable::toString() const {
 	if (this->isFloat() || this->isBoolian() || this->isNull())
 		return value;
 	else
@@ -269,10 +269,10 @@ size_t JVariable::size() {
 }
 
 //-------------------------------jArray
-string JArray::toString() {
+string JArray::toString() const {
 	stringstream str;
 	str << '[';
-	for (vector<JValue *>::iterator i = fields.begin(); i < fields.end(); i++) {
+	for (vector<JValue *>::const_iterator i = fields.begin(); i < fields.end(); i++) {
 		str << (*i)->toString();
 		if (i + 1 != fields.end())
 			str << ',';
@@ -355,7 +355,7 @@ size_t JArray::size() {
 	return fields.size();
 }
 
-string JArray::getValue() {
+string JArray::getValue() const {
 	return this->toString();
 }
 
@@ -363,10 +363,10 @@ string JArray::getValue() {
 
 //todo : check new&delete in from strings,destructor
 
-string JStruct::toString() {
+string JStruct::toString() const {
 	stringstream str;
 	str << '{';
-	for (vector<JItem *>::iterator i = fields.begin(); i != fields.end(); i++) {
+	for (vector<JItem *>::const_iterator i = fields.begin(); i != fields.end(); i++) {
 		str << (*i)->toString();
 		if (i + 1 != fields.end())
 			str << ',';
@@ -375,10 +375,10 @@ string JStruct::toString() {
 	return str.str();
 }
 
-void JStruct::fromString(string str) {
+void JStruct::fromString(string str) {//todo:too expensive, NEED rewrite
 	size_t pos, rePos, j = 0;
 	pos = str.find('{');
-	rePos = str.rfind('}');
+	rePos = JSONUtility::getEndOfStruct(str, pos);//rePos = str.rfind('}');
 	if (pos == string::npos || rePos == string::npos) {
 		EXTcantParseString("can't parse string as structure");
 	}
@@ -434,11 +434,11 @@ void JStruct::fromString(string str) {
 	}
 }
 
-JValue &JStruct::operator[](int i) {
+JValue &JStruct::operator[](int i) const {
 	return *(fields[i]->value);
 }
 
-JValue &JStruct::operator[](string name) {
+JValue &JStruct::operator[](string name) const {
 	for (auto itm : fields) {
 		if (Strings::compare(itm->name, name, false) == 0)
 			return *(itm->value);
@@ -477,7 +477,7 @@ void JStruct::addIgnored(string name, string value) {
 	fields.push_back(new JItem(name, (JValue *) new JIgnored(value), this));
 }
 
-string JStruct::getValue() {
+string JStruct::getValue() const {
 	return this->toString();
 }
 
@@ -487,7 +487,7 @@ JStruct::~JStruct() {
 }
 //-------------------------------jIgnored
 
-string JIgnored::toString() {
+string JIgnored::toString() const {
 	return value;
 }
 
@@ -499,7 +499,7 @@ size_t JIgnored::size() {
 	return this->value.size();
 }
 
-string JIgnored::getValue() {
+string JIgnored::getValue() const {
 	return this->value;
 }
 

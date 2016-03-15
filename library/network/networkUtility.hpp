@@ -26,7 +26,10 @@ public:
 		uv_getaddrinfo_t resolver;
 		int r = uv_getaddrinfo(loop, &resolver, NULL, address.c_str(), service.c_str(), &hints);
 		uvEXTO(r, "getaddrinfo call failed", "networkUtility::uv_resolveAddress");
-		return resolver.addrinfo->ai_addr;
+		sockaddr *temp = (sockaddr *) calloc(1, sizeof(sockaddr));
+		(*temp) = *(resolver.addrinfo->ai_addr);
+		free(resolver.addrinfo);
+		return temp;// Do not forget to free temp
 	}
 
 };

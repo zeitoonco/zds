@@ -26,12 +26,19 @@ PGmediator::PGmediator(std::string pgAdminUserName, std::string pgAdminPassWord,
 void PGmediator::onCommand(string node, string data, string id, string from) {
 	try {
 		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), false)) {
-			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
-			this->sm.communication.runCallback(from, conMgr.query(from, data).toString(), id);
+			DSDBQuery sql(data, true);
+			conMgr.query(from, sql.query.getValue());
+			DTTableString result(conMgr.query(from, sql.query.getValue()).toString(), "");
+			this->sm.communication.runCallback(from, result.toString(), id);
 		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), false)) {
-			this->sm.communication.runCallback(from, std::to_string(conMgr.execute(from, data)), id);
+			DSDBQuery sql(data, true);
+			DSInteger result;
+			result.value = conMgr.execute(from, sql.query.getValue());
+			this->sm.communication.runCallback(from, result.toString(true), id);
 		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), false)) {
-			this->sm.communication.runCallback(from, conMgr.singleFieldQuery(from, data), id);
+			DSDBQuery sql(data, true);
+			DSString result(conMgr.singleFieldQuery(from, sql.query.getValue()), false);
+			this->sm.communication.runCallback(from, result.toString(true), id);
 		}
 	} catch (exceptionEx *errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo->what());
@@ -72,7 +79,7 @@ void PGmediator::onEnable() {
 }
 
 void PGmediator::onDisable() {
-	cerr<<"\nDisable!";
+	cerr << "\nDisable!";
 }
 
 void PGmediator::onUninstall() { //remove Id from the configuration file
@@ -148,11 +155,11 @@ string PGmediator::changeDatatypeVersion(string value, string datatype, int from
 }
 
 void PGmediator::onError(string node, string id, string description) {
-	std::cerr << "Error:\t"<<description<<std::endl;
+	std::cerr << "Error:\t" << description << std::endl;
 }
 
 void PGmediator::onWarning(string level, string node, string id, string description) {
-	std::cerr << "Warning:\t"<<description<<std::endl;
+	std::cerr << "Warning:\t" << description << std::endl;
 }
 
 void PGmediator::pong(string id, int miliseconds) {

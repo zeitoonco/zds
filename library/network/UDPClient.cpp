@@ -3,12 +3,16 @@
 //
 
 #include "UDPClient.hpp"
+#include "utility/exceptionex.hpp"
 
 using namespace zeitoon::utility;
+namespace zeitoon {
+namespace utility {
 
 UDPClient::~UDPClient() {
 	disconnect(false);
-	delete listenThread;
+	if (isConnected())
+		delete listenThread;
 
 }
 
@@ -24,7 +28,6 @@ UDPClient::UDPClient() : _connected(false) {
 
 UDPClient::UDPClient(std::string IP, int port) : UDPClient() {
 	addr = networkUtility::uv_resolveAddress(&loop, IP, std::to_string(port));
-	//uv_ip4_addr(IP.c_str(), port, &addr);
 
 
 }
@@ -85,8 +88,6 @@ void UDPClient::alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_
 void UDPClient::on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const struct sockaddr *addr,
                         unsigned flags) {
 	UDPClient *serverPtr = (UDPClient *) req->data;
-	cerr << "N" << nread << endl;
-	unsigned int i = time(NULL);
 	if (nread < 0) {
 		if (nread == -4095) {
 			std::cerr << "socket closed";
@@ -96,13 +97,18 @@ void UDPClient::on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const
 		uv_close((uv_handle_t *) req, NULL);
 		return;
 	} else if (nread == 0) {
+
 		//nothing
 	} else {
+
+		char sender[17] = {0};
+		uv_ip4_name((const struct sockaddr_in *) addr, sender, 16);
 		if (serverPtr->_onMessage != NULL) {
-			serverPtr->_onMessage(std::string(buf->base, nread));
+			serverPtr->_onMessage(std::string(buf->base, nread), std::string(sender));
 		}
-		//char sender[17] = {0};
-		//uv_ip4_name((const struct sockaddr_in *) addr, sender, 16);
+		if (serverPtr->onMessageBin != NULL) {
+			serverPtr->onMessageBin(buf->base, nread, std::string(sender));
+		}
 	}
 	free(buf->base);
 	cerr << "free" << endl;
@@ -134,4 +140,24 @@ void UDPClient::send(std::string address, int port, std::string data) {
 
 }
 
+void UDPClient::send(std::string address, int port, char *data, int dataLength) {
+	if (dataLength > 65000) {
+		std::cerr << "Data size bigger than 65KB" << std::endl;
+	}
+	uv_udp_send_t send_req;
 
+	uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));//alocated memory
+	bufw->base = data;
+
+	bufw->len = dataLength;
+	//memcpy(bufw->base, data.c_str(), data.size());
+	struct sockaddr *temp = networkUtility::uv_resolveAddress(&loop, address, to_string(port));
+	uv_udp_send(&send_req, &client, bufw, 1, temp, on_send);
+	uv_run(&loop, UV_RUN_DEFAULT);
+
+	free(bufw->base);
+	free(bufw);
+	free(temp);
+}
+}
+}

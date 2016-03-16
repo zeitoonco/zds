@@ -12,11 +12,15 @@
 #include <map>
 #include <thread>
 
-typedef std::function<void(std::string)> onMessageDLG;
+typedef std::function<void(std::string, std::string IP)> onMessageDLG;
+typedef std::function<void(char *buffer, int nreads, std::string IP)> onMessageBinary;
 
+namespace zeitoon {
+namespace utility {
 
 class UDPClient {
 	onMessageDLG _onMessage;
+	onMessageBinary onMessageBin;
 	sockaddr *addr;
 	bool _connected;
 	uv_loop_t loop;
@@ -38,11 +42,19 @@ public:
 
 	UDPClient(std::string IP, int port);
 
-	void registerOnMessageCB(onMessageDLG cb) {
+	void registerOnMessage(onMessageDLG cb) {
 		_onMessage = cb;
 	}
 
-	void clearInMessageCB() {
+	void clearOnMessageCB() {
+		_onMessage = NULL;
+	}
+
+	void registerOnMessageBinary(onMessageBinary cb) {
+		onMessageBin = cb;
+	}
+
+	void clearOnMessageBinary() {
 		_onMessage = NULL;
 	}
 
@@ -64,6 +76,8 @@ public:
 
 	void send(std::string address, int port, std::string data);
 
+	void send(std::string address, int port, char *data, int dataLength);
+
 	static void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const struct sockaddr *addr,
 	                    unsigned flags);
 
@@ -72,4 +86,6 @@ public:
 	}
 };
 
+}
+}
 #endif //TEST_UDPCLIENT_HPP

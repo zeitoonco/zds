@@ -11,11 +11,9 @@ int main() {
 	}
 
 	try {
-		UDPClient x;
+		zeitoon::utility::UDPClient x;
 		std::cout << "Now Sending" << endl;
-		for (int i = 0; i < 10000; i++) {
-			x.send("127.0.0.1", 15001, std::string(temp, 60000));
-		}
+		x.send("127.0.0.1", 15001, std::string(temp, 60000));
 		x.disconnect(true);
 
 

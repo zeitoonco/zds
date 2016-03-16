@@ -1343,6 +1343,184 @@ protected:
 	}
 };
 
+
+union MACBytes {
+	uint64_t value;
+	uint8_t *bytes;
+};
+
+class MACAddress : public datatypes::DTSingleType<uint64_t> {
+
+public:
+	/**constructor baraye DTString.
+	 *
+	 *@param name naame moteghaeir ke constructor DTSingleType miferstd.
+	 * @param def meghdar default baraye _value e object.be sooarat e pishfarz khali ast.
+	 *
+	 */
+	MACAddress(string name, uint64_t def = 0) :
+			DTSingleType<uint64_t>(name, def) {
+	}
+
+	/**toString ke _value object ra dar yek string zakhire mikond.
+	 *
+	 * ba tavajoh be type(json,xml,...),adad ra dar string zakhire mikond vastring ra barmigardanad.dar ghesmate
+	 * json ebteda taabe encodestring az ketabkhane utility ra seda mizanad ta caracter haayi mesl '\t' ya '\n'
+	 * ke caracter haye khas system hastand ra be soorat e sahih dar string zakhire konad.
+	 *
+	 * @param type SerializationType(json,xml,....)
+	 *
+	 * @return stringi k dar aan _value zakhire mishavad.
+	 *
+	 */
+	string toString() const {
+		MACBytes temp;
+		temp.value = this->_value;
+
+		string r =
+				utility::Strings::toString(temp.bytes[0], 16) + ":" +
+				utility::Strings::toString(temp.bytes[1], 16) + ":" +
+				utility::Strings::toString(temp.bytes[2], 16) + ":" +
+				utility::Strings::toString(temp.bytes[3], 16) + ":" +
+				utility::Strings::toString(temp.bytes[4], 16) + ":" +
+				utility::Strings::toString(temp.bytes[5], 16) + ":" +
+				utility::Strings::toString(temp.bytes[6], 16) + ":" +
+				utility::Strings::toString(temp.bytes[7], 16);
+		return r;
+	}
+
+	/**fromstring baraye khoondan daade az stringi k daryaft mikonad.
+	 *
+	 * string ra parse mikonad va daade ra az aan mikhanad va dar _value object zakhire mikond.dar ghesmat
+	 * json nmitavan az trim dar ketabkhane utility estefade kard choon momken ast harf aval stringi ke dar string voroodi
+	 * zakhire shode ast '"' bashad va trim aan ra hazf khahad kard.pas be soorat e dasti '"'ra peida mikonad va
+	 * meghdar beine '"' ra joda mikonad va barmigardanad.sepas aan ra decode mikonad ta caracter haayi mesl e
+	 * '\n' ya '\t' be soorat sahih bashand. va baad az aan string be dast aamdade ra dar _value zakhire mikonad.
+	 *
+	 * @param data stringi k bayad az aan dade bekhanad
+	 * @param type SerializationType(json,xml,...)
+	 *
+	 */
+	void fromString(string data) {
+		this->setValue(parseString(data));
+	}
+
+	/**overload operator =
+	 *
+	 * operator = kelass e DTSingletype ra seda mizanad.
+	 *
+	 * @param dtvar object e voroodi
+	 *
+	 * @rerturn object e this. khode moteghaeir.
+	 */
+	virtual datatypes::DTBase &operator=(datatypes::DTBase &dtvar) {
+		return DTSingleType<uint64_t>::operator=(dtvar);
+	}
+
+	/**overload operator ==
+	 *
+	 * operator == kelass e DTSingletype ra seda mizanad.
+	 *
+	 * @param dtvar object e voroodi
+	 *
+	 * @rerturn true or false.
+	 *
+	 */
+	virtual bool operator==(datatypes::DTBase &dtvar) {
+		return DTSingleType<uint64_t>::operator==(dtvar);
+	}
+
+	/**overload operator !=
+	 *
+	 * mokhalefe operator == ra barmigardanad.
+	 *
+	 * @param dtvar object e voroodi
+	 *
+	 * @return true or false
+	 */
+	virtual bool operator!=(datatypes::DTBase &dtvar) {
+		return !(*this == dtvar);
+	}
+
+	/**overload operator =
+	 *
+	 * operator = kelass e DTSingletype ra seda mizanad.
+	 *
+	 * @param str string voroodi
+	 *
+	 * @rerturn object e this. khode moteghaeir.
+	 *
+	 */
+	virtual datatypes::DTBase &operator=(string str) {
+		return DTSingleType<uint64_t>::operator=(str);
+	}
+
+	/**overload operator ==
+	 *
+	 * operator == kelass e DTSingletype ra seda mizanad.
+	 *
+	 * @param str string voroodi
+	 *
+	 * @rerturn true or false.
+	 *
+	 */
+	virtual bool operator==(string str) {
+		return DTSingleType<uint64_t>::operator==(str);
+	}
+
+	/**overload operator !=
+	 *
+	 * mokhalefe operator == ra barmigardanad.
+	 *
+	 * @param str string e voroodi
+	 *
+	 * @return true or false
+	 */
+	virtual bool operator!=(string str) {
+		return !(*this == str);
+	}
+
+	virtual bool operator==(uint64_t MAC) {
+		return MAC == _value;
+	}
+
+	/**overload operator !=
+	 *
+	 * mokhalefe operator == ra barmigardanad.
+	 *
+	 * @param str string e voroodi
+	 *
+	 * @return true or false
+	 */
+	virtual bool operator!=(uint64_t MAC) {
+		return !(*this == MAC);
+	}
+
+	/**
+	 * getTypename naame kellasi ke dar aan gharar darim ra barmigardand.az in taabe dar hengame excption ha estefade
+	 * mishavad ta vaghti excption rokh dad esm e kellasi ke dar aan excption rokh dade ast dar esception.what
+	 * zakhire mishavad va sepas namayesh dade mishavad taa marahel debug kardn va eibyaabi barnaame rahat tar bashad.
+	 *
+	 *@return naame kellas.
+	 */
+	static string getTypeName() {
+		return "MACAddress";
+	}
+
+protected:
+
+
+	uint64_t parseString(string str) {
+		std::vector<std::string> temp = utility::Strings::split(str, ':');
+		if (temp.size() != 8)
+			EXTinvalidParameter("Invalid MAC address");
+		MACBytes MAC;
+		for (int i = 0; i < temp.size(); i++) {
+			MAC.bytes[i] = std::stoi(temp[i]);
+		}
+		return MAC.value;
+	}
+};
 }
 }
 

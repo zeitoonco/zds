@@ -1346,7 +1346,7 @@ protected:
 
 union MACBytes {
 	uint64_t value;
-	uint8_t *bytes;
+	uint8_t bytes[];
 };
 
 class MACAddress : public datatypes::DTSingleType<uint64_t> {

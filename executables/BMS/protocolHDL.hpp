@@ -4,7 +4,7 @@
 
 #ifndef ZDS_PROTOCOLHDL_HPP
 #define ZDS_PROTOCOLHDL_HPP
-#define serverDevicetype 0xFE
+#define serverDevicetype 0xFFFE
 #define serverDeviceID 0xFE
 #define serverSubnetID 0xFE
 
@@ -112,7 +112,7 @@ extern const uint8_t success;
  */
 extern const uint8_t fail;
 
-/**
+/**TODO: Packet name to be replaced witbh HDLPacket
  * Main Packet container and parser class. HDL Style!
  */
 struct Packet {

@@ -17,8 +17,8 @@
 namespace zeitoon {
 namespace usermanagement {
 
-UmCHI::UmCHI(std::string serverIP, int serverPort) :
-		CommunicationHandlerInterface(this, serverIP, serverPort), userMngrInterface(this),
+UmCHI::UmCHI() :
+		CommunicationHandlerInterface(this), userMngrInterface(this),
 		insInfo("UserManagement", "User Management", 1) {
 	setInstallInfo();
 }
@@ -148,7 +148,7 @@ void UmCHI::onInstall(string id) {
 	outFile << "serviceID : " + id << std::endl;
 	outFile.close();
 	//Addressing the file
-	string temp = cpath + "DBTableScripts.sql";
+	string temp = cpath + "DBTableScripts.sql";//todo: throw exception if file not found
 	std::cout << temp << endl;
 	std::ifstream t(temp);
 	std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
@@ -226,11 +226,11 @@ string UmCHI::getInstallID() {
 			return "";
 		}
 		while (std::getline(inFile, line)) {
-			std::string::size_type tempServiceID = line.find("serviceID = ");
+			std::string::size_type tempServiceID = line.find("serviceID : ");
 			if (tempServiceID != std::string::npos) {
 				if (line.find("#") < tempServiceID)
 					break;
-				serviceID = line.substr(line.find(" =") + 3);
+				serviceID = line.substr(line.find(" :") + 3);
 				return serviceID;
 			}
 		}

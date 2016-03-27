@@ -42,7 +42,7 @@ public:
 	}
 
 	/**
-	 * onCommand() ba tavajoh be node e voroodi, "query", "execute" ya "fieldValue", va ba estefadde az sql e voroodi, result ra be callbackList be darkhaast konande
+	 * onCommand() ba tavajoh be node e voroodi, "query", "execute" ya "fieldValue", va ba estefadde az sql e voroodi, result ra be callback be darkhaast konande
 	 * baaz migardanand, agar node e mored e nazar moteghaazi gheyr az "3 node  e zekr shode" baashad, yek peyghaam e motenaaseb ba error be server ersaal mishavad
 	 * @param node string , naam e yeki az node haye zekr shode
 	 * @param data string , farmaan e sql e darkhaast konande

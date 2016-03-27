@@ -23,7 +23,7 @@ class UmCHI: public CommunicationHandlerInterface {
 	void setInstallInfo();
 	void checkDBTables();
 public:
-	UmCHI(std::string serverIP, int serverPort);
+	UmCHI();
 	void onCommand(string node, string data, string id, string from);
 	void onCallback(string node, string data, string id, string from);
 	void onEvent(string node, string data, string from);

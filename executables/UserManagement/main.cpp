@@ -8,29 +8,37 @@ using namespace zeitoon::usermanagement;
 int main(int argc, char *argv[]) {
 	UmCHI Umediator;
 	if (argc != 3) {
+		std::cout << "Invalid number of arguments provided" << std::endl;
+		std::cout << "Required arguments: ServerIP ServerPort" << std::endl;
+		std::cout << "Trying to load from configuration" << std::endl;
 		try {
-			std::cout << "Invalid number of arguments provided\nLoading via configuration file" << std::endl;
+			UMconfig.load();
 			Umediator.connect(UMconfig.serverIP.getValue(), std::stoi(UMconfig.serverPort.getValue()));
+			std::cout << "Server Addr:\t" << UMconfig.serverIP.getValue() << "\tPort:\t" <<
+			UMconfig.serverPort.getValue() << std::endl;
 			Umediator.sm.joinNet();
 		} catch (exceptionEx *err) {
-			std::cerr << "Required arguments: ServerIP ServerPort\n";
 			std::cerr << "ERROR:\n" << err->what() << std::endl;
-			-1;
+			return -1;
 		} catch (exception &err) {
 			std::cerr << "UnknownERROR:\n" << err.what();
 		}
+	} else {
+		std::cout << "Server Addr:\t" << UMconfig.serverIP.getValue() << "\tPort:\t" <<
+		UMconfig.serverPort.getValue() <<
+		std::endl;
 
+		try {
+			UMconfig.serverIP = argv[1];
+			UMconfig.serverPort = argv[2];
+			UMconfig.save();
+			Umediator.connect(argv[1], std::stoi(argv[2]));
+			Umediator.sm.joinNet();
+		} catch (exceptionEx *err) {
+			std::cerr << "ERROR:\n" << err->what();
+		} catch (exception &err) {
+			std::cerr << "UnknownERROR:\n" << err.what();
+		}
 	}
-	std::cout << "Server Addr:\t" << argv[1] << "\tPort:\t" << argv[2] << std::endl;
 
-	try {
-		UMconfig.serverIP = argv[1];
-		UMconfig.serverPort = argv[2];
-		Umediator.connect(UMconfig.serverIP.getValue(), std::stoi(UMconfig.serverPort.getValue()));
-		Umediator.sm.joinNet();
-	} catch (exceptionEx *err) {
-		std::cerr << "ERROR:\n" << err->what();
-	} catch (exception &err) {
-		std::cerr << "UnknownERROR:\n" << err.what();
-	}
 }

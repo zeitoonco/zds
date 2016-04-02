@@ -7,7 +7,7 @@
 #include <executables/PGdatabase/PGmediator.hpp>
 #include "executables/PGdatabase/DTStructs.hpp"
 #include "executables/PGdatabase/pgutility.hpp"
-#include "utility/exceptionex.hpp"
+#include "PGConfig.hpp"
 #include <fstream>
 #include <deque>
 
@@ -53,13 +53,9 @@ void PGmediator::onCallback(string node, string data, string id, string from) {
 void PGmediator::onEvent(string node, string data, string from) {
 }
 
-void PGmediator::onInstall(string id) {//todo:didnt save InstallID to file
-	string cpath = FileSystemUtility::getAppPath();
-	this->serviceID = id;
-	std::ofstream outFile;
-	outFile.open(cpath + "pgMediatorConfig", std::ofstream::out);
-	outFile << "serviceID : " + id << std::endl;
-	outFile.close();
+void PGmediator::onInstall(string id) {
+	PGconfiguration.serviceID = id;
+	PGconfiguration.save();
 }
 
 void PGmediator::onEnable() {

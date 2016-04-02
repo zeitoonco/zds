@@ -141,13 +141,14 @@ void UmCHI::onEvent(string node, string data, string from) {
 }
 
 void UmCHI::onInstall(string id) {
-	this->serviceID = id; //keeps serviceID in a member variable
+	//set serviceID in confMgr
+
+	UMconfig.serviceID = id;
+	UMconfig.save();
+
 	string cpath = FileSystemUtility::getAppPath();
-	std::ofstream outFile;
-	outFile.open(cpath + "UmCHIConfig", std::ofstream::out);
-	outFile << "serviceID : " + id << std::endl;
-	outFile.close();
-	//Addressing the file
+
+	//Addressing the file and checking Database tables
 	string temp = cpath + "DBTableScripts.sql";//todo: throw exception if file not found
 	std::cout << temp << endl;
 	std::ifstream t(temp);
@@ -180,29 +181,8 @@ void UmCHI::onDisable() {
 }
 
 void UmCHI::onUninstall() {
-	string cpath = FileSystemUtility::getAppPath();
-	std::fstream inFile(cpath + "UmCHIConfig");
-	std::string line;
-	std::deque<std::string> deqTemp;
-	if (not inFile) {
-		EXTinvalidName("unable to find or open requested file");
-	}
-	while (std::getline(inFile, line)) {
-		deqTemp.push_back(line);
-	}
-
-	for (std::deque<std::string>::iterator iter = deqTemp.begin(); iter != deqTemp.end(); iter++) {
-		if (std::string(*iter).find(("serviceID")) != std::string::npos) {
-			deqTemp.erase(iter);
-			break;
-		}
-	}
-	std::ofstream outFile;
-	outFile.open(cpath + "UmCHIConfig", std::ofstream::trunc);
-	for (std::deque<std::string>::iterator iter = deqTemp.begin(); iter != deqTemp.end(); iter++) {
-		outFile << *iter << std::endl;
-	}
-	outFile.close();
+	UMconfig.serviceID = "";
+	UMconfig.save();
 }
 
 void UmCHI::onConnect() {
@@ -218,24 +198,7 @@ string UmCHI::getInstallInfo() {
 }
 
 string UmCHI::getInstallID() {
-	if (serviceID == "") {
-		string cpath = FileSystemUtility::getAppPath();
-		std::fstream inFile(cpath + "UmCHIConfig");
-		std::string line;
-		if (not inFile) {
-			return "";
-		}
-		while (std::getline(inFile, line)) {
-			std::string::size_type tempServiceID = line.find("serviceID : ");
-			if (tempServiceID != std::string::npos) {
-				if (line.find("#") < tempServiceID)
-					break;
-				serviceID = line.substr(line.find(" :") + 3);
-				return serviceID;
-			}
-		}
-	}
-	return serviceID;
+	return UMconfig.serviceID.getValue();
 }
 
 string UmCHI::getServiceName() {

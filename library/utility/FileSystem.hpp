@@ -16,14 +16,14 @@ typedef std::vector<std::string> stringList;
 using std::string;
 
 namespace zeitoon {
-namespace GUI {
+namespace utility {
 
 
 class FileSystem {
 public:
 	static char pathSeprator;
 
-	FileSystem(std::string baseDir);
+	FileSystem(std::string baseDir = "");
 
 	bool fileExist(std::string address);
 

@@ -25,9 +25,66 @@ namespace datatypes {
  */
 template<typename childT>
 class DTMultiFieldType : public DTBase {
-public:
-	typedef typename vector<childT *>::iterator iterator;/**< vector az jense childT ke moteghaeir haaye single object ra dar khod zakhire mikonad*/
+protected:
+	typedef typename vector<childT *>::iterator iterator;
+	typedef typename vector<childT *>::const_iterator citerator;
+	typedef vector<childT *> List;
 
+	List list;
+	List allocatedOnes;
+
+	/**isAllocated() object ra migirad va search mikonad ke dar vector allocatedOnes ast ya na.
+	 *
+	 * @param item objecti ke bayad search shavad.
+	 *
+	 * @return agar dar vector bood true va agar nabood false barmigardanad.
+	 *
+	 */
+	bool isAllocated(childT *item) {
+		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
+			if (*i == item)
+				return true;
+		return false;
+	}
+
+	/**clearAllocatedOnes()
+	 *
+	 * tamame object haayi ke khodeman new karde iim ra az liste kelass DTMultitype hazf mikonad, hamchin az
+	 * memory paak mikonad va sepas vector allocatedOnes ra ham khali mikonad.
+	 *
+	 */
+	void clearAllocatedOnes() {
+		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
+			delete (*i);
+		allocatedOnes.clear();
+	}
+
+	/**tryRemoveAllocated() yek object khaas ra ham az list DTMultiType hazf mikonad ham az allocatedOnes.
+	 *
+	 * @param d objecti ke bayad kollan hazf shavad.
+	 *
+	 * @return agar amaliat e hazf anjaam shod true va agar object ra peida nakard false barmigardanad.
+	 *
+	 */
+	bool tryRemoveAllocated(childT *item) {
+		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
+			if (*i == item) {
+				allocatedOnes.erase(i);
+				return true;
+			}
+		return false;
+	}
+
+	/**addAllocated() objecte jadid be vector AllocatedOnes ezafe mikonad.
+	 *
+	 *@param item objecti ke bayad be vector allocatedOnes ezafe shavad.
+	 *
+	 */
+	void addAllocated(childT *item) {
+		allocatedOnes.push_back(item);
+	}
+
+public:
 	/**constructor e DTMultiFieldType
 	 *
 	 * @param name name object ya haman moteghaeir ra moshakhas mikonad.
@@ -35,6 +92,10 @@ public:
 	 */
 	DTMultiFieldType(string name) :
 			DTBase(name) {
+	}
+
+	virtual ~DTMultiFieldType() {
+		clear();
 	}
 
 	/**lenght ke tedad moteghaeir haye ke dar khod darad ra barmigardanad.
@@ -55,6 +116,35 @@ public:
 		list.push_back(val);
 	}
 
+	/**add() objecte jadid be list DTMultiType ezafe mikonad.
+ *
+ * @param val objecti ke bayad ezaafe shavad.
+ *
+ */
+	virtual void add(childT *val, bool unManagedMemory) {
+		add(val);
+		if (unManagedMemory)
+			addAllocated(val);
+	}
+
+	/**removeAt() object moshakhasi ra az har do vector paak mikonad.
+	 *
+	 * in tabe shomareye objecti ke dar list vojood darad va bayad hazf shavad ra migirad va aan object ra peida
+	 * mikonad va az har do vectore allocatedOnes va list hazf mikonad.
+	 *
+	 * @param shomare objecti ke bayad hazf shavad.
+	 * @param del moshakhas mikonad ke object be soorat e kaamel az memory hazf shavad ya na.
+	 *
+	 */
+	virtual void removeAt(int index) {
+		if (index < 0 || index >= this->list.size())
+			EXToutOfRange(
+					"Provided index(" + Strings::itoa(index)
+					+ ") is out of range(0-"
+					+ Strings::itoa(this->list.size()) + ")");
+		this->remove(*(this->list.begin() + index));
+	}
+
 	/**remove() baraye hazf kardan yek object az list objecthaa ast.
 	 *
 	 * dar in taabe val ra dar voroodi migirad va aan ra dar liste object ha search mikonad va vaghti aan ra peida kard
@@ -68,15 +158,14 @@ public:
 	 * @param del boolian baraye moshakhas kardan delete kaamel e object ya na.
 	 *
 	 */
-	virtual void remove(childT *val, bool del = false) {
+	virtual void remove(childT *val) {
+		if (tryRemoveAllocated(val))
+			delete val;
 		for (iterator i = list.begin(); i != list.end(); i++)
 			if (*i == val) {
 				list.erase(i);
 				break;
 			}
-		if (del)
-			delete val;
-
 	}
 
 	/**clear list ra khali mikonad va tamame objecthaye list ra az list hazf mikonad.
@@ -84,23 +173,12 @@ public:
 	 * @param del boolian baraye moshakhas kardan delete kaamele object az memory ya na.
 	 *
 	 */
-	virtual void clear(bool del = false) {
-		if (del)
-			for (iterator i = list.begin(); i != list.end(); i++)
-				delete *i;
+	virtual void clear() {
+		clearAllocatedOnes();
 		list.clear();
 	}
 
-	/**overload operator [] baraye bargardandan e object ba tavajoh be shomare aan dar list.
-	 *
-	 * @param index shomare ye object
-	 *
-	 * @return object ba shomare moshakhas dar list.
-	 *
-	 */
-	virtual childT *operator[](int index) {
-		return list[index];
-	}
+
 
 	/**
 	 * getTypename naame kellasi ke dar aan gharar darim ra barmigardand.az in taabe dar hengame excption ha estefade
@@ -114,8 +192,6 @@ public:
 		return "DTMultiFieldType";
 	}
 
-protected:
-	vector<childT *> list;
 };
 
 /**class DTSet
@@ -127,73 +203,9 @@ protected:
  */
 template<typename T>
 class DTSet : public DTMultiFieldType<T> {
-public:
+	typedef vector<T *> List;
 	typedef typename vector<T *>::iterator iterator;
 	typedef typename vector<T *>::const_iterator citerator;
-	typedef vector<T *> List;
-protected:
-
-	/**
-	 * dar inja yek vector az noe T ijad mikonim. hadafe in vecrtor in ast ke hargah yek object ra be soorate
-	 * dasti be an hafeze dadim(new kardim), alave bar zakhire kardane aan object dar list kelass DTMultitype,
-	 * aan ra dar vector allocatedOnes ham zakhire mikonim taa yek list az object haayi ke be soorate dasti
-	 * new shodeand ra dashte bashim.
-	 *
-	 */
-	List allocatedOnes;
-
-	/**isAllocated() object ra migirad va search mikonad ke dar vector allocatedOnes ast ya na.
-	 *
-	 * @param item objecti ke bayad search shavad.
-	 *
-	 * @return agar dar vector bood true va agar nabood false barmigardanad.
-	 *
-	 */
-	bool isAllocated(T *item) {
-		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
-			if (*i == item)
-				return true;
-		return false;
-	}
-
-	/**clearAllocatedOnes()
-	 *
-	 * tamame object haayi ke khodeman new karde iim ra az liste kelass DTMultitype hazf mikonad, hamchin az
-	 * memory paak mikonad va sepas vector allocatedOnes ra ham khali mikonad.
-	 *
-	 */
-	void clearAllocatedOnes() {
-		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
-			DTMultiFieldType<T>::remove(*i, true);
-		allocatedOnes.clear();
-	}
-
-	/**tryRemoveAllocated() yek object khaas ra ham az list DTMultiType hazf mikonad ham az allocatedOnes.
-	 *
-	 * @param d objecti ke bayad kollan hazf shavad.
-	 *
-	 * @return agar amaliat e hazf anjaam shod true va agar object ra peida nakard false barmigardanad.
-	 *
-	 */
-	bool tryRemoveAllocated(T *item) {
-		for (iterator i = allocatedOnes.begin(); i != allocatedOnes.end(); i++)
-			if (*i == item) {
-				DTMultiFieldType<T>::remove(*i, true);
-				allocatedOnes.erase(i);
-				return true;
-			}
-		return false;
-	}
-
-	/**addAllocated() objecte jadid be vector AllocatedOnes ezafe mikonad.
-	 *
-	 *@param item objecti ke bayad be vector allocatedOnes ezafe shavad.
-	 *
-	 */
-	void addAllocated(T *item) {
-		allocatedOnes.push_back(item);
-	}
-
 public:
 
 	/**constructor baraye DTSet.
@@ -210,40 +222,28 @@ public:
 	 *
 	 */
 	virtual ~DTSet() {
-		clearAllocatedOnes();
 	}
 
-	/**add() objecte jadid be list DTMultiType ezafe mikonad.
-	 *
-	 * @param val objecti ke bayad ezaafe shavad.
-	 *
-	 */
-	virtual void add(T *val, bool unManagedMemory = false) {
-		DTMultiFieldType<T>::add(val);
-		if (unManagedMemory)
-			addAllocated(val);
-	}
-
-	/**add() dade ie ke be soorate string vared mishavad ra dar list zakhire mikonad.
-	 *
-	 * dar inja string vared mishavad ke dar aan daade be soorat RAW zakhire shode ast. taabe yek object misazad
-	 * va meghdare daade ra dar aan zakhire mikonad va sepas object ra be list DTMultiType va hamchin
-	 * allocatedOnes ezafe mikonad.
-	 *
-	 * @param stringi ke daade be soorat RAW dar an zakhire shode ast.
-	 *
-	 */
-	virtual void add(string str) {
+	/**addJson() dade ie ke be soorate string vared mishavad ra dar list zakhire mikonad.
+*
+* dar inja string vared mishavad ke dar aan daade be soorat RAW zakhire shode ast. taabe yek object misazad
+* va meghdare daade ra dar aan zakhire mikonad va sepas object ra be list DTMultiType va hamchin
+* allocatedOnes ezafe mikonad.
+*
+* @param stringi ke daade be soorat RAW dar an zakhire shode ast.
+*
+*/
+	virtual void addJson(string str) {
 		T *temp = new T("");
 		temp->fromString(str);
-		add(temp, true);
+		this->add(temp, true);
 	}
 
 	virtual void addRange(std::vector<T> iVector) {
 		for (size_t iter = 0; iter < iVector.size(); iter++) {
 			T *temp = new T("");
 			(*temp) = iVector[iter];
-			add(temp, true);
+			this->add(temp, true);
 		}
 	}
 
@@ -260,45 +260,6 @@ public:
 					+ ") is out of range(0-"
 					+ Strings::itoa(this->list.size()) + ")");
 		this->list.insert(this->list.begin() + index, val);
-	}
-
-	/**remove() ebteda val ra az allocatedOnes hazf mikonad sepas aan ra az list DTMultiType hazf mikonad.
-	 *
-	 * @param val objecti ke bayad hazf shavad.
-	 * @param del moshakhas mikonad ke val be soorat e kaamel az memory hazf shavad ya na.
-	 *
-	 */
-	virtual void remove(T *val, bool del = false) {
-		if (!tryRemoveAllocated(val))
-			DTMultiFieldType<T>::remove(val, del);
-	}
-
-	/**clear har do vector allocatedOnse va list DTMultyType ra khali mikonad.
-	 *
-	 * @param del moshakhas mikonad ke object ha be soorat e kaamel az memory hazf shavad ya na.
-	 *
-	 */
-	virtual void clear(bool del = false) {
-		clearAllocatedOnes();
-		DTMultiFieldType<T>::clear(del);
-	}
-
-	/**removeAt() object moshakhasi ra az har do vector paak mikonad.
-	 *
-	 * in tabe shomareye objecti ke dar list vojood darad va bayad hazf shavad ra migirad va aan object ra peida
-	 * mikonad va az har do vectore allocatedOnes va list hazf mikonad.
-	 *
-	 * @param shomare objecti ke bayad hazf shavad.
-	 * @param del moshakhas mikonad ke object be soorat e kaamel az memory hazf shavad ya na.
-	 *
-	 */
-	virtual void removeAt(int index, bool del = false) {
-		if (index < 0 || index >= this->list.size())
-			EXToutOfRange(
-					"Provided index(" + Strings::itoa(index)
-					+ ") is out of range(0-"
-					+ Strings::itoa(this->list.size()) + ")");
-		this->remove(*(this->list.begin() + index), del);
 	}
 
 	/**toString ke _value objectha ra dar yek string zakhire mikond.
@@ -341,11 +302,21 @@ public:
 		if (pos == string::npos || rePos == string::npos)
 			EXTcantParseString("can't find brackets");
 		parseRawString(data.substr(pos + 1, rePos - pos - 1), tempList);
-		clear();
+		DTMultiFieldType<T>::clear();
 		for (iterator i = tempList.begin(); i != tempList.end(); i++) {
-			add(*i);
-			addAllocated(*i);
+			this->add(*i, true);
 		}
+	}
+
+	/**overload operator [] baraye bargardandan e object ba tavajoh be shomare aan dar list.
+ *
+ * @param index shomare ye object
+ *
+ * @return object ba shomare moshakhas dar list.
+ *
+ */
+	virtual T *operator[](int index) {
+		return this->list[index];
 	}
 
 	/**overload operator = ke type string voroodi ra peida mikonad va be taave fromString midahad ta aan ra parse
@@ -610,6 +581,10 @@ public:
 		return str.str();
 	}
 
+	virtual void fromString(string data) {
+		fromString(data, false);
+	}
+
 	/**fromstring baraye khandan dade haye objecthaa az stringi k daryaft mikonad.
 	 *
 	 * string ra parse mikonad va daade ha ra az aan mikhanad va dar _value objectha zakhire mikond.dar ghesmate
@@ -620,13 +595,13 @@ public:
 	 * @param type SerializationType(json,xml,...)
 	 *
 	 */
-	void fromString(string data) {
+	void fromString(string data, bool createIfNotExist) {
 		string backup = toString();
 		exceptionEx *ex = NULL;
 		size_t ver;
 
 		try {
-			ver = parseJSONString(data);
+			ver = parseJSONString(data, createIfNotExist);
 		} catch (exception &excp) {
 			ex = EXcantParseStringI("Failed.",
 			                        EXunknownExceptionI("", excp));
@@ -663,6 +638,17 @@ public:
 			}
 		}
 		return NULL;
+	}
+
+	/**overload operator [] baraye bargardandan e object ba tavajoh be shomare aan dar list.
+ *
+ * @param index shomare ye object
+ *
+ * @return object ba shomare moshakhas dar list.
+ *
+ */
+	virtual DTBase *operator[](int index) {
+		return list[index];
 	}
 
 	/**overload operator =
@@ -814,7 +800,7 @@ private:
 	 * @param str stringi ke data dar khod zakhire shode ast.
 	 *
 	 */
-	size_t parseJSONString(string str) {
+	size_t parseJSONString(string str, bool createIfNotExist = false) {
 		size_t pos, rePos, ver = string::npos, j = string::npos - 1;
 		pos = str.find('{');
 		rePos = str.rfind('}');
@@ -891,6 +877,9 @@ private:
 								+ (*this)[name]->getNameAndType()
 								+ "' failed");
 					}
+				} else if (createIfNotExist) {
+					DTString *temp = new DTString(name, value);
+					this->add(temp, true);
 				}
 				ready = false;
 			}

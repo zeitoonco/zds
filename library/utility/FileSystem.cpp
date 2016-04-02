@@ -15,18 +15,19 @@
 #include <streambuf>
 
 using namespace boost::filesystem;
-using zeitoon::utility::Strings;
 
 namespace zeitoon {
-namespace GUI {
+namespace utility {
 
 
 char FileSystem::pathSeprator = boost::filesystem::path::preferred_separator;
 
 FileSystem::FileSystem(std::string ibaseDir) {
-	ibaseDir = Strings::rtrim(ibaseDir, "/\\") + pathSeprator;
-	if (boost::filesystem::is_directory(ibaseDir) == false) {
-		boost::filesystem::create_directories(ibaseDir); //creates a directory
+	if (ibaseDir != "") {
+		ibaseDir = Strings::rtrim(ibaseDir, "/\\") + pathSeprator;
+		if (boost::filesystem::is_directory(ibaseDir) == false) {
+			boost::filesystem::create_directories(ibaseDir); //creates a directory
+		}
 	}
 	this->baseDir = ibaseDir;
 }

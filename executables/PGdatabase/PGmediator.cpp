@@ -20,7 +20,6 @@ PGmediator::PGmediator(std::string pgAdminUserName, std::string pgAdminPassWord,
 		conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
 		insInfo("PGDatabase", "PostgresDatabase", 1) {
 	this->setInstallInfo();
-	serviceID = "";
 }
 
 void PGmediator::onCommand(string node, string data, string id, string from) {
@@ -117,24 +116,7 @@ string PGmediator::getInstallInfo() {
 }
 
 string PGmediator::getInstallID() {
-	if (serviceID == "") {
-		string cpath = FileSystemUtility::getAppPath();
-		std::fstream inFile(cpath + "pgMediatorConfig");
-		std::string line;
-		if (not inFile) {
-			return "";
-		}
-		while (std::getline(inFile, line)) { //if line[0]
-			std::string::size_type tempServiceID = line.find("serviceID : ");//todo: NEED FOR CONFIG MANAGER
-			if (tempServiceID != std::string::npos) {
-				if (line.find("#") < tempServiceID)
-					break;
-				serviceID = line.substr(line.find(" :") + 3);
-				return serviceID;
-			}
-		}
-	}
-	return serviceID;
+	return PGconfiguration.serviceID.getValue();
 }
 
 string PGmediator::getServiceName() {

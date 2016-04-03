@@ -126,7 +126,7 @@ private:
 	 * in function ejra mishavad ke yek switch baraye barasi e khataahaaye ehtemali mibashad.
 	 * agar khata e mored e nazar peyda shod Exception e motenaaseb baa aan throw mishavad
 	 */
-	std::string errorSwitch(int resStatusID); //TODO:: EDITand update COMMENT
+	std::string errorSwitch(int resStatusID);
 	/**getNameAndType() in function mas'ool e jam-aavari etela'aat baraye estefaade dar hangaam throw kardan e
 	 * exception ast (Hooviaye scopy ke error run-time error midahad.
 	 * @return string e etela'aat taa jayi ke mitavaanad.

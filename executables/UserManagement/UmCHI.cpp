@@ -147,16 +147,15 @@ void UmCHI::onInstall(string id) {
 	UMconfig.save();
 
 	string cpath = FileSystemUtility::getAppPath();
-
 	//Addressing the file and checking Database tables
-	string temp = cpath + "DBTableScripts.sql";//todo: throw exception if file not found
+	string temp = cpath + "DBTableScripts.sql";
 	std::cout << temp << endl;
 	std::ifstream t(temp);
 	std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 	try {
 		userMngrInterface.executeSync(str);
 	} catch (exceptionEx *errorInfo) {
-
+		EXTDBErrorI("Unable to create default tables for UM", errorInfo);
 	}
 }
 

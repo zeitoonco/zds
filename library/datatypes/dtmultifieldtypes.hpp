@@ -878,7 +878,8 @@ private:
 								+ "' failed");
 					}
 				} else if (createIfNotExist) {
-					DTString *temp = new DTString(name, value);
+					DTString *temp = new DTString(name, "");
+					temp->fromString(value);
 					this->add(temp, true);
 				}
 				ready = false;

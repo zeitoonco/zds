@@ -392,6 +392,14 @@ public:
 		return elems;
 	}
 
+	static std::string indentMaker(int indent, std::string indentContent) {
+		std::string temp = "";
+		for (int i = 0; i < indent; i++) {
+			temp += indentContent;
+		}
+		return temp;
+	}
+
 };
 
 class MessageTypes {
@@ -472,6 +480,7 @@ public:
 		}
 		return apath;
 	}
+
 };
 
 

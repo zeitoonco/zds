@@ -66,7 +66,7 @@ public:
 
 	virtual bool fieldIsNull(int rowNumber, int colNumber) const= 0;
 
-	virtual std::string toString() const= 0;
+	virtual std::string toString(int indent = -1, std::string indentContent = defaultIndentContent) const = 0;
 
 	virtual void fromString(std::string data) = 0;
 

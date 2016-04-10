@@ -8,7 +8,6 @@
 #include <datatypes/dtbase.hpp>
 #include <datatypes/dtsingletypes.hpp>
 
-
 using namespace ::std;
 using zeitoon::utility::Strings;
 using zeitoon::utility::JSONUtility;
@@ -179,7 +178,6 @@ public:
 	}
 
 
-
 	/**
 	 * getTypename naame kellasi ke dar aan gharar darim ra barmigardand.az in taabe dar hengame excption ha estefade
 	 * mishavad ta vaghti excption rokh dad esm e kellasi ke dar aan excption rokh dade ast dar esception.what
@@ -271,16 +269,23 @@ public:
 	 *
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
-	 */
-	string toString() const {
+	 *///todo:: Mr, Bakhshi: cmake dependencies to be automaticaly installed when compiled
+	string toString(int indent = -1,
+	                std::string indentContent = defaultIndentContent
+	) const {//TODO: args changed--CHECK TOSTRING for bugs
+		std::string newLine = "";
+		if (indent != -1) {
+			indent++;
+			newLine = "\n";
+		}
 		stringstream str;
 		str << "[";
 		for (citerator i = this->list.begin(); i != this->list.end(); i++) {
-			str << (**i).toString();
+			str << newLine << (**i).toString(indent, indentContent);
 			if (i + 1 != this->list.end())
 				str << ",";
 		}
-		str << ']';
+		str << newLine << Strings::indentMaker((indent - 1), indentContent) << ']';
 		return str.str();
 	}
 
@@ -563,21 +568,33 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() const {
-		return toString(false);
+	string toString(int indent = -1, std::string indentContent = defaultIndentContent) const {
+		return toString(false, indent, indentContent);
 	}
 
-	string toString(bool includeVersion) const {
+
+	string toString(bool includeVersion, int indent = -1,
+	                std::string indentContent = defaultIndentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
 		stringstream str;
-		str << "{";
-		if (includeVersion)
-			str << "\"_version\":" << this->getVersion() << ",";
-		for (citerator i = this->list.begin(); i != this->list.end(); i++) {
-			str << '"' << (*i)->getName() << "\":" << (*i)->toString();
-			if (i + 1 != list.end())
-				str << ',';
+		std::string newLine = "";
+		if (indent < 0) {
+			str << Strings::indentMaker(indent, indentContent) << "{";
+
+		} else {
+			newLine = "\n";
+			str << Strings::indentMaker(indent++, indentContent) << "{";
 		}
-		str << '}';
+		if (includeVersion)
+			str << newLine << Strings::indentMaker(indent, indentContent) << "\"_version\":" << this->getVersion() <<
+			",";
+		for (citerator i = this->list.begin(); i != this->list.end(); i++) {
+			str << newLine << Strings::indentMaker(indent, indentContent) << '"' << (*i)->getName() << "\":" <<
+			(*i)->toString(indent);
+			if (i + 1 != list.end())
+				str << ",";
+		}
+		str << newLine << Strings::indentMaker(--indent, indentContent) << '}';
+		std::string terr = str.str();
 		return str.str();
 	}
 

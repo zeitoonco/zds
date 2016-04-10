@@ -47,7 +47,7 @@ public:
 
 	size_t fieldSize(int tupleNumber, int columnNumber) const;
 
-	std::string toString() const;
+	std::string toString(int indent = -1, std::string indentContent = defaultIndentContent) const;
 
 	void fromString(std::string data);
 

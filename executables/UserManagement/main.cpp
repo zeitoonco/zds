@@ -30,9 +30,9 @@ int main(int argc, char *argv[]) {
 		std::cout << "Server Addr:\t" << serverIP << "\tPort:\t" << serverPort << std::endl;
 		Umediator.sm.joinNet();
 	} catch (exceptionEx *err) {
-		std::cerr << "ERROR:\n" << err->what();
+		std::cout << "ERROR:\n" << err->what() << endl;
 	} catch (exception &err) {
-		std::cerr << "UnknownERROR:\n" << err.what();
+		std::cout << "UnknownERROR:\n" << err.what() << std::endl;
 	}
 
 

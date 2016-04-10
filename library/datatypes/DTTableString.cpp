@@ -56,7 +56,7 @@ size_t DTTableString::columnDataSize(int columnNumber) const {
 			(jsonData["columns"][columnNumber]["size"].getValue()).c_str());
 }
 
-std::string DTTableString::fieldValue(int rowNumber, int colNumber) const {//todo:maybe, change the order??
+std::string DTTableString::fieldValue(int rowNumber, int colNumber) const {
 	return jsonData["rows"][rowNumber][colNumber].getValue();
 }
 
@@ -72,7 +72,8 @@ size_t DTTableString::fieldSize(int tupleNumber, int columnNumber) const {
 	}
 }
 
-std::string DTTableString::toString() const {
+std::string DTTableString::toString(int indent,
+                                    std::string indentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
 	return jsonData.toString();
 }
 

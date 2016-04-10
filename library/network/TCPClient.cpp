@@ -44,10 +44,12 @@ void TCPClient::connect(std::string address, std::string service) {
 }
 
 void TCPClient::disconnect() {
-	uv_close((uv_handle_t *) &this->client, NULL);//todo:check more about disconnecting/ed
-	this->_connected = false;
-	if (this->_onDisconnect != NULL)
-		this->_onDisconnect();
+	if (isConnected()) {
+		uv_close((uv_handle_t *) &this->client, NULL);//todo:check more about disconnecting/ed
+		this->_connected = false;
+		if (this->_onDisconnect != NULL)
+			this->_onDisconnect();
+	}
 }
 
 bool TCPClient::isConnected() {

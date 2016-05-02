@@ -14,4 +14,4 @@ set_target_properties( ${libName}
     LIBRARY_OUTPUT_DIRECTORY "${binDir}/${libDir}"
 ) #set library destination
 
-TARGET_LINK_LIBRARIES(${libName} uv.a pthread dl)
+TARGET_LINK_LIBRARIES(${libName} uv.a pthread dl boost_system boost_thread boost_filesystem)

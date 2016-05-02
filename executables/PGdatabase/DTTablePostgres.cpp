@@ -183,7 +183,7 @@ std::string DTTablePostgres::errorSwitch(int resStatusEnum) {
 	}
 }
 
-std::string DTTablePostgres::toString() const {
+std::string DTTablePostgres::toString(int indent, std::string indentContent) const {
 	stringstream buffer;
 	const int numberOfColumns = PQnfields(result);
 	const int numberOfTupples = PQntuples(result);

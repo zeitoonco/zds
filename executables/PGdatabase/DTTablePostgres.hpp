@@ -85,7 +85,7 @@ public:
 	 * @param type SerializationType
 	 * @return  string resultData
 	 */
-	std::string toString()const;
+	std::string toString(int indent = -1, std::string indentContent = defaultIndentContent) const;
 	/**fromString()
 	 * not implemented
 	 *

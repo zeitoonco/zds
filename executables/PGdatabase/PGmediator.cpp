@@ -18,7 +18,7 @@ PGmediator::PGmediator(std::string pgAdminUserName, std::string pgAdminPassWord,
                        std::string pgAdminHost, int pgAdminPort, std::string pgAdminDbname) :
 		CommunicationHandlerInterface(this),
 		conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
-		insInfo("PGDatabase", "PostgresDatabase", 1) {
+		insInfo("PGDatabase", "PostgresDatabase", 1, 1, EnmServiceType::Database) {
 	this->setInstallInfo();
 	serviceID = "";
 }
@@ -29,16 +29,16 @@ void PGmediator::onCommand(string node, string data, string id, string from) {
 			DSDBQuery sql(data, true);
 			conMgr.query(from, sql.query.getValue());
 			DTTableString result(conMgr.query(from, sql.query.getValue()).toString(), "");
-			this->sm.communication.runCallback(from, result.toString(), id);
+			this->sm.communication.runCallback(node, result.toString(), id);
 		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), false)) {
 			DSDBQuery sql(data, true);
 			DSInteger result;
 			result.value = conMgr.execute(from, sql.query.getValue());
-			this->sm.communication.runCallback(from, result.toString(true), id);
+			this->sm.communication.runCallback(node, result.toString(), id);
 		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), false)) {
 			DSDBQuery sql(data, true);
 			DSString result(conMgr.singleFieldQuery(from, sql.query.getValue()), false);
-			this->sm.communication.runCallback(from, result.toString(true), id);
+			this->sm.communication.runCallback(node, result.toString(), id);
 		}
 	} catch (exceptionEx *errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo->what());

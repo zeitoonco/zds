@@ -44,7 +44,9 @@ void TCPClient::connect(std::string address, std::string service) {
 }
 
 void TCPClient::disconnect() {
-	uv_close((uv_handle_t *) &this->client, NULL);//todo:check more about disconnecting/ed
+	if ((this->client.flags & 3) == 0)//fixme:i don't like this condition!
+		uv_close((uv_handle_t *) &this->client, NULL);
+	//todo:check more about disconnecting/ed ( check handl flags? see in uv_close:1 )
 	this->_connected = false;
 	if (this->_onDisconnect != NULL)
 		this->_onDisconnect();
@@ -80,7 +82,7 @@ void TCPClient::on_connect(uv_connect_t *req, int status) {
 }
 
 void TCPClient::alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
-	*buf = uv_buf_init((char *) malloc(suggested_size), (unsigned int)suggested_size);
+	*buf = uv_buf_init((char *) malloc(suggested_size), (unsigned int) suggested_size);
 }
 
 void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
@@ -137,7 +139,7 @@ void TCPClient::send(std::string data) {
 
 	uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));
 	uint8_t *buff = (uint8_t *) malloc(data.size() + 6);
-	uint32_t size = (uint32_t)data.size();
+	uint32_t size = (uint32_t) data.size();
 	bufw->base = (char *) buff;
 	bufw->len = data.size() + 6;
 	memcpy(buff + 6, data.c_str(), data.size());

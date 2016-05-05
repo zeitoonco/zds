@@ -10,6 +10,7 @@
 
 #include <database/sqliteDatabaseHub.h>
 #include "sstream"
+#include <algorithm>
 
 namespace zeitoon {
 namespace utility {
@@ -66,6 +67,7 @@ public:
 	 * @param level   sathe log ba tavajeh be ahamiyate an baraye system va mored estefada an. @see LogLevels
 	 */
 	void log(string owner, string message, LogLevels level) {
+		message=utility::Strings::replace(message,"'","''");
 		stringstream ss;
 		ss << "insert into log(owner,message,loglevel) values('" << owner << "','" << message << "'," << (int) level
 		<< ");";

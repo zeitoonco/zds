@@ -17,6 +17,7 @@
 #include <vector>
 #include "utility/utility.hpp"
 #include "utility/jsonParser.hpp"
+#include <map>
 
 
 using namespace std;
@@ -28,7 +29,8 @@ namespace _core {
 class CommunicationManager {
 
 public:
-	typedef std::function<void(string,string,string,string&,MessageTypes::MessageTypes_,string)> sendFuncDLG;
+	typedef std::function<void(string, string, string, string &, MessageTypes::MessageTypes_, string,
+	                           string)> sendFuncDLG;
 	sendFuncDLG sendFunc;
 
 	unordered_map<string, EventProfile> eventList;
@@ -41,39 +43,55 @@ public:
 	enum mutexNames {
 		MTXEventList, MTXHookList, MTXCommandList, MTXHookEvent, MTXCallback
 	};
+
+	struct idData {
+		string data;
+		bool set;
+	};
+	map<string, idData *> idList;
+	mutex MtxIdList;
 public:
 	CommunicationManager(sendFuncDLG ptr) {
-		sendFunc=ptr;
-		string localcmd[] = { "_core.registerCommand", "_core.registerEvent", "_core.registerHook", "_core.removeCommand",
-				"_core.removeEvent", "_core.removeHook" }; //todo:automate this stupid process
-		for (int i = 0; i < 6; i++)
-			registerCommand( CommandProfile("_core", localcmd[i]));
+		sendFunc = ptr;
 	}
 
 	void registerCommand(CommandProfile profile);
+
 	bool removeCommand(CommandProfile profile);
+
 	bool removeCommand(string name);
 
 	void registerEvent(EventProfile profile);
+
 	bool removeEvent(EventProfile profile);
+
 	bool removeEvent(string name);
 
 	void registerHook(HookProfile profile);
+
 	bool removeHook(string name);
+
 	bool removeHook(HookProfile profile);
 
 	CommandProfile getCommand(string name);
+
 	CallbackProfile getCallback(string name);
+
 	EventProfile getEvent(string name);
+
 	HookProfile getHook(string name);
 
 	void fireEvent(string eventName, string &data, string from);
-	void callCommand(string cmdName, string &data, string from, string id);
+
+	string callCommandSync(string cmdName, string &data, string from, string id, string sessionid = "");
+
+	string callCommand(string cmdName, string &data, string from, string id, string sessionid="");
+
 	void callCallback(string clbName, string &data, string from, string id);
 
 	void cleanup(ExtensionProfile *ext);
 
-	inline string getNameAndType() const{
+	inline string getNameAndType() const {
 		return "CommunicationManager";
 	}
 

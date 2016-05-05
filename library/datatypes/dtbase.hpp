@@ -19,29 +19,6 @@ namespace datatypes {
  *
  */
 class DTBase {
-protected:
-
-	/**isvalidname baraye check kardan valid boodn naami ke dar _name gharar migirad
-	 *
-	 * mavared mojaz : horoof e koochak, horoof ebozorg, underline, adaad magar dar ebteda bashand.
-	 *
-	 * @param name naami k bayad check shavad.
-	 *
-	 * @return agar name valid bood true va dar gheir in soorat false bargardande mishavad.
-	 *
-	 */
-	bool isValidName(string name) {
-		for (uint i = 0; i < name.length(); i++) {
-			char c = name[i];
-			if (!((c >= 65 && c <= 90) || //Lower case alphabet
-			      (c >= 97 && c <= 122) || //Upper case alphabet
-			      (c == 95) || // underline
-			      (i > 0 && (c >= 48 && c < 57)))) //numbers, except in first place
-				return false;
-		}
-		return true;
-	}
-
 public:
 
 	/**constructor DTBase k name e moteghaeir ra migirad.
@@ -52,7 +29,7 @@ public:
 	 */
 	DTBase(string name = "") {
 		name = utility::Strings::trim(name);
-		if (isValidName(name))
+		if (Strings::isValidName(name))
 			_name = name;
 		else
 			EXTinvalidName("'" + name +

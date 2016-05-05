@@ -168,6 +168,27 @@ protected:
 
 public:
 
+	/**isvalidname baraye check kardan valid boodn naami ke dar _name gharar migirad
+	 *
+	 * mavared mojaz : horoof e koochak, horoof ebozorg, underline, adaad magar dar ebteda bashand.
+	 *
+	 * @param name naami k bayad check shavad.
+	 *
+	 * @return agar name valid bood true va dar gheir in soorat false bargardande mishavad.
+	 *
+	 */
+	static bool isValidName(string name) {
+		for (uint i = 0; i < name.length(); i++) {
+			char c = name[i];
+			if (!((c >= 65 && c <= 90) || //Lower case alphabet
+			      (c >= 97 && c <= 122) || //Upper case alphabet
+			      (c == 95) || // underline
+			      (i > 0 && (c >= 48 && c < 57)))) //numbers, except in first place
+				return false;
+		}
+		return true;
+	}
+
 	/**compare() do string ra migirad va check mikonad ba ham barabar and ya na.
 	 *
 	 * agar do string baham barabar bashand 0 va dar gheir insoorat adadi gheir sefr barmigardanad.
@@ -332,7 +353,7 @@ public:
 	}
 
 	static string toString(long long int val, unsigned int base = 10) {
-		string n = toString((unsigned long long int) val, base);
+		string n = toString((unsigned long long int) abs(val), base);
 		return (val < 0 ? "-" + n : n);
 	}
 
@@ -382,7 +403,7 @@ public:
 		return string(val ? "true" : "false");
 	}
 
-	static std::vector<std::string> split(const std::string &s, char delim) {
+	static vector<std::string> split(const string &s, char delim) {
 		std::vector<std::string> elems;
 		std::stringstream ss(s);
 		std::string item;
@@ -392,6 +413,30 @@ public:
 		return elems;
 	}
 
+	static string replace(std::string str, const string &from, const string &to) {
+		size_t start_pos = 0;
+		while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+			str.replace(start_pos, from.length(), to);
+			start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+		}
+		return str;
+	}
+
+	static string padLeft(const string source, int size, char padchar = ' ') {
+		ssize_t padSize = size - source.length();
+		if (padSize > 0)
+			return string(padSize, padchar) + source;
+		else
+			return source;
+	}
+
+	static string padRight(const string source, int size, char padchar = ' ') {
+		ssize_t padSize = size - source.length();
+		if (padSize > 0)
+			return source + string(padSize, padchar);
+		else
+			return source;
+	}
 };
 
 class MessageTypes {
@@ -422,10 +467,15 @@ public:
 	}
 
 	static string makeCommand(string node, string id, string from, string data) {
+		return makeCommand(node, id, from, data, "");
+	}
+
+	static string makeCommand(string node, string id, string from, string data, string session) {
 		return ("{\"type\" : \"call\" , \"node\" : \"" + node + "\" " +
 		        (id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
 		        (from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
 		        (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+		        (session.length() > 0 ? ", \"session\" : " + session + " " : "") +
 		        "}");
 	}
 

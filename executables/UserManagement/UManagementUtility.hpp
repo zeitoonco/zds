@@ -63,7 +63,9 @@ namespace zeitoon {
 
 			static std::string logout() { return "userman.logout"; }
 
-			static std::string checkpermission() { return "userman.checkpermission"; }
+			static std::string checkpermission() { return "userman.checkPermission"; }
+
+			static std::string checkpermissionByName() { return "userman.checkPermissionByName"; }
 
 			static std::string addUser() { return "userman.addUser"; }
 

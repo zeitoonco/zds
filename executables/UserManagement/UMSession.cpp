@@ -49,7 +49,7 @@ void UMSession::updatePermissionsCache() {
 		coreInstance->systemLog.log(getNameAndType(), "Failed to updatePermissionCache() " + std::string(errorInfo->what()), LogLevels::warning);
 		EXTDBErrorIO("Failed to updatePermissionCache", getNameAndType(), errorInfo);
 	}
-	if (result.rowCount() > 1) {
+	if (result.rowCount() > 0) {
 		for (size_t i = 0; i < result.rowCount(); i++) {
 			permissionsCache[std::stoi(result.fieldValue(i, 0))] = std::stoi(result.fieldValue(i, 1));
 		}

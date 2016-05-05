@@ -39,19 +39,20 @@ public:
 	CommunicationManager comm;
 	TCPServer net;
 	utility::sqliteDatabaseHub db;
+	ExtensionProfile *ecore;
 
 	Router(int port);
 
 	virtual ~Router();
 
-	void packetReceived(string data, ExtensionProfile *ext);
+	void packetReceived(string data, ExtensionProfile *ext, size_t netid);
 
 	void sendPacket(string &data, ExtensionProfile *extension);
 
 	void sendMessage(string extension, string source, string node, string &data, MessageTypes::MessageTypes_ msgT,
-	                 string id);
+	                 string id, string session = "");
 
-	void callCommandLocal(string node, string &data, string from, string id); //s
+	void callCommandLocal(string node, string &data, string from, string id, string session); //s
 
 	void fireHookLocal(string node, string &data, string from); //s
 
@@ -59,9 +60,18 @@ public:
 
 	void changeDatatypeVersion(string data, string extension, int vfrom, int vto);
 
-	//void sendMessage(string extension, string dest, string &data, MessageTypes msgT);
-	//void messageReceived(string extension, string dest, string &data, MessageTypes msgT);
-	//etc!
+	void populateInstallInfo();
+	void registerCore();
+	bool checkCoreRequirements();
+	void registerCEP();
+	void registerServiceCEPermissions(ExtensionProfile *ext);
+
+	bool enableService(string name);
+	bool installService(string name);
+	bool getInstallInfo(string name);
+	bool uninstallService(string name);
+	bool disableService(string name);
+
 	inline string getNameAndType() {
 		return "ExtensionManager";
 	}

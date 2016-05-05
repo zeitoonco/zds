@@ -477,7 +477,7 @@ private:
 							"syntax error at column" + Strings::itoa(i)
 							+ " : can't find end of region");
 				else if (j != string::npos - 1) {
-					i = j + 1;
+					i = j;
 					j = string::npos - 1;
 				}
 			}
@@ -844,8 +844,8 @@ private:
 			if (!ready) {
 				if (j == string::npos)
 					EXTcantParseString(
-							"syntax error at column" + Strings::itoa(i)
-							+ " : can't find end of region");
+							"syntax error at column" + Strings::itoa(i) + " : can't find end of region:\"" + str +
+							"\"");
 				else if (j != string::npos - 1) {
 					i = j;
 					j = string::npos - 1;

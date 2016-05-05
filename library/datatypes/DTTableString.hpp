@@ -10,6 +10,7 @@
 
 #include "datatypes/DTTable.hpp"
 #include "utility/jsonParser.hpp"
+#include <memory>
 
 namespace zeitoon {
 namespace datatypes {
@@ -21,13 +22,13 @@ public:
 	/** JStruct jsonData
 	 *  baraye tabdil va negahdaari e result e haasel az yek query ke PGresult * result
 	 */
-	JStruct jsonData;
+	std::shared_ptr<JStruct> jsonData;
 
 	~DTTableString();
 
 	DTTableString(std::string name);
 
-	DTTableString(const DTTableString &tbl);
+	//DTTableString(const DTTableString &tbl);
 
 	DTTableString(std::string receivedData, std::string name);
 

@@ -310,6 +310,31 @@ public:
 	}
 };
 
+class accessDenied : public exceptionEx {
+public:
+	accessDenied(string imessage = "", string owner = "", string file = "",
+	             int line = -1, exceptionEx *iinnerException = NULL) :
+			exceptionEx(getDefTitle(), imessage, owner, file, line,
+			            iinnerException) {
+	}
+
+	string getDefTitle() {
+		return "Access Denied";
+	}
+};
+
+class resourceNotAvailable : public exceptionEx {
+public:
+	resourceNotAvailable(string imessage = "", string owner = "", string file = "",
+	             int line = -1, exceptionEx *iinnerException = NULL) :
+			exceptionEx(getDefTitle(), imessage, owner, file, line,
+			            iinnerException) {
+	}
+
+	string getDefTitle() {
+		return "Resource is not available";
+	}
+};
 
 //exceptionEx
 #define EXexceptionEx(msg) new zeitoon::utility::exceptionEx(msg,this->getNameAndType(),__FILE__,__LINE__)
@@ -446,6 +471,24 @@ public:
 #define EXTnetworkFailureI(msg, inner) throw EXnetworkFailureI(msg,inner)
 #define EXnetworkFailureIO(msg, owner, inner) new zeitoon::utility::networkFailure(msg,owner,__FILE__,__LINE__,inner)
 #define EXTnetworkFailureIO(msg, owner, inner) throw EXnetworkFailureIO(msg,owner,inner)
+//accessDenied
+#define EXaccessDenied(msg) new zeitoon::utility::accessDenied(msg,this->getNameAndType(),__FILE__,__LINE__)
+#define EXTaccessDenied(msg) throw EXaccessDenied(msg)
+#define EXaccessDeniedO(msg, owner) new zeitoon::utility::accessDenied(msg,owner,__FILE__,__LINE__)
+#define EXTaccessDeniedO(msg, owner) throw EXaccessDeniedO(msg,owner)
+#define EXaccessDeniedI(msg, inner) new zeitoon::utility::accessDenied(msg,this->getNameAndType(),__FILE__,__LINE__,inner)
+#define EXTaccessDeniedI(msg, inner) throw EXaccessDeniedI(msg,inner)
+#define EXaccessDeniedIO(msg, owner, inner) new zeitoon::utility::accessDenied(msg,owner,__FILE__,__LINE__,inner)
+#define EXTaccessDeniedIO(msg, owner, inner) throw EXaccessDeniedIO(msg,owner,inner)
+//resourceNotAvailable
+#define EXresourceNotAvailable(msg) new zeitoon::utility::resourceNotAvailable(msg,this->getNameAndType(),__FILE__,__LINE__)
+#define EXTresourceNotAvailable(msg) throw EXresourceNotAvailable(msg)
+#define EXresourceNotAvailableO(msg, owner) new zeitoon::utility::resourceNotAvailable(msg,owner,__FILE__,__LINE__)
+#define EXTresourceNotAvailableO(msg, owner) throw EXresourceNotAvailableO(msg,owner)
+#define EXresourceNotAvailableI(msg, inner) new zeitoon::utility::resourceNotAvailable(msg,this->getNameAndType(),__FILE__,__LINE__,inner)
+#define EXTresourceNotAvailableI(msg, inner) throw EXresourceNotAvailableI(msg,inner)
+#define EXresourceNotAvailableIO(msg, owner, inner) new zeitoon::utility::resourceNotAvailable(msg,owner,__FILE__,__LINE__,inner)
+#define EXTresourceNotAvailableIO(msg, owner, inner) throw EXresourceNotAvailableIO(msg,owner,inner)
 
 }
 }

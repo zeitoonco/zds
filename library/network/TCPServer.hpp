@@ -41,12 +41,26 @@ public:
 
 			void _packetReceived() {
 				if (this->_parent->_onMessage != NULL)
-					this->_parent->_onMessage(this->_id, this->_buff);
+					std::thread *t = new std::thread(&client::_safeCaller, this, this->_id, this->_buff);
+				//fixme:FREE MEMORY!
+				//this->_parent->_onMessage(this->_id, this->_buff);
 				this->_buff = "";
 				this->_lastPacketLen = 0;
 			}
 
 		public:
+			void _safeCaller(size_t id, std::string data) {
+				try {
+					this->_parent->_onMessage(id, data);
+				} catch (exceptionEx *ex) {
+					cerr << "TCPS.Error.OnReceive: " << ex->what() << endl;
+				} catch (exception &ex) {
+					cerr << "TCPS.sysError.OnReceive: " << ex.what() << endl;
+				} catch (...) {
+					cerr << "TCPS.uncaughtError.OnReceive: " << endl;
+				}
+			}
+
 			void send(std::string data);
 
 			void stop();

@@ -19,7 +19,7 @@ namespace usermanagement {
 
 UmCHI::UmCHI() :
 		CommunicationHandlerInterface(this), userMngrInterface(this),
-		insInfo("UserManagement", "User Management", 1) {
+		insInfo("UserManagement", "User Management", 1, 1, EnmServiceType::UserManager) {
 	setInstallInfo();
 }
 
@@ -29,12 +29,11 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			DSLoginInfo logInfo(data);
 			int sessionID;
 			std::string description;
-			std::string UMlogResString = UMLoginResult::typeString[userMngrInterface.login(logInfo.username.getValue(),
-			                                                                               logInfo.password.getValue(),
-			                                                                               sessionID,
-			                                                                               description)];
+			std::string UMlogResString =
+					UMLoginResult::typeString[userMngrInterface.login(
+							logInfo.username.getValue(), logInfo.password.getValue(), sessionID, description)];
 			DSLoginResult logResult(UMlogResString, description, sessionID);
-			sm.communication.runCallback(from, logResult.toString(true), id);
+			sm.communication.runCallback(node, logResult.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::logout(), false)) {
 			DSInteger sessionID;
 			sessionID.fromString(data);
@@ -44,14 +43,22 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			DSBoolean checkResult;
 			checkResult.value = userMngrInterface.checkPermission(checkInfo.sessionID.getValue(),
 			                                                      checkInfo.permissionID.getValue());
-			sm.communication.runCallback(from, checkResult.toString(true), id);
+			sm.communication.runCallback(node, checkResult.toString(true), id);
+		} else if (!Strings::compare(node, commandInfo::checkpermissionByName(), false)) {
+			DSChkPermissionByName checkInfo(data);
+			DSBoolean checkResult;
+			checkResult.value = userMngrInterface.checkPermissionByName(checkInfo.sessionID.getValue(),
+			                                                            checkInfo.pname.getValue());
+			sm.communication.runCallback(node, checkResult.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::addUser(), false)) {
 			DSAddUser adUsrInfo(data);
 			DSInteger addResult;
-			addResult.value = userMngrInterface.addUser(adUsrInfo.username.getValue(), adUsrInfo.password.getValue(), adUsrInfo.name.getValue());
+			addResult.value = userMngrInterface.addUser(adUsrInfo.username.getValue(), adUsrInfo.password.getValue(),
+			                                            adUsrInfo.name.getValue());//todo:return the return value?
 		} else if (!Strings::compare(node, commandInfo::modifyUser(), false)) {
 			DSModifyUser userInfo(data);
-			userMngrInterface.modifyUser(userInfo.userID.getValue(), userInfo.username.getValue(), userInfo.password.getValue(), userInfo.name.getValue());
+			userMngrInterface.modifyUser(userInfo.userID.getValue(), userInfo.username.getValue(),
+			                             userInfo.password.getValue(), userInfo.name.getValue());
 		} else if (!Strings::compare(node, commandInfo::removeUser(), false)) {
 			DSInteger userID;
 			userID.fromString(data);
@@ -61,7 +68,7 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			userId.fromString(data);
 			UMUserInfo temp = userMngrInterface.getUserInfo(userId.value.getValue());
 			DSUserInfo userInfo(temp.id, temp.username, temp.name, temp.banned, temp.banReason);
-			sm.communication.runCallback(from, userInfo.toString(true), id);
+			sm.communication.runCallback(node, userInfo.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::registerPermission(), false)) {
 			DSRegPermission permissionInfo(data);
 			DSInteger regResult;
@@ -69,11 +76,12 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			                                                       permissionInfo.title.getValue(),
 			                                                       permissionInfo.description.getValue(),
 			                                                       permissionInfo.parentID.getValue());
-			sm.communication.runCallback(from, regResult.toString(true), id);
+			sm.communication.runCallback(node, regResult.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::updatePermission(), false)) {
 			DSUpdatePermission updateInfo(data);
-			userMngrInterface.updatePermission(updateInfo.permissiosnID.getValue(), updateInfo.name.getValue(), updateInfo.title.getValue(),
-					updateInfo.description.getValue(), updateInfo.parentID.getValue());
+			userMngrInterface.updatePermission(updateInfo.permissiosnID.getValue(), updateInfo.name.getValue(),
+			                                   updateInfo.title.getValue(),
+			                                   updateInfo.description.getValue(), updateInfo.parentID.getValue());
 		} else if (!Strings::compare(node, commandInfo::removePermission(), false)) {
 			DSInteger removeID;
 			removeID.fromString(data);
@@ -84,29 +92,30 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			regResult.value = userMngrInterface.registerUsergroup(usrGrpInfo.title.getValue(),
 			                                                      usrGrpInfo.parentID.getValue(),
 			                                                      usrGrpInfo.description.getValue());
-			sm.communication.runCallback(from, regResult.toString(true), id);
+			sm.communication.runCallback(node, regResult.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::updateUsergroup(), false)) {
 			DSUpdateUsrGrp usrGrpInfo(data);
-			userMngrInterface.updateUsergroup(usrGrpInfo.usergroupID.getValue(), usrGrpInfo.title.getValue(), usrGrpInfo.parentID.getValue(),
-					usrGrpInfo.description.getValue());
+			userMngrInterface.updateUsergroup(usrGrpInfo.usergroupID.getValue(), usrGrpInfo.title.getValue(),
+			                                  usrGrpInfo.parentID.getValue(),
+			                                  usrGrpInfo.description.getValue());
 		} else if (!Strings::compare(node, commandInfo::removeUsergroup(), false)) {
 			DSInteger usrGrpID;
 			usrGrpID.fromString(data);
 			userMngrInterface.removeUsergroup(usrGrpID.value.getValue());
 		} else if (!Strings::compare(node, commandInfo::listUsers(), false)) {
-			DSUserList usersList(userMngrInterface.listUsers());
-			sm.communication.runCallback(from, usersList.toString(true), id);
+			DSUserList usersList=userMngrInterface.listUsers();
+			sm.communication.runCallback(node, usersList.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::listUsersByGroup(), false)) {
 			DSInteger groupID;
 			groupID.fromString(data);
-			DSUserList usrListByGrp(userMngrInterface.listUsersByGroup(groupID.value.getValue()));
-			sm.communication.runCallback(from, usrListByGrp.toString(true), id);
+			DSUserList usrListByGrp=userMngrInterface.listUsersByGroup(groupID.value.getValue());
+			sm.communication.runCallback(node, usrListByGrp.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::listPermissions(), false)) {
-			DSPermissionsList permsList(userMngrInterface.listPermissions());
-			sm.communication.runCallback(from, permsList.toString(true), id);
+			DSPermissionsList permsList=userMngrInterface.listPermissions();
+			sm.communication.runCallback(node, permsList.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::listUsergroups(), false)) {
 			DSUserGroupsList usrGrpList(userMngrInterface.listUsergroups());
-			sm.communication.runCallback(from, usrGrpList.toString(true), id);
+			sm.communication.runCallback(node, usrGrpList.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::addUserUsergroup(), false)) {
 			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
 			userMngrInterface.addUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
@@ -117,7 +126,8 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 
 		} else if (!Strings::compare(node, commandInfo::addUserPermission(), false)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
-			userMngrInterface.addUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(), regInfo.permissionState.getValue());
+			userMngrInterface.addUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(),
+			                                    regInfo.permissionState.getValue());
 		} else if (!Strings::compare(node, commandInfo::removeUserPermission(), false)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
 			userMngrInterface.removeUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(),
@@ -141,22 +151,23 @@ void UmCHI::onEvent(string node, string data, string from) {
 }
 
 void UmCHI::onInstall(string id) {
-	this->serviceID = id; //keeps serviceID in a member variable
 	string cpath = FileSystemUtility::getAppPath();
-	std::ofstream outFile;
-	outFile.open(cpath + "UmCHIConfig", std::ofstream::out);
-	outFile << "serviceID : " + id << std::endl;
-	outFile.close();
 	//Addressing the file
 	string temp = cpath + "DBTableScripts.sql";//todo: throw exception if file not found
 	std::cout << temp << endl;
 	std::ifstream t(temp);
 	std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-	try {
-		userMngrInterface.executeSync(str);
-	} catch (exceptionEx *errorInfo) {
+	//try {
+	userMngrInterface.executeSync(str);
+	//} catch (exceptionEx *errorInfo) {
+	//fixme:wtf is this?!
+	//}
+	this->serviceID = id; //keeps serviceID in a member variable
+	std::ofstream outFile;
+	outFile.open(cpath + "UmCHIConfig", std::ofstream::out);
+	outFile << "serviceID : " + id << std::endl;
+	outFile.close();
 
-	}
 }
 
 void UmCHI::onEnable() {
@@ -246,17 +257,17 @@ std::size_t UmCHI::getServiceVersion() {
 	return 1;
 }
 
-	string UmCHI::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
-	                                    int &newVersion) {
+string UmCHI::changeDatatypeVersion(string value, string datatype, int fromVersion, int toVersion,
+                                    int &newVersion) {
 	return "";
 }
 
 void UmCHI::onError(string node, string id, string description) {
-	std::cerr << "Error:\t"<<description<<std::endl;
+	std::cerr << "Error:\t" << description << std::endl;
 }
 
 void UmCHI::onWarning(string level, string node, string id, string description) {
-	std::cerr << "Warning:\t"<<description<<std::endl;
+	std::cerr << "Warning:\t" << description << std::endl;
 }
 
 void UmCHI::checkDBTables() {
@@ -296,6 +307,11 @@ void UmCHI::setInstallInfo() {
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::checkpermission(), DSChkPermission::getStructName(),
 			                                   DSChkPermission::getStructVersion(),
+			                                   DSBoolean::getStructName(), DSBoolean::getStructVersion()), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::checkpermissionByName(),
+			                                   DSChkPermissionByName::getStructName(),
+			                                   DSChkPermissionByName::getStructVersion(),
 			                                   DSBoolean::getStructName(), DSBoolean::getStructVersion()), true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::addUser(), DSAddUser::getStructName(),
@@ -431,7 +447,8 @@ void UmCHI::setInstallInfo() {
 
 //------set requirements
 
-	insInfo.requirements.add(new DSInstallInfo::DSInstallInfoRequirementDetail("PGDatabase", 1), true);
+	insInfo.installRequirements.add(new DSInstallInfo::DSInstallInfoRequirementDetail("PGDatabase", 1), true);
+	insInfo.enableRequirements.add(new DSInstallInfo::DSInstallInfoRequirementDetail("PGDatabase", 1), true);
 
 //------set datatype names
 

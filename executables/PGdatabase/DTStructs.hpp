@@ -28,6 +28,7 @@ public:
 	}
 	DSDBQuery() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		this->list.push_back(&query);
 	}
 	DSDBQuery(std::string data, bool isJSON) :
 			DSDBQuery() {
@@ -35,7 +36,6 @@ public:
 			this->fromString(data);
 		} else {
 			query = data;
-			this->list.push_back(&query);
 		}
 	}
 };
@@ -59,7 +59,6 @@ public:
 			this->fromString(data);
 		} else {
 			value = data;
-			this->list.push_back(&value);
 		}
 	}
 };

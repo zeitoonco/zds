@@ -73,8 +73,9 @@ size_t DTTableString::fieldSize(int tupleNumber, int columnNumber) const {
 	}
 }
 
-std::string DTTableString::toString() const {
-	return jsonData->toString();
+std::string DTTableString::toString(int indent,
+                                    std::string indentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
+	return jsonData->toString();//todo: um, what r those args for?!
 }
 
 void DTTableString::fromString(std::string data) {

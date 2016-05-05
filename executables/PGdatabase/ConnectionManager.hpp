@@ -11,7 +11,6 @@
 #include"Connection.hpp"
 
 #include<mutex>
-//Todo:: make __local and .extension to be create on start if they are not already created!
 
 /**
  * Class e ConnectionManager baraye modiriat e userhaaye postgresql mibaashad.

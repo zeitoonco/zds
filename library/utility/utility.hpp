@@ -413,6 +413,14 @@ public:
 		return elems;
 	}
 
+	static std::string indentMaker(int indent, std::string indentContent) {//fixme:@navidi :use string constructor?
+		std::string temp = "";
+		for (int i = 0; i < indent; i++) {
+			temp += indentContent;
+		}
+		return temp;
+	}
+
 	static string replace(std::string str, const string &from, const string &to) {
 		size_t start_pos = 0;
 		while ((start_pos = str.find(from, start_pos)) != std::string::npos) {

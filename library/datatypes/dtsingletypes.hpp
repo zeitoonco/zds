@@ -307,11 +307,13 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() const {
-		return toString(10);
+	string toString(int indent = -1,
+	                std::string indentContent = defaultIndentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
+		return toString(10, indent, indentContent);
 	}
 
-	string toString(int base) const {
+	string toString(int base, int indent = -1,
+	                std::string indentContent = defaultIndentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
 		return Strings::toString(this->getValue(), base);
 	}
 
@@ -617,7 +619,8 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() const {
+	string toString(int indent = -1,
+	                std::string indentContent = defaultIndentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
 		stringstream str;
 		str << setprecision(std::numeric_limits<double>::digits10 + 1) << this->getValue();
 		return str.str();
@@ -877,7 +880,8 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() const {
+	string toString(int indent = -1,
+	                std::string indentContent = defaultIndentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
 		return toString(boolTxType::TrueFalse);
 	}
 
@@ -1094,7 +1098,8 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() const {
+	string toString(int indent = -1,
+	                std::string indentContent = defaultIndentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
 		return '"' + utility::JSONUtility::encodeString(this->getValue()) + '"';
 	}
 
@@ -1241,7 +1246,8 @@ public:
 	 * @return stringi k dar aan _value zakhire mishavad.
 	 *
 	 */
-	string toString() const {
+	string toString(int indent = -1,
+	                std::string indentContent = defaultIndentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
 		stringstream str;
 		str << '"' << EnumType::typeString[this->getValue()] << '"';
 		return str.str();

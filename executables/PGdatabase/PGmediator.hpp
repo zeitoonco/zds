@@ -20,7 +20,6 @@ class PGmediator: public CommunicationHandlerInterface {
 private:
 	ConnectionManager conMgr;
 	zeitoon::datatypes::DSInstallInfo insInfo;
-	std::string serviceID;
 public:
 
 	/**

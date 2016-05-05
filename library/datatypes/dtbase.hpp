@@ -6,6 +6,7 @@
 #include <utility/exceptionex.hpp>
 #include "utility/utility.hpp"
 
+const std::string defaultIndentContent = "\t";
 using namespace zeitoon::utility;
 using std::string;
 
@@ -65,7 +66,7 @@ public:
 	 *
 	 * @return strinigi ke dar an meghdar moteghaeir zakhire shode ast.
 	 */
-	virtual string toString() const = 0;
+	virtual string toString(int indent = -1, std::string indentContent = defaultIndentContent) const = 0;
 
 	/**fromString ke stringi raa ke migirad parse mikonad va aan string raa tabdil be meghdar moteghaeir mikond
 	 *

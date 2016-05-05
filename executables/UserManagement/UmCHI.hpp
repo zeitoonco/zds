@@ -11,6 +11,7 @@
 #include "utility/DTStructs.hpp"
 #include <mediator/CommunicationHandlerInterface.hpp>
 #include "executables/UserManagement/UMCore.hpp"
+#include "UMConfig.hpp"
 #include <string>
 
 namespace zeitoon {

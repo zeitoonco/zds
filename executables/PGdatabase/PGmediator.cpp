@@ -7,7 +7,7 @@
 #include <executables/PGdatabase/PGmediator.hpp>
 #include "executables/PGdatabase/DTStructs.hpp"
 #include "executables/PGdatabase/pgutility.hpp"
-#include "utility/exceptionex.hpp"
+#include "PGConfig.hpp"
 #include <fstream>
 #include <deque>
 
@@ -20,7 +20,6 @@ PGmediator::PGmediator(std::string pgAdminUserName, std::string pgAdminPassWord,
 		conMgr(pgAdminUserName, pgAdminPassWord, pgAdminHost, pgAdminPort, pgAdminDbname, this),
 		insInfo("PGDatabase", "PostgresDatabase", 1, 1, EnmServiceType::Database) {
 	this->setInstallInfo();
-	serviceID = "";
 }
 
 void PGmediator::onCommand(string node, string data, string id, string from) {
@@ -53,13 +52,9 @@ void PGmediator::onCallback(string node, string data, string id, string from) {
 void PGmediator::onEvent(string node, string data, string from) {
 }
 
-void PGmediator::onInstall(string id) {//todo:didnt save InstallID to file
-	string cpath = FileSystemUtility::getAppPath();
-	this->serviceID = id;
-	std::ofstream outFile;
-	outFile.open(cpath + "pgMediatorConfig", std::ofstream::out);
-	outFile << "serviceID : " + id << std::endl;
-	outFile.close();
+void PGmediator::onInstall(string id) {
+	PGconfiguration.serviceID = id;
+	PGconfiguration.save();
 }
 
 void PGmediator::onEnable() {
@@ -121,24 +116,7 @@ string PGmediator::getInstallInfo() {
 }
 
 string PGmediator::getInstallID() {
-	if (serviceID == "") {
-		string cpath = FileSystemUtility::getAppPath();
-		std::fstream inFile(cpath + "pgMediatorConfig");
-		std::string line;
-		if (not inFile) {
-			return "";
-		}
-		while (std::getline(inFile, line)) { //if line[0]
-			std::string::size_type tempServiceID = line.find("serviceID : ");//todo: NEED FOR CONFIG MANAGER
-			if (tempServiceID != std::string::npos) {
-				if (line.find("#") < tempServiceID)
-					break;
-				serviceID = line.substr(line.find(" :") + 3);
-				return serviceID;
-			}
-		}
-	}
-	return serviceID;
+	return PGconfiguration.serviceID.getValue();
 }
 
 string PGmediator::getServiceName() {

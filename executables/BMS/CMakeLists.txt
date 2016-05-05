@@ -1,6 +1,7 @@
 #include source files
 SET(PROJECT_SOURCE_FILES "")
-INCLUDE (sources.cmake)
+INCLUDE(sources.cmake)
+
 
 #extract modue name
 file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR} moduleName)
@@ -26,13 +27,13 @@ set_target_properties( ${moduleLib}
   LIBRARY_OUTPUT_DIRECTORY "${binDir}/${executablesDir}/${moduleName}/${testsDir}"
 ) #set library destination
 
-target_include_directories(${moduleName} 
+target_include_directories(${moduleName}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${testsDir}")
 	# make a general targot that builds all tests of this module
-	set(moduleTestsTarget "${moduleName}_${testsDir}") 
-	add_custom_target(${moduleTestsTarget}) 
+	set(moduleTestsTarget "${moduleName}_${testsDir}")
+	add_custom_target(${moduleTestsTarget})
 
 	#add test subDirectory
 	add_subdirectory(${testsDir})

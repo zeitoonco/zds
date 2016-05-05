@@ -44,6 +44,8 @@ void TCPClient::connect(std::string address, std::string service) {
 }
 
 void TCPClient::disconnect() {
+	if (!isConnected())
+		return;
 	if ((this->client.flags & 3) == 0)//fixme:i don't like this condition!
 		uv_close((uv_handle_t *) &this->client, NULL);
 	//todo:check more about disconnecting/ed ( check handl flags? see in uv_close:1 )

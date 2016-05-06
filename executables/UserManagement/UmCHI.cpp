@@ -103,15 +103,15 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			usrGrpID.fromString(data);
 			userMngrInterface.removeUsergroup(usrGrpID.value.getValue());
 		} else if (!Strings::compare(node, commandInfo::listUsers(), false)) {
-			DSUserList usersList=userMngrInterface.listUsers();
+			DSUserList usersList = userMngrInterface.listUsers();
 			sm.communication.runCallback(node, usersList.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::listUsersByGroup(), false)) {
 			DSInteger groupID;
 			groupID.fromString(data);
-			DSUserList usrListByGrp=userMngrInterface.listUsersByGroup(groupID.value.getValue());
+			DSUserList usrListByGrp = userMngrInterface.listUsersByGroup(groupID.value.getValue());
 			sm.communication.runCallback(node, usrListByGrp.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::listPermissions(), false)) {
-			DSPermissionsList permsList=userMngrInterface.listPermissions();
+			DSPermissionsList permsList = userMngrInterface.listPermissions();
 			sm.communication.runCallback(node, permsList.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::listUsergroups(), false)) {
 			DSUserGroupsList usrGrpList(userMngrInterface.listUsergroups());
@@ -132,6 +132,11 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
 			userMngrInterface.removeUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(),
 			                                       regInfo.permissionState.getValue());
+		} else if (!Strings::compare(node, commandInfo::listUserPermissions(), false)) {
+			DSInteger userID;
+			userID.fromString(data);
+			DSUserPermissionList permsList = userMngrInterface.listUserPermissions(userID.value.value());
+			sm.communication.runCallback(node, permsList.toString(true), id);
 		}
 	} catch (exceptionEx *errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo->what());
@@ -157,11 +162,14 @@ void UmCHI::onInstall(string id) {
 	std::cout << temp << endl;
 	std::ifstream t(temp);
 	std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+	int res;
 	try {
-		userMngrInterface.executeSync(str);
+		res=userMngrInterface.executeSync(str);
 	} catch (exceptionEx *errorInfo) {
 		EXTDBErrorI("Unable to create default tables for UM", errorInfo);
 	}
+	if (res==-1)
+		EXTDBError("Sql error");
 	//set serviceID in confMgr
 	UMconfig.serviceID = id;
 	UMconfig.save();
@@ -187,7 +195,7 @@ void UmCHI::onEnable() {
 void UmCHI::onDisable() {
 }
 
-void UmCHI::onUninstall() {
+void UmCHI::onUninstall() {//fixme: remove db things
 	UMconfig.serviceID = "";
 	UMconfig.save();
 }
@@ -338,6 +346,11 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserPermission(), DSUserPermission::getStructName(),
 			                                   DSUserPermission::getStructVersion(), "",
 			                                   0), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::listUserPermissions(), DSInteger::getStructName(),
+			                                   DSInteger::getStructVersion(),
+			                                   DSUserPermissionList::getStructName(),
+			                                   DSUserPermissionList::getStructVersion()), true);
 
 //--------set available events info
 

@@ -876,7 +876,7 @@ void UMCore::addUserPermission(int userID, int permissionID, int state) {
 			                                 true));
 }
 
-void UMCore::removeUserPermission(int userID, int permissionID, int state) {
+void UMCore::removeUserPermission(int userID, int permissionID, int state) {//fixme:whats state for?
 	try {
 		executeSync("delete from userpermission where userid=" + std::to_string(userID) + " and permissionid=" +
 		            std::to_string(permissionID));
@@ -887,6 +887,26 @@ void UMCore::removeUserPermission(int userID, int permissionID, int state) {
 	                                 zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(
 			                                 true));
 }
+
+DSUserPermissionList UMCore::listUserPermissions(int userID){
+	DSUserPermissionList list;
+	zeitoon::datatypes::DTTableString result("");
+	try {
+		result = querySync("select permissionid,state from userpermission where userid="+to_string(userID));
+	} catch (exceptionEx *errorInfo) {
+		systemLog.log(getNameAndType(),
+		              "Unable to fetch  permission names from database." + std::string(errorInfo->what()),
+		              LogLevels::warning);
+		EXTDBErrorIO("Unable to fetch  permission names from database", getNameAndType(), errorInfo);
+		return list;
+	}
+	for (size_t i = 0; i < result.rowCount(); i++) {
+		list.permissionsList.add(new DSPermissionState(stoi(result.fieldValue(i, 0)),
+		                                                          stoi(result.fieldValue(i, 1))), true);
+	}
+	return list;
+}
+
 
 }//usermanagement
 }//zeitoon

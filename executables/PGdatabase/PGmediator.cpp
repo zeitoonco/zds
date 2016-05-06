@@ -77,7 +77,7 @@ void PGmediator::onDisable() {
 	cerr << "\nDisable!";
 }
 
-void PGmediator::onUninstall() { //remove Id from the configuration file
+void PGmediator::onUninstall() { //fixme: this is old id file!. remove db things
 	string cpath = FileSystemUtility::getAppPath();
 	std::fstream inFile(cpath + "pgMediatorConfig");
 	std::string line;

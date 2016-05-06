@@ -103,6 +103,7 @@ namespace zeitoon {
 
 			static std::string removeUserPermission() { return "userman.removeUserPermission"; }
 
+			static std::string listUserPermissions() { return "userman.listUserPermissions"; }
 		};
 
 		class eventInfo {

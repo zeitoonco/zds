@@ -36,7 +36,7 @@ public:
 
 	}
 
-	void load() {
+	void load() { //fixme:breaks when file is empty (first run, somehow file was created but was empty)
 		if (lastStaticConfigIndex == -1)
 			lastStaticConfigIndex = this->length();
 		if (fs.fileExist(fileName))

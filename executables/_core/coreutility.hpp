@@ -46,9 +46,9 @@ public:
 
 	static std::string removeHook() { return "_core.removeHook"; }
 
-	static std::string error() { return "_core.error"; }
+	static std::string error() { return "error"; }
 
-	static std::string warning() { return "_core.warning"; }
+	static std::string warning() { return "warning"; }
 
 	static std::string registerSetting() { return "_core.registerSetting"; }
 

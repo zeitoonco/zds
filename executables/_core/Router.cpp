@@ -445,6 +445,7 @@ bool Router::uninstallService(string name) {
 	extManager.save();
 	string dt = "{\"name\":\"" + name + "\"}";
 	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
+	//todo:cleanup UM,PGDB
 }
 
 bool Router::disableService(string name) {

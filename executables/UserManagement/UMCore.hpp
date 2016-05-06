@@ -179,6 +179,7 @@ public:
 
 	void removeUserPermission(int userID, int permissionID, int state = 0);
 
+	DSUserPermissionList listUserPermissions(int userID);
 private:
 	/*
 	 typedef  void (UMCore::*BPTR) (std::string);

@@ -521,7 +521,7 @@ class DSUserPermission : public DTStruct {
 public:
 	DTInteger<int> userID = {"userID"};
 	DTInteger<int> permissionID = {"permissionID"};
-	DTInteger<int> permissionState = {"permissionState"};
+	DTInteger<int> permissionState = {"state"};
 
 	static std::string getStructName() {
 		return "DSUserPermission";
@@ -551,6 +551,60 @@ public:
 
 	}
 };
+
+class DSPermissionState : public DTStruct {
+public:
+	DTInteger<int> permissionID = {"id"};
+	DTInteger<int> permissionState = {"state"};
+
+	static std::string getStructName() {
+		return "DSPermissionState";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSPermissionState() :
+			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&permissionID);
+		list.push_back(&permissionState);
+	}
+
+	DSPermissionState(std::string data) :
+			DSPermissionState() {
+		this->fromString(data);
+	}
+
+	DSPermissionState(int ipermissionID, int ipermissionState) :
+			DSPermissionState() {
+		permissionID = ipermissionID;
+		permissionState = ipermissionState;
+
+	}
+};
+
+class DSUserPermissionList : public DTStruct {
+public:
+	DTSet<DSPermissionState> permissionsList = {"listPermissions"};
+
+	static std::string getStructName() {
+		return "DSUserPermissionList";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSUserPermissionList() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		this->list.push_back(&permissionsList);
+	}
+
+	DSUserPermissionList(std::string data) : DSUserPermissionList() {
+		this->fromString(data);
+	}
+};
+
 } //namespace: zeitoon
 } //namespace: datatypes
 

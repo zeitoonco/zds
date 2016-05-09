@@ -35,3 +35,15 @@ if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${testsDir}")
     #add test subDirectory
     add_subdirectory(${testsDir})
 endif ()
+
+# libs
+target_link_libraries(${moduleName} pthread dl boost_system boost_thread)#boost_thread & system manually added. needs revision
+
+find_package(CryptoPP REQUIRED)
+if (CRYPTOPP_FOUND)
+    message(WARNING "crypto found")
+    include_directories(${CRYPTOPP_INCLUDE_DIRS})
+    target_link_libraries(${moduleName} ${CRYPTOPP_LIBRARIES})
+else ()
+    message(WARNING "crypto not found")
+endif ()

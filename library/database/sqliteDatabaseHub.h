@@ -1,3 +1,6 @@
+#ifndef SQLITEDATABASEHUB_HPP
+#define SQLITEDATABASEHUB_HPP
+
 #include "sqlite3.h"
 #include <vector>
 #include <string>
@@ -103,9 +106,7 @@ public:
 			}
 			sqlite3_finalize(stmt);
 			return tbl;
-		}
-
-		else {
+		} else {
 			EXTDBError(string("Error in loading statement: ") + sqlite3_errstr(res));
 		}
 	}
@@ -196,3 +197,5 @@ public:
 
 }
 }
+
+#endif /* SQLITEDATABASEHUB_HPP */

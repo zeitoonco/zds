@@ -9,13 +9,14 @@
 #include "GuiCHI.hpp"
 
 int main(int argc, char *argv[]) {
-	if (argc != 5) {
+	if (argc != 4) {
 		std::cerr << "Invalid number of arguments provided\n";
-		std::cerr << "Required arguments: ServerIP ServerPort FileSystemBaseDir WebSocketPortNo\n";
+		std::cerr << "Required arguments: ServerIP ServerPort WebSocketPortNo\n";
 		return -1;
 	}
 	try {
-		zeitoon::GUI::GuiCHI GUI(argv[1], std::atoi(argv[2]), argv[3], std::atoi(argv[4]));
+		zeitoon::GUI::GuiCHI GUI(std::atoi(argv[3]));
+		GUI.connect(argv[1], std::atoi(argv[2]));
 		GUI.sm.joinNet();
 	} catch (zeitoon::utility::cantParseString *err) {
 		std::cout << err->what();

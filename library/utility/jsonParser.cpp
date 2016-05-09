@@ -144,7 +144,7 @@ JValue &JValue::operator[](string name) const {
 
 //-------------------------------jVariable
 bool JVariable::isNull() const {
-	return (Strings::compare("NULL", value) == 0);
+	return (seq("NULL", value));
 }
 
 bool JVariable::isInt() const {
@@ -153,20 +153,31 @@ bool JVariable::isInt() const {
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
 		if ((str[i] < 48 || str[i] > 57)    //Numbers
-		    && !((str[i] == 45 || str[i] == 43) && i == 0))    // ' ','-','+'
+		    && !((str[i] == 45 || str[i] == 43) && i == 0))    // '-','+'
 			return false;
+	if ((str[0] == 45 || str[0] == 43) && str.length() == 1)
+		return false;
 	return true;
 }
 
 bool JVariable::isFloat() const { //TODO: make sure that 'e','E','.' r only used once?
 	if (value.length() == 0)
 		return false;
+	int cn, cd, ce;
+	cn = ce = cd = 0;
 	string str = Strings::trim(value, "\"");
 	for (unsigned int i = 0; i < value.size(); i++)
-		if ((str[i] < 48 || str[i] > 57)    //Numbers
-		    && str[i] != 46 && !((str[i] == 45 || str[i] == 43) && i == 0)    // '.','-','+'
-		    && str[i] != 101 && str[i] != 69)    //e & E
+		if (str[i] >= 48 && str[i] <= 57)    //Numbers
+			cn += 1;
+		else if (str[i] == 46)
+			cd += 1;
+		else if ((str[i] == 45 || str[i] == 43) && i == 0)    // '.','-','+'
+			;//ok
+		else
 			return false;
+	//&& str[i] != 101 && str[i] != 69)    //e & E
+	if (cn<0 || cd>1)
+		return false;
 	return true;
 }
 
@@ -256,7 +267,7 @@ void JVariable::fromString(string str) {
 
 string JVariable::toString() const {
 	if (this->isFloat() || this->isBoolian() || this->isNull())
-		return value;
+		return Strings::toLower(value);
 	else
 		return "\"" + JSONUtility::encodeString(value) + "\"";
 }

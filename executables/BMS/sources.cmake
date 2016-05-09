@@ -5,4 +5,4 @@
 #	PARENT_SCOPE
 #)
 
-AddSourceFiles(protocolHDL.cpp main2.cpp)
+AddSourceFiles(main.cpp)

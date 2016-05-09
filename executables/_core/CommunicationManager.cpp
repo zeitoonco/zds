@@ -117,7 +117,7 @@ void CommunicationManager::fireEvent(string eventName, string &data, string from
 			try {
 				HookProfile &hook = hookList.at(hookId);
 				lock.unlock();
-				sendFunc(hook.extension, from, hook.eventName, data, MessageTypes::MTFire, "");
+				sendFunc(hook.extension, from, hook.eventName, data, MessageTypes::MTFire, "", "");
 			} catch (...) {
 				//todo: log fire fail
 				cerr << "LOG:Firing hook failed. " << eventName << ">" << hookId;
@@ -127,17 +127,47 @@ void CommunicationManager::fireEvent(string eventName, string &data, string from
 		EXTnamesMismatch("No event named '" + eventName + "' is registered");
 }
 
-void CommunicationManager::callCommand(string cmdName, string &data, string from, string id) {
+string CommunicationManager::callCommandSync(string cmdName, string &data, string from, string id, string sessionid) {
+	string cid = callCommand(cmdName, data, from, id, sessionid);
+
+	idData x = {"", false};
+	try {
+		lock_guard<mutex> lg(MtxIdList);
+		idList[cid] = &x;
+	} catch (std::exception ex) {
+		EXTunknownExceptionI("unable to add to id-list", ex);
+	}
+	while (!x.set) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(30));
+	}
+	string dt = x.data;
+	try {
+		lock_guard<mutex> lg(MtxIdList);
+		idList.erase(cid);
+	} catch (std::exception &ex) {
+		EXTunknownExceptionI("unable to remove from id-list", ex);
+	}
+	return dt;
+}
+
+string CommunicationManager::callCommand(string cmdName, string &data, string from, string id, string sessionid) {
 	lockg(MTXCommandList);
-	auto cmd = commandList.find(cmdName);
+	auto cmd = commandList.find(cmdName); //todo:case insensitive in command name search?! how?
 	if (cmd != commandList.end()) {
 		CallbackProfile cbp(cmd->second, from, id);
-		if (id.length() > 0) {
+		if (id.length() > 0) { // no id, no callback
 			lockg(MTXCallback);
-			callbackList.emplace(cbp.uniqId(), cbp);
+			auto res = callbackList.emplace(cbp.uniqId(), cbp);
+			if (!res.second) {//exist, rewrite!
+				callbackList.erase(cbp.uniqId());
+				res = callbackList.emplace(cbp.uniqId(), cbp);
+				if (!res.second)
+					EXTunknownException("Cant store callback, failed on rewrite!");
+			}
 		}
 		lock.unlock();
-		sendFunc(cmd->second.extension, from, cmd->second.name, data, MessageTypes::MTCall, cbp.uniqId());
+		sendFunc(cmd->second.extension, from, cmd->second.name, data, MessageTypes::MTCall, cbp.uniqId(), sessionid);
+		return cbp.uniqId();
 	} else
 		EXTnamesMismatch("No command named '" + cmdName + "' is registered");
 }
@@ -146,11 +176,19 @@ void CommunicationManager::callCallback(string clbName, string &data, string fro
 	lockg(MTXCallback);
 	auto clb = callbackList.find(id);
 	if (clb != callbackList.end()) {
-		sendFunc(clb->second.extension, from, clb->second.command.name, data, MessageTypes::MTCallback,
-		         clb->second.identity);
-		commandList.erase(id);
+		//in sync list?
+		if (idList.find(id) != idList.end()) {
+			lock_guard<mutex> lg(MtxIdList);
+			idData *x = idList[id];
+			x->data = data;
+			x->set = true;
+		} else {            //else, send it
+			sendFunc(clb->second.extension, from, clb->second.command.name, data, MessageTypes::MTCallback,
+			         clb->second.identity, "");
+		}
+		callbackList.erase(id);
 	} else
-		EXTnamesMismatch("No callbackList with id '" + id + "' is registered");
+		EXTnamesMismatch("No callback with id '" + id + "' is registered");
 }
 
 CommandProfile CommunicationManager::getCommand(string name) {
@@ -168,7 +206,7 @@ CallbackProfile CommunicationManager::getCallback(string name) {
 	if (cmd != callbackList.end())
 		return cmd->second;
 	else
-		EXTnamesMismatch("No callbackList with id '" + name + "' is registered");
+		EXTnamesMismatch("No callback with id '" + name + "' is registered");
 }
 
 EventProfile CommunicationManager::getEvent(string name) {
@@ -194,7 +232,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (commandList.size() > 0) {
 		lockg(MTXCommandList);
 		for (auto &i:commandList)
-			if (seq(i.second.extension, ext->name))
+			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		for (string n:names)
 			commandList.erase(n);
@@ -202,7 +240,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (callbackList.size() > 0) {
 		lockg(MTXCallback);
 		for (auto &i:callbackList)
-			if (seq(i.second.extension, ext->name))
+			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		for (string n:names)
 			callbackList.erase(n);
@@ -210,7 +248,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (eventList.size() > 0) {
 		lockg(MTXEventList);
 		for (auto &i:eventList)
-			if (seq(i.second.extension, ext->name))
+			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		lockgc(lock2, MTXHookEvent);
 		for (string n:names) {
@@ -221,7 +259,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (hookList.size() > 0) {
 		lockg(MTXHookList);
 		for (auto &i:hookList)
-			if (seq(i.second.extension, ext->name))
+			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		lockgc(lock2, MTXHookEvent);
 		for (string n:names) {

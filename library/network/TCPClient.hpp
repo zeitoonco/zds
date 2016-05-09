@@ -9,6 +9,8 @@
 #include <uv.h>
 #include <functional>
 #include <thread>
+#include <iostream>
+#include <utility/exceptionex.hpp>
 
 namespace zeitoon {
 namespace utility {
@@ -89,10 +91,24 @@ private:
 	static void on_client_write(uv_write_t *req, int status);
 
 	void _packetReceived() {
+		std::cerr << "\nNETR " << this->_buff;
 		if (this->_onMessage != NULL)
-			this->_onMessage(this->_buff);
+			std::thread *t = new std::thread(&TCPClient::_safeCaller, this, this->_buff);//fixme:FREE MEMORY!
+		//this->_onMessage(this->_buff);
 		this->_buff = "";
 		this->_lastPacketLen = 0;
+	}
+
+	void _safeCaller( std::string data) {
+		try {
+			this->_onMessage( data);
+		} catch (exceptionEx *ex) {
+			cerr << "TCPC.Error.OnReceive: " << ex->what() << endl;
+		} catch (exception &ex) {
+			cerr << "TCPC.sysError.OnReceive: " << ex.what() << endl;
+		} catch (...) {
+			cerr << "TCPC.uncaughtError.OnReceive: " << endl;
+		}
 	}
 };
 

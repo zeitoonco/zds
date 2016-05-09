@@ -1,27 +1,108 @@
-pg databse:
+pg database:
   add cmd: remove user/service
   
 Mediators:
   add local config manager
   throw exception on error
-  
-Datatypes:
-  use jsonParse
+  err on > ServerMediator::onNetDisconnect() . dont call on dtor!
+  send and receive error in json format. reconstruct err class in service using it...
+
+datatypes
+    remove DTBase(string name, string text). (calling pure virtual in ctor)
+    use jsonParse
+    auto convert ( DTInteger<->int )
+
+DT::DTTable[Str]
+    add 'findColumn' & 'getfield'(by col name) funcs
 
   
 JsonParser:
   add level of parsing
   add ignore
   rewrite parsing process for JSON to handle all unexpected situations.
-  
-  
-  
-  
-  
-  
+
+
+GUI
+*  multi language, files in services, swap in GUI server ... (keep lang of users)
+  restirict session id to a connection
+  limit commands that can be used before login
+  start websocket on enable
+
+_core
+   a call without id means, it dosnt need its callback
+*   user access
+    add title to services
+    make _core a service! ( need um,db to activate...)
+  manage different states in db vs from service (onConnect)
+  exes, node generator
+
+    how can DB service register its permisssions when UM is not loaded yet?!
+    in comm, make string compare case insensitive(commands & events)
+
+    error codes
+
+    auto-create local db
+    filtered events (on data fields)
+    Use 'service' onlu, instead of 'extension' or 'plugin'
+    move codes to ExtensionProfile or Extension Manager from Router
+
+    check requirements by servicetype
+
+    stop communication if UM is not running
+    callback for enable,disable,install,uninstall,
+    make Service.state pruvate, provide setter,getter. fire events on change!
+
+    stop service if required is stopped
+    registerCommand=>get info from serviceInfo, if exist register with that data
+    check command's required permission(mentioned in installinfo) beside default one (2check in one go?)
+    extmanager.save, update only if its changed. use getter setters
+    update reSat. when other services got Enabled!
+UM
+    break on invalid id, in check permission
+    set permission commands
+    session timeout
+    logout when gui disconnects
+    multi check permission command?
+
+cmake:
+    automate resource copy
+    use link of CMakeLists files from reference.
+    add libs from sources.cmake
+
+exception:
+    dont use *
+    try removing macros?
+    make inheritance mor simple? ( only implmnt a constructor?
+
+all:
+    multiLang
+    cache man util( core service )
+    Auto-gen [service]utility, install infos, nodes, ... ,... ,!!!
+    rename all .lenght()s to .size()
+    add a [success] field to "callback" packets? ( use this instead of error packet!)
+    inline commands.(script, store in core, fast run)
+
+NET:
+    multi-thread receive pool handler
+
+
+NEXT
+    hesabdary
+    paziresh
+    chat
   
   
   now #ajl:
     add Info.cpp
-    #
-    use DSQuery in DBMediator
+
+    IMPP
+    how core & pgdatabase set command permission when um is not loaded?
+    check tcpserver disconnect
+    make udp on message threaded & check dc
+    store service data in db, man status
+    check session in packet!(
+            set session in gui server.
++            check mediators and core for session parameter .
+            change documents, add session in packet
+    standardize gui packets!!!cmd,evnt,cb,err,warning
+    CLEANUP!

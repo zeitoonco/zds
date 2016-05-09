@@ -73,7 +73,7 @@ public:
 	virtual void pong(string id, int miliseconds) = 0;
 
 	virtual bool datareceive(string data) {
-		JStruct js(data);
+		JStruct js(data);//todo:dont parse data field
 		string type = js["type"].getValue();
 		string node = js["node"].getValue();
 		if (!Strings::compare(type, "internal", false)) {
@@ -98,31 +98,35 @@ public:
 			string from = (fromj == NULL ? "" : fromj->value->getValue());
 			string id = (idj == NULL ? "" : idj->value->getValue());
 			if (!Strings::compare(type, "fire", false)) { //communication
-				onEvent(node, data, from);
+				this->onEvent(node, data, from);
 			} else if (!Strings::compare(type, "callback", false)) { //communication
-				onCallback(node, data, id, from);
+				this->onCallback(node, data, id, from);
 			} else if (!Strings::compare(type, "call", false)) { //communication
 				if (!Strings::compare(node, "onInstall", false)) {
 					if (dataj == NULL)
 						EXTinvalidParameter("onInstall: Data field is empty!");
 					JStruct &jdata = *((JStruct *) dataj->value);
-					onInstall(jdata["id"].getValue());
+					this->onInstall(jdata["id"].getValue());
+					//todo: receive a bool, that shows if install process was successful, for next line
+					sm.send(CommunicationUtility::makeCallback("onInstall", id, getServiceName(), "{\"success\":true}"));
 				} else if (!Strings::compare(node, "onUninstall", false)) {
-					onUninstall();
+					this->onUninstall();
 				} else if (!Strings::compare(node, "onEnable", false)) {
-					onEnable();
+					this->onEnable();
+					//todo: receive a bool, that shows if install process was successful, for next line
+					sm.send(CommunicationUtility::makeCallback("onEnable", id, getServiceName(), "{\"success\":true}"));
 				} else if (!Strings::compare(node, "onDisable", false)) {
-					onDisable();
+					this->onDisable();
 				} else if (!Strings::compare(node, "error", false)) {
 					if (dataj == NULL)
 						EXTinvalidParameter("error: Data field is empty!");
 					JStruct &jdata = *((JStruct *) dataj->value);
-					onError(jdata["node"].getValue(), jdata["id"].getValue(), jdata["description"].getValue());
+					this->onError(jdata["node"].getValue(), jdata["id"].getValue(), jdata["description"].getValue());
 				} else if (!Strings::compare(node, "warning", false)) {
 					if (dataj == NULL)
 						EXTinvalidParameter("warning: Data field is empty!");
 					JStruct &jdata = *((JStruct *) dataj->value);
-					onWarning(jdata["level"].getValue(), jdata["node"].getValue(), jdata["id"].getValue(),
+					this->onWarning(jdata["level"].getValue(), jdata["node"].getValue(), jdata["id"].getValue(),
 					          jdata["description"].getValue());
 				} else if (!Strings::compare(node, "getInstallInfo", false)) {
 					sm.send(CommunicationUtility::makeCallback("getInstallInfo", id, getServiceName(),
@@ -144,7 +148,7 @@ public:
 							                                   + "\" , \"value\" : " + newdata + "}"
 							));
 				} else
-					onCallback(node, data, id, from);
+					this->onCommand(node, data, id, from);
 			}
 		}
 		return false;

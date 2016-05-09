@@ -11,7 +11,6 @@ void onmsg(size_t id, std::string msg);
 TCPServer a(5456);
 
 int main() {
-
 	a.listen();
 	a.registerOnMessageCB(onmsg);
 	//a.joinOnListenThread();

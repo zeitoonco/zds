@@ -460,6 +460,10 @@ public:
 		return !(*this == str);
 	}
 
+	virtual operator IntType() const {//todo: incomplate expriment for auto convert
+		return this->getValue();
+	}
+
 	/**
 	 * getTypename naame kellasi ke dar aan gharar darim ra barmigardand.az in taabe dar hengame excption ha estefade
 	 * mishavad ta vaghti excption rokh dad esm e kellasi ke dar aan excption rokh dade ast dar esception.what
@@ -750,6 +754,10 @@ public:
 		return !(*this == var);
 	}
 
+	virtual operator FloatType() const {
+		return this->getValue();
+	}
+
 	/**
 	 *getTypename naame kellasi ke dar aan gharar darim ra barmigardand.az in taabe dar hengame excption ha estefade
 	 * mishavad ta vaghti excption rokh dad esm e kellasi ke dar aan excption rokh dade ast dar esception.what
@@ -816,11 +824,13 @@ public:
 	};
 
 protected:
-	int boolStrLen = 4;
-	string boolStr[4][2] = {{"false", "true"},
+	int boolStrLen = 6;
+	string boolStr[6][2] = {{"false", "true"},
 	                        {"0",     "1"},
 	                        {"off",   "on"},
-	                        {"no",    "yes"}};
+	                        {"no",    "yes"},
+	                        {"f",     "t"},
+	                        {"n",     "y"}};
 	boolTxType _stringType;
 
 public:
@@ -1011,6 +1021,10 @@ public:
 		return !(*this == val);
 	}
 
+	virtual operator bool() const {
+		return getValue();
+	}
+
 	/**
 	 * getTypename naame kellasi ke dar aan gharar darim ra barmigardand.az in taabe dar hengame excption ha estefade
 	 * mishavad ta vaghti excption rokh dad esm e kellasi ke dar aan excption rokh dade ast dar esception.what
@@ -1070,8 +1084,7 @@ public:
 	 * @param def meghdar default baraye _value e object.be sooarat e pishfarz khali ast.
 	 *
 	 */
-	DTString(string name, string def = "") :
-			DTSingleType<string>(name, def) {
+	DTString(string name, string def = "") : DTSingleType<string>(name, def) {
 	}
 
 	/**toString ke _value object ra dar yek string zakhire mikond.
@@ -1107,7 +1120,7 @@ public:
 		//we can't use trim because first character in string can be '"'
 		size_t x = data.find('"');
 		size_t y = data.rfind('"');
-		if (x == string::npos || y == string::npos)
+		if (!(x == string::npos && y == string::npos) && (x == string::npos || y == string::npos))
 			EXTcantParseString("provided string is not enclosed with '\"'.");
 		str = data.substr(x + 1, y - x - 1);
 		str = parseString(utility::JSONUtility::decodeString(str));
@@ -1187,6 +1200,10 @@ public:
 	 */
 	virtual bool operator!=(string str) {
 		return !(*this == str);
+	}
+
+	virtual operator string() const {
+		return getValue();
 	}
 
 	/**
@@ -1350,14 +1367,13 @@ protected:
 };
 
 
-union MACBytes {
-	uint64_t value;
-	uint8_t bytes[];
-};
-
 class MACAddress : public datatypes::DTSingleType<uint64_t> {
-
 public:
+	union MACBytes {
+		uint64_t value;
+		uint8_t bytes[];
+	};
+
 	/**constructor baraye DTString.
 	 *
 	 *@param name naame moteghaeir ke constructor DTSingleType miferstd.

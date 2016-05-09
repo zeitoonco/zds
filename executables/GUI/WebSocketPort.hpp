@@ -21,7 +21,7 @@ typedef websocketpp::server<websocketpp::config::asio> websocketServer;
 namespace zeitoon {
 namespace GUI {
 
-
+//todo: we need callback for 'onMessage', 'newClient
 class WebSocketPort {
 	websocketServer GUI_WebSocketServer;
 	boost::asio::io_service ios;

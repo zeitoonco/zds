@@ -1,0 +1,170 @@
+###	Internal
+
+•Ping Sample: (both way)
+{"type" : "internal" , "node" : "ping" , "id" : "$$$123ABCD9"}
+•Response Pong Sample:
+{"type" : "internal" , "node" : "pong" , "id" : "$$$123ABCD9"}
+
+• hello			(Server>Client)
+{"type" : "internal" , "node" : "hello"}
+• hello responsee	(C>S)
+{"type" : "internal" , "node" : "hello" , "name" : "installedServiceSample"    , "version" : "5" , "id" : "$$$123ABCD9"}
+{"type" : "internal" , "node" : "hello" , "name" : "notInstalledServiceSample" , "version" : "5"}
+
+
+### Communications
+♦Call		template: {"type" : "call" ,     "node" : "$$$" , "id" : "$$$" , "from" : "$$$" , "session" : "$$$" ,  	"data" : "$$$" }
+♦Callback	template: {"type" : "callback" , "node" : "$$$" , "id" : "$$$" , "from" : "$$$" , 			"data" : "$$$" }
+♦Fire		template: {"type" : "fire" ,     "node" : "$$$" , 		 "from" : "$$$" , 			"data" : "$$$" }
+
+### Server Predefined Nodes 
+
+♣Communication manager
+ •onSettingUpdate : Event
+	{"type" : "fire" , "node" : "onsettingupdate" , "from" : "__core" , "data" : {"settingname" : "$$$name" , "newvalue" : "$$$value"} }
+
+ •registerCommand
+	{"type" : "call" , "node" : "registercommand" , "id" : "$$$123456" , "data" : {"names" : ["command1","command2","commandN"]} }
+ •removeCommand
+	{"type" : "call" , "node" : "removeCommand" , "id" : "$$$123456" , "data" : {"names" : ["command1","command2","commandN"]} }
+ •registerEvent
+	{"type" : "call" , "node" : "registerEvent" , "id" : "$$$123456" , "data" : {"names" : ["event1","event2","eventN"]} }
+ •removeEvent
+	{"type" : "call" , "node" : "removeEvent" , "id" : "$$$123456" , "data" : {"names" : ["event1","event2","eventN"]} }
+ •registerHook
+	{"type" : "call" , "node" : "registerHook" , "id" : "$$$123456" , "data" : {"names" : ["hook1","hook2","hookN"]} }
+ •removeHook
+	{"type" : "call" , "node" : "removeHook" , "id" : "$$$123456" , "data" : {"names" : ["hook1","hook2","hookN"]} }
+
+♣etc
+ •error
+	{"type" : "call" , "node" : "error" , "id" : "$$$123456" , "data" : {"node" : "$$$name" , "id" : "$$$123456" , "description" : "$$$something..."} }
+
+ •warning
+	{"type" : "call" , "node" : "warning" , "id" : "$$$123456" , "data" : {"level" : "note" , "node" : "$$$name" , "id" : "$$$123456" , "description" : "$$$something..."} } 
+	
+♣Settings
+ •registerSetting
+	{"type" : "call" , "node" : "registersetting" , "id" : "$$$123456" , "data" : { "name" : "$$$name" , "defvalue" : "$$$value" , "public" : "$$$truefalse" , "readonly" : "$$$truefalse"} }
+ •removeSetting
+	{"type" : "call" , "node" : "removesetting" , "id" : "$$$123456" , "data" : { "name" : "$$$name"} }
+ •setSetting
+	{"type" : "call" , "node" : "setsetting" , "id" : "$$$123456" , "data" : { "name" : "$$$name" , "value" : "$$$value"} }
+ •getSetting
+	{"type" : "call" , "node" : "getsetting" , "id" : "$$$123456" , "data" : { "name" : "$$$name"} }
+	•Response from server:
+	{"type" : "callback" , "node" : "getsetting" , "id" : "$$$123456" , "from" : "__core" , "data" : { "name" : "$$$name" , "value" : "$$$value"} }
+ •updateSetting
+	{"type" : "call" , "node" : "updatesetting" , "id" : "$$$123456" , "data" : { "name" : "$$$name" , "defvalue" : "$$$value" , "public" : "$$$truefalse" , "readonly" : "$$$truefalse"} }
+ •resetSetting
+	{"type" : "call" , "node" : "resetsetting" , "id" : "$$$123456" , "data" : { "name" : "$$$name"} }
+	•Response from server:
+	{"type" : "callback" , "node" : "resetsetting" , "id" : "$$$123456" , "from" : "__core" , "data" : { "name" : "$$$name" , "value" : "$$$value"} }
+
+###Service predefined Nodes
+ •onInstall
+	{"type" : "call" , "node" : "oninstall" , "from" : "__core" , "data" : {"id" : "$$$123ABCD9"} }
+ •onUninstall
+	{"type" : "call" , "node" : "onuninstall" , "from" : "__core" }
+ •onEnable
+	{"type" : "call" , "node" : "onenable" , "from" : "__core" }
+ •onDisable
+	{"type" : "call" , "node" : "ondisable" , "from" : "__core" }
+ •error
+	{"type" : "call" , "node" : "error" , "id" : "$$$123456" , "from" : "__core" , "data" : {"node" : "$$$name" , "id" : "$$$123456" , "description" : "$$$something..."} }
+ •warning
+	{"type" : "call" , "node" : "warning" , "id" : "$$$123456" , "from" : "__core" , "data" : {"level" : "note" , "node" : "$$$name" , "id" : "$$$123456" , "description" : "$$$something..."} } 
+ •changeDatatypeVersion
+	{"type" : "call" , "node" : "changedatatypeversion" , "id" : "$$$123456" , "from" : "$$$sender" , "data" : {"value" : $$$SomeData , "datatype" : "$$$name" , "fromversion" : "$$$1" , "toversion" : "$$$2"} } 
+	•Response from service:
+	{"type" : "callback" , "node" : "changedatatypeversion" , "id" : "$$$123456" , "from" : "$$$servicename" , "data" : { "datatype" : "$$$name" , "newversion" : "$$$2" , "value" : $$$ConvertedData} }
+ •getInstallInfo
+	{"type" : "call" , "node" : "getinstallinfo" , "id" : "$$$123456" , "from" : "__core"} 
+	•Response from service:
+	{"type" : "callback" , "node" : "getinstallinfo" , "id" : "$$$123456" , "data" : {
+																					"name" : "$$$servicename" , 
+																					"title" : "$$$ Service Title" , 
+																					"version" : "$$$3" ,
+																					"commands" : [
+																									{"name" : "$$$name" , "inputdatatype" : "$$$datatype1" , "inputdatatypeversion" : "$$$2" , "outputdatatype" : "$$$datatype2" , "outputdatatypeversion" : "$$$1"} ,
+																									{"name" : "$$$name2" , "inputdatatype" : "$$$datatype3" , "inputdatatypeversion" : "$$$1" , "outputdatatype" : "$$$datatype4" , "outputdatatypeversion" : "$$$10"}
+																									, ... ] ,
+																					"events" : [ {"name" : "$$$name" , "datatype" : "$$$datatype2" , "datatypeversion" : "$$$3"} , ... ] ,
+																					"hooks" : [ {"name" : "$$$eventname" , "datatype" : "$$$datatype2" , "datatypeversion" : "$$$3"} , ... ] ,
+																					"requirements" : [ {"name" : "$$$servicename" , "version" : "$$$minversion" } , ... ] ,
+																					"datatypes" : [ {"name" : "$$$datatypename" , "version" : "$$$123"} , ... ] ,
+																					} }
+
+																					
+																					
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------																					
+### Sample scenario : a Service that controls lightnings of a building, named "lightman"
+
+@@ Service Connected to server for first time
+  S>C	{"type" : "internal" , "node" : "hello"}
+  C>S	{"type" : "internal" , "node" : "hello" , "name" : "lightman" , "version" : "1"}
+
+@@ Service Installed from server control panel
+  S>C	{"type" : "call" , "node" : "getinstallinfo" , "id" : "1001" , "from" : "__core"} 
+  C>S	{"type" : "callback" , "node" : "getinstallinfo" , "id" : "1001" , "data" : {"name" : "lightman" , "title" : "Building Lightning Manager" , "version" : "1" , 
+																												"commands" : [ 
+																																{"name" : "lightning.getLampState" , "inputdatatype" : "lightning.DTLampAddress" , "inputdatatypeversion" : "2" , "outputdatatype" : "DTBoolean" , "outputdatatypeversion" : "0"} ,
+																																{"name" : "lightning.setLampState" , "inputdatatype" : "lightning.DTLampState" , "inputdatatypeversion" : "3" , "outputdatatype" : "" , "outputdatatypeversion" : "0"} 
+																															] ,
+																												"events" : [ 
+																																{"name" : "lightning.lampStateChanged" , "datatype" : "lightning.DTLampState" , "datatypeversion" : "3"}
+																															] ,
+																												"hooks" : [ 
+																																{"name" : "weather.stormArrival" , "datatype" : "weather.DTStormInfo" , "datatypeversion" : "1"}
+																																{"name" : "calendar.twilight" , "datatype" : "calendar.DTDate" , "datatypeversion" : "1"}																																
+																																{"name" : "calendar.sunrise" , "datatype" : "calendar.DTDate" , "datatypeversion" : "1"}																																
+																																{"name" : "calendar.sunset" , "datatype" : "calendar.DTDate" , "datatypeversion" : "1"}																																
+																															] ,
+																												"calls" : [
+																																{"name" : "weather.getTemperator" , "inputdatatypeversion" : "0" , "outputdatatypeversion" : "1"}
+																															] ,
+																												"requirements" : [ 
+																																{"name" : "calendar" , "version" : "2" } 
+																															] ,
+																												"datatypes" : [ 
+																																{"name" : "lightning.DTLampAddress" , "version" : "2"} , 
+																																{"name" : "lightning.DTLampState" , "version" : "3"} , 
+																															] ,
+																													} }
+  S>C	{"type" : "call" , "node" : "oninstall" , "from" : "__core" , "data" : {"id" : "DCH2837G462CN38"} }
+  C>S	{"type" : "call" , "node" : "registersetting" , "data" : { "name" : "lightning.lampSwitchCounter" , "defvalue" : "0" , "public" : "true" , "readonly" : "true"} }
+
+@@ Service Enabled from server control panel
+  S>C	{"type" : "call" , "node" : "onenable" , "from" : "__core" }
+  C>S	{"type" : "call" , "node" : "resetsetting" , "id" : "62489" , "data" : { "name" : "lightning.lampSwitchCounter"} }
+  S>C	{"type" : "callback" , "node" : "resetsetting" , "id" : "62489" , "from" : "__core" , "data" : { "name" : "lightning.lampSwitchCounter" , "value" : "0"} }
+  C>S	{"type" : "call" , "node" : "registercommand" , "data" : {"names" : ["lightning.getLampState","lightning.setLampState"]} }
+  C>S	{"type" : "call" , "node" : "registerEvent" , "data" : {"names" : ["lightning.lampStateChanged"]} }
+  C>S	{"type" : "call" , "node" : "registerHook" , "data" : {"names" : ["calendar.sunset","calendar.sunrise"]} }
+
+@@ Service Disconnects & reconnects
+  S>C	{"type" : "internal" , "node" : "hello"}
+  C>S	{"type" : "internal" , "node" : "hello" , "name" : "lightman" , "version" : "1" , "id" : "BH6ER065"}
+
+@@ Someone turns on a lamp
+  S>C	{"type" : "call" , "node" : "lightning.setLampState" , "id" : "6548" , "from" : "remoteControl" , "data" : {"room" : "4" , "lamp" : "7" , "state" : "on"} }
+  C>S	{"type" : "fire" , "node" : "lightning.lampStateChanged" , "data" : {"room" : "4" , "lamp" : "7" , "state" : "on"} }
+
+@@ Needs current temperature
+  C>S	{"type" : "call" , "node" : "weather.getTemperator" , "id" : "102" }
+  S>C	{"type" : "callback" , "node" : "weather.getTemperator" , "id" : "102" , "from" : "weatherService" , "data" : {"currentTemp" : "21" , "todayMean" : "23"} }
+
+@@ Someone needs a lamp state
+  S>C	{"type" : "call" , "node" : "lightning.getLampState" , "id" : "1116" , "from" : "remoteControl" , "data" : {"room" : "1" , "lamp" : "4"} }
+  C>S	{"type" : "callback" , "node" : "lightning.getLampState" , "id" : "1116" , "data" : "off" }
+
+@@ Someone tries to turn on an invalid lamp
+  S>C	{"type" : "call" , "node" : "lightning.setLampState" , "id" : "9413" , "from" : "remoteControl" , "data" : {"room" : "9" , "lamp" : "99" , "state" : "on"} }
+  C>S	{"type" : "call" , "node" : "error" , "id" : "11011" , "data" : {"node" : "lightning.setLampState" , "id" : "9413" , "description" : "Invalid lamp number in request"} }
+
+@@ Anytime while service is connected this can happen
+  C>S	{"type" : "internal" , "node" : "ping" , "id" : "3DK85T"}
+  S>C	{"type" : "internal" , "node" : "pong" , "id" : "3DK85T"}
+ //or
+  S>C	{"type" : "internal" , "node" : "ping" , "id" : "5T347A"}
+  C>S	{"type" : "internal" , "node" : "pong" , "id" : "5T347A"}

@@ -1,0 +1,37 @@
+rename renamed EVERYTHING!
+cant type TAB in commit message
+
+
+symlink cmake files, macro for link libs and link custom files, extern libs
+
+add new nodes to server( get list of services ... )
+
+onInstall callback(success or ..)
+
+
+node:
+***C
+list
+putFile
+getFile
+moveFile
+removeFile
+makeDir
+removeDir
+moveDir
+
+
+x setup nginx. 
+  point to web files
+  route cmd & evnts & cb & hook
+  manage session
+    catch login res, save session, attach to next ones
+F   CORE. check accessLevel
+
+
+
+call
+hook 
+
+callback
+fire

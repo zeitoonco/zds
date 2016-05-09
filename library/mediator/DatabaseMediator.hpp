@@ -18,16 +18,26 @@ class ServerMediator;
 
 class DatabaseMediator {
 	ServerMediator *sm;
-	public:
+
+	std::string wrapSqlCmd(std::string sql);
+
+public:
 	DatabaseMediator(ServerMediator *ism) :
 			sm(ism) {
 	}
+
 	void query(std::string cmd);
+
 	zeitoon::datatypes::DTTableString querySync(std::string cmd);
+
 	void execute(std::string cmd);
+
 	int executeSync(std::string cmd);
+
 	void singleFieldQuery(std::string cmd);
-	std::string singleFieldQuerySync(std::string cmd);//single field result Only
+
+	std::string singleFieldQuerySync(std::string cmd);
+
 	virtual ~DatabaseMediator() {
 	}
 };

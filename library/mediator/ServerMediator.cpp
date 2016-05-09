@@ -25,7 +25,7 @@ ServerMediator::ServerMediator(CommunicationHandlerInterface *chi) :
 }*/
 
 ServerMediator::~ServerMediator() {
-	disconnect();
+	//disconnect(); //fixme: pure func error, see line 74
 }
 
 void ServerMediator::connect() {
@@ -71,7 +71,7 @@ void ServerMediator::send(string data) {
 	}
 
 	void ServerMediator::onNetDisconnect() {
-		owner->onDisconnect();
+		owner->onDisconnect();//todo: called after destruction of owner! sigabrt
 }
 
 } /* namespace utility */

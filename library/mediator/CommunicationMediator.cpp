@@ -17,12 +17,13 @@
 namespace zeitoon {
 namespace utility {
 
-void CommunicationMediator::runCommand(string name, string data, string id) {
-	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data));
+void CommunicationMediator::runCommand(string name, string data, string id, string session) {
+	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data, session));
 }
 
-string CommunicationMediator::runCommandSync(string name, string data, string id) {
-	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data));
+string CommunicationMediator::runCommandSync(string name, string data, string id, string session) {
+	//todo:throw error if id is empty
+	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data, session));
 	idData x = {"", false};
 	try {
 		lock_guard<mutex> lg(MtxIdList);
@@ -41,6 +42,14 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 		EXTunknownExceptionI("unable to remove from id-list", ex);
 	}
 	return dt;
+}
+
+void CommunicationMediator::runCommand(string name, string data, string id) {
+	runCommand(name, data, id, "");
+}
+
+string CommunicationMediator::runCommandSync(string name, string data, string id) {
+	return runCommandSync(name, data, id, "");
 }
 
 void CommunicationMediator::runCommand(string name, string data) {
@@ -104,9 +113,9 @@ void CommunicationMediator::removeCommand(string name) {
 	                                           "{\"names\" : [" + name + "]}"));
 }
 
-void CommunicationMediator::registerHook(string name) {
+void CommunicationMediator::registerHook(string name, string session) {
 	sm->send(CommunicationUtility::makeCommand("_core.registerHook", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [" + name + "]}"));
+	                                           "{\"names\" : [" + name + "]}",session));
 }
 
 void CommunicationMediator::removeHook(string name) {
@@ -114,7 +123,7 @@ void CommunicationMediator::removeHook(string name) {
 	                                           "{\"names\" : [" + name + "]}"));
 }
 
-void zeitoon::utility::CommunicationMediator::errorReport(std::string node, std::string id, std::string desc) {
+void CommunicationMediator::errorReport(std::string node, std::string id, std::string desc) {
 	sm->send(CommunicationUtility::makeError(node, id, desc));
 }
 

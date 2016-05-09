@@ -11,7 +11,8 @@
 #include "datatypes/dtsingletypes.hpp"
 #include "datatypes/DTTableString.hpp"
 
-namespace zeitoon { namespace datatypes {
+namespace zeitoon {
+namespace datatypes {
 
 class DSString : public DTStruct {
 public:
@@ -36,7 +37,6 @@ public:
 			this->fromString(data);
 		} else {
 			value = data;
-			this->list.push_back(&value);
 		}
 	}
 };
@@ -113,6 +113,21 @@ public:
 	}
 };
 
+class EnmServiceType {
+public:
+	enum EnmServiceTypesEnum {
+		other, Core, Database, UserManager, GUI, BMS, Accounting, Chat, Reception, __MAX
+	};
+	const static string typeString[];
+};
+
+class ServiceTypePrototypes {//todo:later
+public:
+	class ServiceTypeVersion {
+	public:
+
+	};
+};
 
 class DSInstallInfo : public DTStruct {
 public:
@@ -123,22 +138,29 @@ public:
 		DTInteger<> inputDatatypeVersion = {"inputDatatypeVersion"};
 		DTString outputDatatype = {"outputDatatype"};
 		DTInteger<> outputDatatypeVersion = {"inputDatatypeVersion"};
+		DTString permissionRequired = {"permissionRequired"};
 
 		DSCommandDetail(string sname) : DSCommandDetail("", "", 0, "", 0) {
 		}
 
-		DSCommandDetail(string iname, string inputDT, int inputDTVer, string outputDT, int outputDTVer) :
-				DTStruct("DSCommandDetail", 0, 0, 0) {
-			name = iname;
-			inputDatatype = inputDT;
-			inputDatatypeVersion = inputDTVer;
-			outputDatatype = outputDT;
-			outputDatatypeVersion = outputDTVer;
+		DSCommandDetail(string iname, string inputDT, int inputDTVer, string outputDT, int outputDTVer,
+		                string reqPermission = "") : DTStruct("DSCommandDetail", 0, 0, 0) {
 			this->list.push_back(&name);
 			this->list.push_back(&inputDatatype);
 			this->list.push_back(&inputDatatypeVersion);
 			this->list.push_back(&outputDatatype);
 			this->list.push_back(&outputDatatypeVersion);
+			this->list.push_back(&permissionRequired);
+			name = iname;
+			inputDatatype = inputDT;
+			inputDatatypeVersion = inputDTVer;
+			outputDatatype = outputDT;
+			outputDatatypeVersion = outputDTVer;
+			if (reqPermission == "")
+				permissionRequired = iname;
+			else
+				permissionRequired = reqPermission;
+
 		}
 	};
 
@@ -149,16 +171,18 @@ public:
 		DTInteger<> datatypeVersion = {"datatypeVersion"};
 
 		DSEventDetail(string sname) : DSEventDetail("", "", 0) {
+
 		}
 
 		DSEventDetail(string iname, string DT, int DTVer) :
 				DTStruct("DSEventDetail", 0, 0, 0) {
-			name = iname;
-			datatype = DT;
-			datatypeVersion = DTVer;
 			this->list.push_back(&name);
 			this->list.push_back(&datatype);
 			this->list.push_back(&datatypeVersion);
+			name = iname;
+			datatype = DT;
+			datatypeVersion = DTVer;
+
 		}
 	};
 
@@ -173,12 +197,13 @@ public:
 
 		DSHookDetail(string iname, string DT, int DTVer) :
 				DTStruct("DSHookDetail", 0, 0, 0) {
-			name = iname;
-			datatype = DT;
-			datatypeVersion = DTVer;
 			this->list.push_back(&name);
 			this->list.push_back(&datatype);
 			this->list.push_back(&datatypeVersion);
+			name = iname;
+			datatype = DT;
+			datatypeVersion = DTVer;
+
 		}
 	};
 
@@ -195,16 +220,17 @@ public:
 
 		DSInstallInfoCommandCallDetail(string iname, string inputDT, int inputDTVer, string outputDT, int outputDTVer) :
 				DTStruct("DSInstallInfoCommandCallDetail", 0, 0, 0) {
-			name = iname;
-			inputDatatype = inputDT;
-			inputDatatypeVersion = inputDTVer;
-			outputDatatype = outputDT;
-			outputDatatypeVersion = outputDTVer;
 			this->list.push_back(&name);
 			this->list.push_back(&inputDatatype);
 			this->list.push_back(&inputDatatypeVersion);
 			this->list.push_back(&outputDatatype);
 			this->list.push_back(&outputDatatypeVersion);
+			name = iname;
+			inputDatatype = inputDT;
+			inputDatatypeVersion = inputDTVer;
+			outputDatatype = outputDT;
+			outputDatatypeVersion = outputDTVer;
+
 		}
 	};
 
@@ -218,10 +244,11 @@ public:
 
 		DSInstallInfoRequirementDetail(string iname, int iVer) :
 				DTStruct("DSInstallInfoRequirementDetail", 0, 0, 0) {
-			name = iname;
-			version = iVer;
 			this->list.push_back(&name);
 			this->list.push_back(&version);
+			name = iname;
+			version = iVer;
+
 		}
 	};
 
@@ -235,42 +262,55 @@ public:
 
 		DSInstallInfoDatatypesDetail(string iname, int iVer) :
 				DTStruct("DSInstallInfoDatatypesDetail", 0, 0, 0) {
-			name = iname;
-			version = iVer;
 			this->list.push_back(&name);
 			this->list.push_back(&version);
+			name = iname;
+			version = iVer;
+
 		}
 	};
 
 	DTString name = {"name"};
-	DTString title = {"title"};
+	DTString name2 = {"name2"};
 	DTInteger<> serviceVersion = {"version"};
+	DTInteger<> minSupportedVersion = {"minSupportedVersion"};
+	DTEnum<EnmServiceType> serviceType = {"serviceType"};
+	//DTInteger<> serviceVersion = {"version"};
+
 	DTSet<DSCommandDetail> commands = {"commands"};
 	DTSet<DSEventDetail> events = {"events"};
 	DTSet<DSHookDetail> hooks = {"hooks"};
 	DTSet<DSInstallInfoCommandCallDetail> calls = {"calls"};
-	DTSet<DSInstallInfoRequirementDetail> requirements = {"requirements"};
+	DTSet<DSInstallInfoRequirementDetail> installRequirements = {"installRequirements"};
+	DTSet<DSInstallInfoRequirementDetail> enableRequirements = {"enableRequirements"};
 	DTSet<DSInstallInfoDatatypesDetail> datatypes = {"datatypes"};
 
-	DSInstallInfo(string iname, string ititle, int iver) : DTStruct("installInfo", 0, 0, 0) {
+	DSInstallInfo(string iname, string iname2, int iver, int iminSupVer, EnmServiceType::EnmServiceTypesEnum iSrvisType)
+			: DTStruct("installInfo", 0, 0, 0) {
 		name = iname;
-		title = ititle;
+		name2 = iname2;
 		serviceVersion = iver;
+		minSupportedVersion = iminSupVer;
+		serviceType = iSrvisType;
 		this->list.push_back(&name);
-		this->list.push_back(&title);
+		this->list.push_back(&name2);
 		this->list.push_back(&serviceVersion);
+		this->list.push_back(&minSupportedVersion);
+		this->list.push_back(&serviceType);
+
 		this->list.push_back(&commands);
 		this->list.push_back(&events);
 		this->list.push_back(&hooks);
 		this->list.push_back(&calls);
-		this->list.push_back(&requirements);
+		this->list.push_back(&installRequirements);
+		this->list.push_back(&enableRequirements);
 		this->list.push_back(&datatypes);
 	}
 
 };
 
 
-class DatatypesUtility {
+class DatatypesUtility {//todo: move to utility?
 public:
 	static zeitoon::datatypes::DTSet<zeitoon::datatypes::DTString> toDTStringSet(
 			std::vector<std::string> iVector) {
@@ -291,5 +331,6 @@ public:
 };
 
 
-}}
+}
+}
 #endif /* DTSTRUCTS_HPP_ */

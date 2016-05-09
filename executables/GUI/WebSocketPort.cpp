@@ -37,10 +37,18 @@ WebSocketPort::~WebSocketPort() {
 }
 
 void WebSocketPort::listenThreads(int iport) {
-	this->port = iport == 0 ? this->port : iport;
-	GUI_WebSocketServer.listen(this->port);
-	GUI_WebSocketServer.start_accept();
-	GUI_WebSocketServer.run();
+	try {
+		this->port = iport == 0 ? this->port : iport;
+		GUI_WebSocketServer.listen(this->port);
+		GUI_WebSocketServer.start_accept();
+		GUI_WebSocketServer.run();
+	} catch (exceptionEx *ex) {
+		cerr << "WS.Error.OnReceive: " << ex->what() << endl;
+	} catch (exception &ex) {
+		cerr << "WS.sysError.OnReceive: " << ex.what() << endl;
+	} catch (...) {
+		cerr << "WS.uncaughtError.OnReceive: " << endl;//todo:use logger
+	}
 }
 
 void WebSocketPort::joinListenThread() {
@@ -52,7 +60,7 @@ void WebSocketPort::listen(int portIn) {
 
 }
 
-void WebSocketPort::sendo() {
+void WebSocketPort::sendo() {//fixme:@navidi:WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	std::string MSg = "";
 	int IDNum = 0;
 	while (MSg != "\\NO") {
@@ -105,7 +113,7 @@ void WebSocketPort::send(websocketpp::connection_hdl client, std::string data) {
 void WebSocketPort::received(websocketpp::connection_hdl client, std::string data) { //client
 	//if (sendStruct == NULL)//jaaaye in che konim baraye check??
 	//return;
-	std::thread *receivedThread = new std::thread(&WebSocketPort::receivedThreads, this, client, data);
+	std::thread *receivedThread = new std::thread(&WebSocketPort::receivedThreads, this, client, data);//fixme:free mem?
 	//lock//scopelock
 	this->threadsList.push_back(receivedThread);
 	std::cout << "\nID:" << receivedThread->get_id();
@@ -113,16 +121,24 @@ void WebSocketPort::received(websocketpp::connection_hdl client, std::string dat
 }
 
 void WebSocketPort::receivedThreads(websocketpp::connection_hdl client, std::string data) {
-	int ID = this->connectionList.at(client);
-	if (onMessageCB == NULL) {
-		return;
-	}
-	onMessageCB(ID, data);
-	std::cout << "\nRemoving Threat from the list" << std::endl;
-	for (unsigned int i = 0; i < this->threadsList.size(); i++) {
-		if (this_thread::get_id() == this->threadsList[i]->get_id()) {
-			this->threadsList.erase(this->threadsList.begin() + i);
+	try {
+		int ID = this->connectionList.at(client);
+		if (onMessageCB == NULL) {
+			return;
 		}
+		onMessageCB(ID, data);
+		std::cout << "\nRemoving Threat from the list" << std::endl;
+		for (unsigned int i = 0; i < this->threadsList.size(); i++) {
+			if (this_thread::get_id() == this->threadsList[i]->get_id()) {//fixme:free memory of thread?
+				this->threadsList.erase(this->threadsList.begin() + i);
+			}
+		}
+	} catch (exceptionEx *ex) {
+		cerr << "WSR.Error.OnReceive: " << ex->what() << endl;
+	} catch (exception &ex) {
+		cerr << "WSR.sysError.OnReceive: " << ex.what() << endl;
+	} catch (...) {
+		cerr << "WSR.uncaughtError.OnReceive: " << endl;
 	}
 }
 

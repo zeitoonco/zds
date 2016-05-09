@@ -36,6 +36,10 @@ public:
 	virtual ~CommunicationMediator() {
 	}
 
+	void runCommand(string name, string data, string id, string session);
+
+	string runCommandSync(string name, string data, string id, string session);
+
 	void runCommand(string name, string data, string id);
 
 	string runCommandSync(string name, string data, string id);
@@ -68,7 +72,7 @@ public:
 
 	void removeCommand(string name);
 
-	void registerHook(string name);
+	void registerHook(string name, string session = "");
 
 	void removeHook(string name);
 

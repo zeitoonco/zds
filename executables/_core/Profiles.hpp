@@ -9,6 +9,7 @@
 #define COMMANDPROFILE_HPP
 
 #include <string>
+#include <utility/DTStructs.hpp>
 
 using namespace std;
 
@@ -68,39 +69,42 @@ public:
 class ExtensionProfile {
 public:
 	enum class extensionState {
-		unknown = 0,    //before hello
-		notInstalled,
-		installed,
-		enabled,
-		disabled
+		unknown = 0, notInstalled, installing, installed, enabled
 	};
-	enum class extensioniState {
-		unknown = 0,                //before hello, connected
-		notConnected,               //disconnected after hello
-		requirementNotSatisfied,    //installed/Enabled but requirements not satisfied
-		running                     //connected and running normally(might be a reqUnsatisfied Service, but still not installed
-	};
-	size_t netClientId;
-	string name;
-	int version;
+
 	extensionState state;
-	extensioniState istate;
-	string stateDesc;
-	//vector<extensionRequirmentProfile> requirments;
+	bool requirementsSatisfied;
+	bool CEPermissionsRegistered;
+	ssize_t netClientId;
 
-	/*void checkRequirments();
+	string installID;
 
-	 void callInstall();
+	datatypes::DSInstallInfo serviceInfo;
+private:
+	ExtensionProfile(extensionState sstate, ssize_t netid) :
+			serviceInfo("", "", 0, 0, datatypes::EnmServiceType::other) {
+		netClientId = netid;
+		state = sstate;
+		requirementsSatisfied = false;
+		CEPermissionsRegistered = false;
+	}
 
-	 void callUninstall();
+public:
+	ExtensionProfile(std::string serviceInfoJson, extensionState sstate, ssize_t netid = -1)
+			: ExtensionProfile(sstate, netid) {
+		if (serviceInfoJson.size() > 0)
+			serviceInfo.fromString(serviceInfoJson);
+	}
 
-	 void callEnable();
+	ExtensionProfile(std::string name, int version, extensionState sstate, ssize_t netid = -1)
+			: ExtensionProfile(sstate, netid) {
+		serviceInfo.name = name;
+		serviceInfo.serviceVersion = version;
+	}
 
-	 void callDisable();
+	bool isConnected() { return netClientId != -1; }
 
-	 void save();
-
-	 void load();*/
+	bool isRunning() { return (state == extensionState::enabled) && isConnected() && (requirementsSatisfied == true); }
 };
 }
 }

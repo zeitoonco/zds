@@ -109,4 +109,6 @@ WITH (
   OIDS=FALSE
 );
 
+INSERT INTO permission(id,parentid,name,title) values(0,-1,'_masterPermission','Permissions');
+
 END;

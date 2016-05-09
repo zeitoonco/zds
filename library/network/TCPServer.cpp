@@ -175,7 +175,8 @@ void TCPServer::on_client_write(uv_write_t *req, int status) {
 void TCPServer::clientCollection::client::stop() {
 	//uv_shutdown()
 	this->_isConnected = false;
-	uv_close((uv_handle_t *) this->_client, NULL);
+	if ((this->_client->flags & 3) == 0)//fixme:i don't like this condition!
+		uv_close((uv_handle_t *) this->_client, NULL);
 	if (this->_parent->_onClientDisconnect != NULL)
 		this->_parent->_onClientDisconnect(this->_id);
 }

@@ -47,12 +47,15 @@ int main() {
     DSMessageItem testMessageList(12, "1395-02-18", "DSMessageItem", MsgType.user);
     std::cout << testMessageList.toString("\t") << endl;
 
-/*
+
+    DTInteger<> il={"kk"};
+    il=8;
+
     vector<DTInteger<int>> Amghozi_2;
-    Amghozi_2.push_back(1214);
+    Amghozi_2.push_back(il);
     DSSessionList testSessionList(Amghozi_2);
     std::cout << testSessionList.toString("\t") << endl;
-*/
+
 
     DSSession testSession(12, 13, "1395-02-18");
     std::cout << testSession.toString("\t") << endl;

@@ -5,17 +5,21 @@
 #ifndef ZDS_CHAT_HPP
 #define ZDS_CHAT_HPP
 
+#include "DSStructs.hpp"
+
 #include <string>
+
 namespace zeitoon {
     namespace chat {
 
         class ChatCHI;
 
         class chaT {
-            ChatCHI *chatCor;
+            ChatCHI *chatCHI;
         public:
             chaT(ChatCHI *ptr);
-        void newMSG(int h, std::string l){}
+
+            void newMessage(int userID, int sessionID, std::string msg, EnumMsgType::msgType type);
 
 
         };

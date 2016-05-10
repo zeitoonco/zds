@@ -5,22 +5,21 @@
 
 #include <mediator/CommunicationHandlerInterface.hpp>
 #include "datatypes/dtsingletypes.hpp"
-
+#include <fstream>
 using namespace zeitoon::datatypes;
 namespace zeitoon {
     namespace chat {
 
 
         void ChatCHI::onCommand(string node, string data, string id, string from) {
-            /* if (node == "new"){
-                 DSNewMessage dummy(data);
-                 CHATT.newMSG(dummy.userID.getValue(),dummy.msg.getValue());
-                 int al = dummy.type.getValue();
-                 std::string del = EnumMsgType::typeString[al];
-                 */
             if (!Strings::compare(node, CommandInfo::newMessage(), false)) {
-                DSNewMessage dummy(data);
+                DSNewMessage input(data);
+                chatCore.newMessage(input.userID.getValue(), input.sessionID.getValue(), input.msg.getValue(),
+                                    (EnumMsgType::msgType) input.type.getValue());
             }
+
+
+
             /*   else if (!Strings::compare(node, CommandInfo::removeMessage(), false)) {
                    DTInteger<int> dummy(data);
                }
@@ -50,7 +49,23 @@ namespace zeitoon {
         }
 
         void ChatCHI::onInstall(string id) {
-
+            string cpath = FileSystemUtility::getAppPath();
+            //Addressing the file and checking Database tables
+            string temp = cpath + "DBTableScripts.sql";
+            std::cout << temp << endl;
+            std::ifstream t(temp);
+            std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+            int res;
+            try {
+                res=sm.database.executeSync(str);
+            } catch (exceptionEx *errorInfo) {
+                EXTDBErrorI("Unable to create default tables for UM", errorInfo);
+            }
+            if (res==-1)
+                EXTDBError("Sql error");
+            //set serviceID in confMgr
+            Chatconfig.serviceID = id;
+            Chatconfig.save();
         }
 
         void ChatCHI::onEnable() {

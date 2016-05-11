@@ -98,9 +98,9 @@ public:
 				for (int i = 0; i < cols; i++) {
 					char *v = (char *) sqlite3_column_text(stmt, i);
 					if (v == NULL)
-						vrow.push_back("");
+						vrow.push_back("null");
 					else
-						vrow.push_back(v);
+						vrow.push_back("\"" + string(v) + "\"");
 				}
 				tbl.rowAdd(vrow);
 			}

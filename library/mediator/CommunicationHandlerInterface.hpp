@@ -108,12 +108,14 @@ public:
 					JStruct &jdata = *((JStruct *) dataj->value);
 					this->onInstall(jdata["id"].getValue());
 					//todo: receive a bool, that shows if install process was successful, for next line
+					this_thread::sleep_for(chrono::milliseconds(200));
 					sm.send(CommunicationUtility::makeCallback("onInstall", id, getServiceName(), "{\"success\":true}"));
 				} else if (!Strings::compare(node, "onUninstall", false)) {
 					this->onUninstall();
 				} else if (!Strings::compare(node, "onEnable", false)) {
 					this->onEnable();
 					//todo: receive a bool, that shows if install process was successful, for next line
+					this_thread::sleep_for(chrono::milliseconds(200));
 					sm.send(CommunicationUtility::makeCallback("onEnable", id, getServiceName(), "{\"success\":true}"));
 				} else if (!Strings::compare(node, "onDisable", false)) {
 					this->onDisable();

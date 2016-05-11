@@ -16,7 +16,7 @@ using namespace zeitoon::utility;
 
 DTTableString::DTTableString(std::string receivedData, std::string name) :
 		DTTable(name) {
-	jsonData=std::make_shared<JStruct>();
+	jsonData = std::make_shared<JStruct>();
 	jsonData->fromString(receivedData);
 }
 
@@ -35,15 +35,14 @@ DTTableString::~DTTableString() {
 
 size_t DTTableString::rowCount() const {
 	return (*jsonData)["rows"].size();
-
 }
 
 size_t DTTableString::columnCount() const {
 	return ((*jsonData)["columns"].size());
 }
 
-std::string DTTableString::columnName(int fieldNumber) const { //field numbers start from 0
-	return (*jsonData)["columns"][fieldNumber]["name"].getValue();
+std::string DTTableString::columnName(int columnNumber) const { //field numbers start from 0
+	return (*jsonData)["columns"][columnNumber]["name"].getValue();
 }
 
 ColumnDataType::columnDataType DTTableString::columnDataType(int columnNumber) const {
@@ -53,28 +52,27 @@ ColumnDataType::columnDataType DTTableString::columnDataType(int columnNumber) c
 
 size_t DTTableString::columnDataSize(int columnNumber) const {
 //returns -1 for variable size fields.
-	return (size_t) std::atol(
-			((*jsonData)["columns"][columnNumber]["size"].getValue()).c_str());
+	return std::stoul((*jsonData)["columns"][columnNumber]["size"].getValue());
 }
 
-std::string DTTableString::fieldValue(int rowNumber, int colNumber) const {
-	return (*jsonData)["rows"][rowNumber][colNumber].getValue();
+std::string DTTableString::fieldValue(int rowNumber, int columnNumber) const {
+	return (*jsonData)["rows"][rowNumber][columnNumber].getValue();
 }
 
-bool DTTableString::fieldIsNull(int tupleNumber, int columnNumber) const {
-	return this->fieldValue(tupleNumber, columnNumber) == "NULL";
+bool DTTableString::fieldIsNull(int rowNumber, int columnNumber) const {
+	return ((JVariable&) ((*jsonData)["rows"][rowNumber][columnNumber])).isNull();
 }
 
-size_t DTTableString::fieldSize(int tupleNumber, int columnNumber) const {
+size_t DTTableString::fieldSize(int rowNumber, int columnNumber) const {
 	if (this->columnDataType(columnNumber) == ColumnDataType::TEXT) {
-		return (*jsonData)["rows"][tupleNumber][columnNumber].size();
+		return (*jsonData)["rows"][rowNumber][columnNumber].size();
 	} else {
 		return this->columnDataSize(columnNumber);
 	}
 }
 
-std::string DTTableString::toString(int indent,
-                                    std::string indentContent) const {//TODO: args changed--CHECK TOSTRING for bugs
+std::string DTTableString::toString(int indent, std::string indentContent) const {
+	//TODO: args changed--CHECK TOSTRING for bugs
 	return jsonData->toString();//todo: um, what r those args for?!
 }
 
@@ -169,8 +167,8 @@ void DTTableString::columnAdd(string name, ColumnDataType::columnDataType dtype,
 	JArray &cols = (JArray &) (*jsonData)["columns"];
 	JArray &tupples = (JArray &) (*jsonData)["rows"];
 	JStruct colStruct;
-	colStruct.add("name", name);
-	colStruct.add("datatype", ColumnDataType::toString(dtype));
+	colStruct.add("name", "\""+name+"\"");
+	colStruct.add("datatype", "\""+ColumnDataType::toString(dtype)+"\"");
 	colStruct.add("size", std::to_string(size));
 	cols.add(colStruct.toString());
 	for (unsigned int iter = 0; iter < tupples.size(); iter++) {

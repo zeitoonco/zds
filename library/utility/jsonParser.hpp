@@ -244,7 +244,7 @@ public:
 class JVariable : public JValue {
 protected:
 	string value;
-
+	bool isString;
 public:
 	JVariable(string ivalue) {
 		fromString(ivalue);
@@ -267,6 +267,8 @@ public:
 	bool toBoolian() const;
 
 	string getValue() const;
+
+	void setNULL();
 
 	void setValue(string val);
 

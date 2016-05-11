@@ -47,3 +47,5 @@ if (CRYPTOPP_FOUND)
 else ()
     message(WARNING "crypto not found")
 endif ()
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DBTableScripts.sql DESTINATION ${binDir}/${executablesDir}/${moduleName})

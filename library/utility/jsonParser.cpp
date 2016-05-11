@@ -144,89 +144,46 @@ JValue &JValue::operator[](string name) const {
 
 //-------------------------------jVariable
 bool JVariable::isNull() const {
-	return (seq("NULL", value));
+	return (!isString && seq("NULL", value));
 }
 
 bool JVariable::isInt() const {
-	if (value.length() == 0)
-		return false;
-	string str = Strings::trim(value, "\"");
-	for (unsigned int i = 0; i < value.size(); i++)
-		if ((str[i] < 48 || str[i] > 57)    //Numbers
-		    && !((str[i] == 45 || str[i] == 43) && i == 0))    // '-','+'
-			return false;
-	if ((str[0] == 45 || str[0] == 43) && str.length() == 1)
-		return false;
-	return true;
+	return (!isString && Strings::isInt(value));
 }
 
 bool JVariable::isFloat() const { //TODO: make sure that 'e','E','.' r only used once?
-	if (value.length() == 0)
-		return false;
-	int cn, cd, ce;
-	cn = ce = cd = 0;
-	string str = Strings::trim(value, "\"");
-	for (unsigned int i = 0; i < value.size(); i++)
-		if (str[i] >= 48 && str[i] <= 57)    //Numbers
-			cn += 1;
-		else if (str[i] == 46)
-			cd += 1;
-		else if ((str[i] == 45 || str[i] == 43) && i == 0)    // '.','-','+'
-			;//ok
-		else
-			return false;
-	//&& str[i] != 101 && str[i] != 69)    //e & E
-	if (cn<0 || cd>1)
-		return false;
-	return true;
+	return (!isString && Strings::isFloat(value));
 }
 
 bool JVariable::isBoolian() const {
-	if (value.length() == 0)
-		return false;
-	string tval = Strings::toLower(Strings::trim(value, "\""));
-	if (tval != "true" && tval != "false")
-		return false;
-	return true;
+	return (!isString && Strings::isBoolian(value));
 }
 
 long long int JVariable::toInt() const {
 	if (!isInt())
 		EXTcantParseString("can't convert value to int");
-	string tmp = Strings::trim(value, "\"");
-	stringstream str(tmp);
-	long long int val;
-	str >> val;
-	return val;
+	return stoll(value);
 }
 
 unsigned long long int JVariable::toUInt() const {
 	if (!isInt())
 		EXTcantParseString("can't convert value to int");
-	string tmp = Strings::trim(value, "\"");
-	stringstream str(tmp);
-	unsigned long long int val;
-	str >> val;
-	return val;
+	return stoull(value);
 }
 
 long double JVariable::toFloat() const {
 	if (!isFloat())
 		EXTcantParseString("can't convert value to float");
-	string tmp = Strings::trim(value, "\"");
-	stringstream str(tmp);
-	long double val;
-	str >> val;
-	return val;
+	return stold(value);
 }
 
 bool JVariable::toBoolian() const {
 	if (!isBoolian())
 		EXTcantParseString("can't convert value to boolean");
-	string tval = Strings::toLower(Strings::trim(value, "\""));
-	if (tval == "true")
+	string tval = Strings::toLower(Strings::trim(value));
+	if (seq(tval, "true"))
 		return true;
-	else if (tval != "false")
+	else if (seq(tval, "false"))
 		return false;
 	else
 		EXTcantParseString("can't parse value to boolean");
@@ -236,24 +193,34 @@ string JVariable::getValue() const {
 	return value;
 }
 
+void JVariable::setNULL() {
+	value = "null";
+	isString = false;
+}
+
 void JVariable::setValue(bool val) {
 	value = Strings::toString(val);
+	isString = false;
 }
 
 void JVariable::setValue(long long val) {
 	value = Strings::toString(val);
+	isString = false;
 }
 
 void JVariable::setValue(unsigned long long int val) {
 	value = Strings::toString(val);
+	isString = false;
 }
 
 void JVariable::setValue(long double val) {
 	value = Strings::toString(val);
+	isString = false;
 }
 
 void JVariable::setValue(string val) {
 	value = val;
+	isString = true;
 }
 
 void JVariable::fromString(string str) {
@@ -261,22 +228,28 @@ void JVariable::fromString(string str) {
 	if (str[0] == '"') {
 		str = str.substr(1, str.size() - 2);
 		str = JSONUtility::decodeString(str);
+		isString = true;
+	} else {
+		isString = false;
 	}
 	value = str;
+	if (!isString && (!isFloat() && !isBoolian() && !isNull()))
+		//EXTinvalidParameter("Invalid value: "+str);
+		isString = true;
 }
 
 string JVariable::toString() const {
-	if (this->isFloat() || this->isBoolian() || this->isNull())
-		return Strings::toLower(value);
-	else
+	if (isString)
 		return "\"" + JSONUtility::encodeString(value) + "\"";
+	else
+		return Strings::toLower(value);
 }
 
 size_t JVariable::size() {
-	if (isFloat() || isInt() || isBoolian())
-		return 1;
-	else
+	if (isString)
 		return this->value.size();
+	else
+		return 1;
 }
 
 //-------------------------------jArray

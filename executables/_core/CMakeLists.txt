@@ -40,3 +40,4 @@ endif()
 
 # libs
 #target_link_libraries(${moduleName} ..?)
+#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data.db3 DESTINATION ${binDir}/${executablesDir}/${moduleName})

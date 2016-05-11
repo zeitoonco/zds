@@ -196,6 +196,7 @@ public:
 
 	DSModifyUser() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		this->list.push_back(&userID);
 		this->list.push_back(&username);
 		this->list.push_back(&password);
 		this->list.push_back(&name);
@@ -459,10 +460,10 @@ public:
 
 class DSUserGroupsList : public DTStruct {
 public:
-	DTSet<DTString> userGrpsList = {"listUsergroups"};
+	DTSet<DSUpdateUsrGrp> userGrpsList = {"userGroupsList"};
 
 	static std::string getStructName() {
-		return "DSlistUsergroups";
+		return "DSUserGroupsList";
 	}
 
 	static int getStructVersion() {
@@ -477,11 +478,6 @@ public:
 	DSUserGroupsList(std::string data) :
 			DSUserGroupsList() {
 		this->fromString(data);
-	}
-
-	DSUserGroupsList(std::vector<DTString> iusersList) :
-			DSUserGroupsList() {
-		userGrpsList.addRange(iusersList);
 	}
 };
 
@@ -601,6 +597,58 @@ public:
 	}
 
 	DSUserPermissionList(std::string data) : DSUserPermissionList() {
+		this->fromString(data);
+	}
+};
+
+class DSUsergroupPermission : public DTStruct {
+public:
+	DTInteger<int> usergroupID = {"usergroupID"};
+	DTInteger<int> permissionID = {"permissionID"};
+	DTInteger<int> permissionState = {"state"};
+
+	static std::string getStructName() {
+		return "DSUsergroupPermission";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSUsergroupPermission() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&usergroupID);
+		list.push_back(&permissionID);
+		list.push_back(&permissionState);
+	}
+
+	DSUsergroupPermission(std::string data) : DSUsergroupPermission() {
+		this->fromString(data);
+	}
+
+	DSUsergroupPermission(int iusergroupID, int ipermissionID, int ipermissionState) : DSUsergroupPermission() {
+		permissionID = ipermissionID;
+		usergroupID = iusergroupID;
+		permissionState = ipermissionState;
+	}
+};
+
+class DSUsergroupPermissionList : public DTStruct {
+public:
+	DTSet<DSPermissionState> permissionsList = {"listPermissions"};
+
+	static std::string getStructName() {
+		return "DSUsergroupPermissionList";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSUsergroupPermissionList() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		this->list.push_back(&permissionsList);
+	}
+
+	DSUsergroupPermissionList(std::string data) : DSUsergroupPermissionList() {
 		this->fromString(data);
 	}
 };

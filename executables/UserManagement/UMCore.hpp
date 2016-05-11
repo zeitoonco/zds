@@ -150,7 +150,7 @@ public:
 	/** listi az kolle userGroup-haaye mojood dar database raa be soorat e yek vector<"zeitoon::datatypes::DTString"> barmigardanad
 	 * @return vector<"zeitoon::datatypes::DTString">
 	 */
-	std::vector<zeitoon::datatypes::DTString> listUsergroups();
+	DSUserGroupsList listUsergroups();
 
 	/** executeSync() baa daryaaft e string e haaviye "SQL" be soorat e Synchronize tedaad e tupple haay e ta'sir gerefte az farmaan
 	 * raa baaz migardanad.
@@ -180,6 +180,13 @@ public:
 	void removeUserPermission(int userID, int permissionID, int state = 0);
 
 	DSUserPermissionList listUserPermissions(int userID);
+
+	void addUsergroupPermission(int usergroupID, int permissionID, int state);
+
+	void removeUsergroupPermission(int usergroupID, int permissionID, int state = 0);
+
+	DSUsergroupPermissionList listUsergroupPermissions(int usergroupID);
+
 private:
 	/*
 	 typedef  void (UMCore::*BPTR) (std::string);

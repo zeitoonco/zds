@@ -36,17 +36,17 @@ public:
 
 	size_t columnCount() const;
 
-	std::string columnName(int fieldNumber) const;
+	std::string columnName(int columnNumber) const;
 
 	ColumnDataType::columnDataType columnDataType(int columnNumber) const;
 
 	size_t columnDataSize(int columnNumber) const;
 
-	std::string fieldValue(int rowNumber, int colNumber) const;
+	std::string fieldValue(int rowNumber, int columnNumber) const;
 
-	bool fieldIsNull(int tupleNumber, int columnNumber) const;
+	bool fieldIsNull(int rowNumber, int columnNumber) const;
 
-	size_t fieldSize(int tupleNumber, int columnNumber) const;
+	size_t fieldSize(int rowNumber, int columnNumber) const;
 
 	std::string toString(int indent = -1, std::string indentContent = defaultIndentContent) const;
 

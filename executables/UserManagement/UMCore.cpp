@@ -490,12 +490,12 @@ DSUserList UMCore::listUsers() {
 	DSUserList allUsers;
 	zeitoon::datatypes::DTTableString result("");
 	try {
-		result = this->querySync("select id,username,name,banned,banreason from users");
+		result = this->querySync("select id,username,name,banned,banreason from users order by id");
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(), "Unable to fetch all usernames from database" + std::string(errorInfo->what()),
 		              LogLevels::warning);
 		EXTDBErrorIO("Unable to fetch all usernames from database", getNameAndType(), errorInfo);
-		return allUsers;
+		return allUsers;//fixme:return after throw? really? @see: https://upload.wikimedia.org/wikipedia/commons/3/3b/Paris_Tuileries_Garden_Facepalm_statue.jpg
 	}
 
 	for (size_t i = 0; i < result.rowCount(); i++) {
@@ -518,7 +518,7 @@ DSUserList UMCore::listUsersByGroup(
 	try {
 		result = querySync(
 				"select id,username,name,banned,banreason from users inner join usergroup on usergroup.userid=users.id where groupid=" +
-				std::to_string(groupID));
+				std::to_string(groupID) + " order by users.id");
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(),
 		              "Unable to fetch  user of group[" + std::to_string(groupID) + "] from database. " +
@@ -526,7 +526,7 @@ DSUserList UMCore::listUsersByGroup(
 		              LogLevels::warning);
 		EXTDBErrorIO("Unable to fetch  user of group[" + std::to_string(groupID) + "] from database", getNameAndType(),
 		             errorInfo);
-		return allUsersOfSpecificGroup;
+		return allUsersOfSpecificGroup;//fixme:return after throw? really? @see: http://memesvault.com/wp-content/uploads/Facepalm-Meme-Picard-14.jpg
 	}
 
 	for (size_t i = 0; i < result.rowCount(); i++) {
@@ -545,40 +545,43 @@ DSPermissionsList UMCore::listPermissions() {
 	DSPermissionsList allPermissions;
 	zeitoon::datatypes::DTTableString result("");
 	try {
-		result = querySync("select id,parentid,name,title,description from permission");
+		result = querySync("select id,parentid,name,title,description from permission order by id");
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(),
 		              "Unable to fetch  permission names from database." + std::string(errorInfo->what()),
 		              LogLevels::warning);
 		EXTDBErrorIO("Unable to fetch  permission names from database", getNameAndType(), errorInfo);
-		return allPermissions;
+		return allPermissions;//fixme:return after throw? really? @see: http://memesvault.com/wp-content/uploads/Facepalm-Meme-08.png
 	}
 	for (size_t i = 0; i < result.rowCount(); i++) {
 		allPermissions.permissionsList.add(new DSUpdatePermission(stoi(result.fieldValue(i, 0)),
 		                                                          result.fieldValue(i, 2),
 		                                                          result.fieldValue(i, 3),
 		                                                          result.fieldValue(i, 4),
-		                                                          stoi(result.fieldValue(i, 1))), true);
+		                                                          result.fieldIsNull(i, 1) ? -1 : stoi(
+				                                                          result.fieldValue(i, 1))), true);
 	}
 	return allPermissions;
 }
 
-std::vector<zeitoon::datatypes::DTString> UMCore::listUsergroups() {
-	std::vector<zeitoon::datatypes::DTString> allGroups;
+DSUserGroupsList UMCore::listUsergroups() {
+	DSUserGroupsList allGroups;
 	zeitoon::datatypes::DTTableString result("");
 	try {
-		result = querySync("select title from groups");
+		result = querySync("select id,title,parentid,description from groups order by id");
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(),
-		              "Unable to fetch all usergroup titles from database" + std::string(errorInfo->what()),
+		              "Unable to fetch usergroups data from database" + std::string(errorInfo->what()),
 		              LogLevels::warning);
-		EXTDBErrorIO("Unable to fetch all usergroup titles from database", getNameAndType(), errorInfo);
-		return allGroups;
+		EXTDBErrorIO("Unable to fetch usergroups data from database", getNameAndType(), errorInfo);
+		//fixme:its sily to log & throw a message. one should do the other
+		return allGroups;//fixme:return after throw? really? @see: https://i.ytimg.com/vi/k1wqciODsC8/maxresdefault.jpg
 	}
 	for (size_t i = 0; i < result.rowCount(); i++) {
-		zeitoon::datatypes::DTString temp("tempUsrGrpList");
-		temp.setValue(result.fieldValue(i, 0));
-		allGroups.push_back(temp);
+		allGroups.userGrpsList.add(new DSUpdateUsrGrp(stoi(result.fieldValue(i, 0)),
+		                                              result.fieldValue(i, 1),
+		                                              result.fieldIsNull(i, 2) ? -1 : stoi(result.fieldValue(i, 2)),
+		                                              result.fieldValue(i, 3)), true);
 	}
 
 	return allGroups;
@@ -811,9 +814,8 @@ int UMCore::getPermissionParent(int permissionID) {
 	try {
 		std::cout << "\nTrying to get parent of permission\n";
 		//result = querySync("select parentid from permission where id=" + std::to_string(permissionID));
-		return std::stoi(
-				querySync("select parentid from permission where id=" + std::to_string(permissionID)).fieldValue(0,
-				                                                                                                 0));//fixme:invalid id breaks here
+		auto r = querySync("select parentid from permission where id=" + std::to_string(permissionID));
+		return r.fieldIsNull(0, 0) ? -1 : std::stoi(r.fieldValue(0, 0));//fixme:invalid id breaks here
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorO("unable to get permissionParent from database" + std::string(errorInfo.what()),
 		            "PermissionID: " + std::to_string(permissionID) + "@usermanagement::umcore::getpermissionParent]");
@@ -836,10 +838,6 @@ int UMCore::getUsergroupParent(int parentID) {            //////////////////////
 
 //return atoi(PQgetvalue(result, 0, 0));
 
-}
-
-std::string UMCore::getNameAndType() {
-	return "[UMCore]";
 }
 
 void UMCore::addUserUsergroup(int userID, int groupID) {
@@ -888,11 +886,11 @@ void UMCore::removeUserPermission(int userID, int permissionID, int state) {//fi
 			                                 true));
 }
 
-DSUserPermissionList UMCore::listUserPermissions(int userID){
+DSUserPermissionList UMCore::listUserPermissions(int userID) {
 	DSUserPermissionList list;
 	zeitoon::datatypes::DTTableString result("");
 	try {
-		result = querySync("select permissionid,state from userpermission where userid="+to_string(userID));
+		result = querySync("select permissionid,state from userpermission where userid=" + to_string(userID));
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(),
 		              "Unable to fetch  permission names from database." + std::string(errorInfo->what()),
@@ -902,11 +900,59 @@ DSUserPermissionList UMCore::listUserPermissions(int userID){
 	}
 	for (size_t i = 0; i < result.rowCount(); i++) {
 		list.permissionsList.add(new DSPermissionState(stoi(result.fieldValue(i, 0)),
-		                                                          stoi(result.fieldValue(i, 1))), true);
+		                                               stoi(result.fieldValue(i, 1))), true);
 	}
 	return list;
 }
 
+void UMCore::addUsergroupPermission(int usergroupID, int permissionID, int state) {
+	try {
+		executeSync(
+				"insert into grouppermission(permissionid,groupid,state) values(" +
+				std::to_string(permissionID) + ", " + std::to_string(usergroupID) +
+				", " + std::to_string(state) + ")");
+	} catch (exceptionEx *errorInfo) {
+		EXTDBErrorI("Unable to add the permission for the user", errorInfo);
+	}//todo: dont fire event if it failed!, and we need a CB for all commands that may fail! or a error!
+	/*umCHI->sm.communication.runEvent(eventInfo::usersPermissionAdded(),
+	                                 zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(
+			                                 true));*/
+}
+
+void UMCore::removeUsergroupPermission(int usergroupID, int permissionID, int state) {
+	try {
+		executeSync("delete from grouppermission where groupid=" + std::to_string(usergroupID) + " and permissionid=" +
+		            std::to_string(permissionID));
+	} catch (exceptionEx *errorInfo) {
+		EXTDBErrorI("Unable to remove user's permission", errorInfo);
+	}
+	/*umCHI->sm.communication.runEvent(eventInfo::usersPermissionRemoved(),
+	                                 zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(
+			                                 true));*/
+}
+
+DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
+	DSUsergroupPermissionList list;
+	zeitoon::datatypes::DTTableString result("");
+	try {
+		result = querySync("select permissionid,state from grouppermission where groupid=" + to_string(usergroupID));
+	} catch (exceptionEx *errorInfo) {
+		systemLog.log(getNameAndType(),
+		              "Unable to fetch  permission names from database." + std::string(errorInfo->what()),
+		              LogLevels::warning);
+		EXTDBErrorIO("Unable to fetch  permission names from database", getNameAndType(), errorInfo);
+		return list;
+	}
+	for (size_t i = 0; i < result.rowCount(); i++) {
+		list.permissionsList.add(new DSPermissionState(stoi(result.fieldValue(i, 0)),
+		                                               stoi(result.fieldValue(i, 1))), true);
+	}
+	return list;
+}
+
+std::string UMCore::getNameAndType() {
+	return "[UMCore]";
+}
 
 }//usermanagement
 }//zeitoon

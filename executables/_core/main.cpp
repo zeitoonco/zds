@@ -22,12 +22,13 @@ int main() {
 	Router r(5458);
 
 	cout << "Zeitoon Server _Core Service\n";
-	cout << "Valid commands: (installinfo|install|enable|disable|uninstall) $service\n";
+	cout << "Valid commands: (installinfo[if]|install[ins]|enable[enb]|disable[dsb]|uninstall[uin]) $service\n";
 	//cout << "                hello $service\n";
 	cout << "                ls lscmd lsevent lshook\n";
 	cout << "Started. Listening on port 5458\n";
 
-	string cmd, p1, p2, p3 = "";
+	string cmd;
+	int p1;
 	while (cmd != "q") {
 		cout << "\nCMD:";
 		cin >> cmd;
@@ -36,21 +37,25 @@ int main() {
 			if (cmd == "ping") {
 				cin >> p1;
 				//todo:??
-			} else if (cmd == "installinfo") {
+			} else if (seq(cmd, "installinfo") || seq(cmd, "if")) {
 				cin >> p1;
-				r.getInstallInfo(p1);
-			} else if (cmd == "install") {
+				r.getInstallInfo(r.extManager[p1]->serviceInfo.name);
+			} else if (seq(cmd, "install") || seq(cmd, "if")) {
 				cin >> p1;
-				r.installService(p1);
-			} else if (cmd == "enable") {
+				if (!r.installService(r.extManager[p1]->serviceInfo.name))
+					cerr << "\n##Install '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";
+			} else if (seq(cmd, "enable") || seq(cmd, "enb")) {
 				cin >> p1;
-				r.enableService(p1);
-			} else if (cmd == "disable") {
+				if (!r.enableService(r.extManager[p1]->serviceInfo.name))
+					cerr << "\n##enable '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";
+			} else if (seq(cmd, "disable") || seq(cmd, "dsb")) {
 				cin >> p1;
-				r.disableService(p1);
-			} else if (cmd == "uninstall") {
+				if (!r.disableService(r.extManager[p1]->serviceInfo.name))
+					cerr << "\n##disable '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";
+			} else if (seq(cmd, "uninstall") || seq(cmd, "uni")) {
 				cin >> p1;
-				r.uninstallService(p1);
+				if (!r.uninstallService(r.extManager[p1]->serviceInfo.name))
+					cerr << "\n##uninstall '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";
 			} else if (cmd == "ls") {
 				printListOfServices(r);
 			} else if (cmd == "lscmd") {
@@ -59,6 +64,8 @@ int main() {
 				printListOfEvents(r);
 			} else if (cmd == "lshook") {
 				printListOfHooks(r);
+			} else {
+				cerr<<"\n>> INVALID COMMAND \n";
 			}
 		} catch (exceptionEx *ex) {
 			cerr << "\nERRR:" << ex->what() << endl;
@@ -70,17 +77,19 @@ int main() {
 }
 
 void printListOfServices(Router &r) {
-	cout << endl << Strings::padRight("Name", 30) << Strings::padRight("State", 6) <<
+	cout << endl << Strings::padRight("ID", 3) << Strings::padRight("Name", 30) << Strings::padRight("State", 6) <<
 	Strings::padRight("NID", 5) << Strings::padRight("InstallID", 12) <<
-	Strings::padRight("CEP", 4) << Strings::padRight("req", 4) << endl;
+	Strings::padRight("CEP", 4) << Strings::padRight("req", 4) << Strings::padRight("ST", 4) << endl;
 
 	for (int i = 0; i < r.extManager.size(); i++) {
-		cout << Strings::padRight(r.extManager[i]->serviceInfo.name, 30)
+		cout << Strings::padRight(to_string(i), 3)
+		<< Strings::padRight(r.extManager[i]->serviceInfo.name, 30)
 		<< Strings::padRight(to_string((int) (r.extManager[i]->state)), 6)
 		<< Strings::padRight(to_string(r.extManager[i]->netClientId), 5)
 		<< Strings::padRight(r.extManager[i]->installID, 12)
 		<< Strings::padRight(to_string(r.extManager[i]->CEPermissionsRegistered), 4)
-		<< Strings::padRight(to_string(r.extManager[i]->requirementsSatisfied), 4) << endl;
+		<< Strings::padRight(to_string(r.extManager[i]->requirementsSatisfied), 4)
+		<< Strings::padRight(to_string(r.extManager[i]->serviceInfo.serviceType.getValue()), 4) << endl;
 	}
 }
 

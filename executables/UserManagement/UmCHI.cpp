@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include "executables/PGdatabase/DTStructs.hpp"
 #include "executables/PGdatabase/pgutility.hpp"
+#include "executables/_core/coreutility.hpp"
 #include <deque>
 #include "datatypes/dtsingletypes.hpp"
 #include "UManagementUtility.hpp"
@@ -155,7 +156,7 @@ void UmCHI::onEvent(string node, string data, string from) {
 
 }
 
-void UmCHI::onInstall(string id) {
+void UmCHI::onInstall(string id) {//todo: check serviceID
 	string cpath = FileSystemUtility::getAppPath();
 	//Addressing the file and checking Database tables
 	string temp = cpath + "DBTableScripts.sql";
@@ -176,6 +177,7 @@ void UmCHI::onInstall(string id) {
 }
 
 void UmCHI::onEnable() {
+	//--------register cmds
 	std::string temp = "";
 	size_t length = insInfo.commands.length();
 	for (size_t i = 0; i < length; i++) {
@@ -183,6 +185,8 @@ void UmCHI::onEnable() {
 	}
 	sm.communication.registerCommand(temp);
 	std::cout << temp << endl;
+
+	//--------register events
 	length = insInfo.events.length();
 	temp = "";
 	for (size_t i = 0; i < length; i++) {
@@ -190,6 +194,16 @@ void UmCHI::onEnable() {
 	}
 	sm.communication.registerEvent(temp);
 	std::cout << temp << endl;
+
+	//--------register hooks
+	length = insInfo.hooks.length();
+	temp = "";
+	for (size_t i = 0; i < length; i++) {
+		temp += (i == 0 ? "" : ",") + insInfo.hooks[i]->name.toString();
+	}
+	sm.communication.registerHook(temp);
+	std::cout << temp << endl;
+
 }
 
 void UmCHI::onDisable() {
@@ -484,7 +498,9 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(zeitoon::usermanagement::DSUserPermission::getStructName(),
 			                                                zeitoon::usermanagement::DSUserPermission::getStructVersion()),
 			true);
+	///------------set available hooks
 
+	insInfo.hooks.add(new DSInstallInfo::DSHookDetail(zeitoon::_core::eventInfo::onServiceUninstall(), "", 0), true);
 }
 } //usermanagement
 } //zeitoon

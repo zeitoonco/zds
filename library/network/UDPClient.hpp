@@ -12,7 +12,7 @@
 #include <map>
 #include <thread>
 
-typedef std::function<void(std::string, std::string IP)> onMessageDLG;
+typedef std::function<void(std::string data, std::string IP)> onMessageDLG;
 typedef std::function<void(char *buffer, int nreads, std::string IP)> onMessageBinary;
 
 namespace zeitoon {

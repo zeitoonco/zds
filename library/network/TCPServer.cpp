@@ -19,6 +19,8 @@ TCPServer::TCPServer(int port) : clients(this) {
 	uvEXT(r, "uv_loop_init failed")
 	r = uv_tcp_init(&loop, &server);
 	uvEXT(r, "uv_tcp_init failed")
+	this->dataProcThreadMaker(4);
+
 }
 
 TCPServer::~TCPServer() {
@@ -40,6 +42,10 @@ void TCPServer::listen(int port) {
 	r = uv_listen((uv_stream_t *) &server, DEFAULT_BACKLOG, TCPServer::on_new_connection);
 	uvEXT(r, "listen failed(uv_listen)");
 	listenTrd = new std::thread(&TCPServer::_listen, this);
+	this->mainTimer.data = this;
+	uv_timer_init(&loop, &mainTimer);
+	//this_thread::sleep_for(std::chrono::milliseconds(5000));
+	uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 300);
 }
 
 void TCPServer::_listen() {
@@ -53,7 +59,9 @@ void TCPServer::_listen() {
 		std::cerr << "\nTCPServer::listen Finished with " << r;
 	} catch (exceptionEx *ex) {
 		cerr << "Uncought ERROR: " << ex->what();
-	}
+	} /*catch (exception &ex){
+		cerr << "Uncought ERROR: " << ex.what();
+	}*/
 }
 
 void TCPServer::stop() {
@@ -121,6 +129,7 @@ void TCPServer::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 				}
 			} else if (ci == 0 && c->_lastPacketLen > 0) {  //Next part of last packet
 				size_t rem = (c->_lastPacketLen - c->_buff.size());
+				cerr << "NR" << nread << "," << c->_lastPacketLen << "," << rem << endl;
 				if ((rem) <= nread) { // packet complated
 					c->_buff += std::string(buf->base, rem);
 					c->_packetReceived();
@@ -129,11 +138,14 @@ void TCPServer::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 					c->_buff += std::string(buf->base, (size_t) (nread));
 					ci = nread; //fin.
 				}
+				//c->_buff = string(buf->base, (size_t) nread);
 			}   //else? rubbish!
+
 		}
-		c->_buff = string(buf->base, (size_t) nread);
-		free(buf->base);
+
 	}
+	free(buf->base);
+
 }
 
 void TCPServer::send(size_t clientId, std::string msg) {
@@ -177,6 +189,7 @@ void TCPServer::clientCollection::client::stop() {
 	this->_isConnected = false;
 	if ((this->_client->flags & 3) == 0)//fixme:i don't like this condition!
 		uv_close((uv_handle_t *) this->_client, NULL);
+
 	if (this->_parent->_onClientDisconnect != NULL)
 		this->_parent->_onClientDisconnect(this->_id);
 }
@@ -184,6 +197,67 @@ void TCPServer::clientCollection::client::stop() {
 void TCPServer::joinOnListenThread() {
 	if (listenTrd != NULL)
 		listenTrd->join();
+}
+
+void TCPServer::dataProcThreadMgrTimer(uv_timer_t *handle) {
+	TCPServer *c = (TCPServer *) handle->data;
+	uv_timer_t sc = c->mainTimer;
+	if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
+		c->dataProcThreadMaker(1);//todo: see if it makes any difference with or without a lock
+		c->check2 = 0;
+		std::cerr << "NEW THREAD No Pops since last lab" << endl;
+	} else if (c->dataQ_Pushes > c->dataQ_Pops) {
+		if (c->check2 == 5) {
+			c->dataProcThreadMaker(1);
+			c->check2 = 0;
+			std::cerr << "NEW THREAD Pushez > Popz" << endl;
+		} else {
+			c->check2++;
+		}//todo:: else if (pops> pushes){ threads --!!!
+	} else {
+		c->check2 = 0;
+	}
+	c->lastDataQSize = c->receivedDataQ.size();
+	c->dataQ_Pushes = 0;
+	c->dataQ_Pops = 0;
+}
+
+void TCPServer::dataProcThreadMaker(int numberOfThreads) {
+	for (int i = 0; i < numberOfThreads; i++) {
+		std::thread *temp = new std::thread(&TCPServer::dataProcessor, this);
+		dataThreadPool.push_back(temp);
+	}
+}
+
+void TCPServer::freeThreadPool() {
+	stopDataProcess = true;
+	this_thread::sleep_for(chrono::milliseconds(500));
+	for (auto i = 0; i < dataThreadPool.size(); i++) {
+		dataThreadPool[i]->detach();
+		delete dataThreadPool[i];
+	}
+}
+
+void TCPServer::dataProcessor() {
+	std::unique_lock<std::mutex> lck(mtx);
+	lck.unlock();
+	while (not stopDataProcess) {
+		lck.lock();
+		if (receivedDataQ.size() > 0) {
+			receivedData temp = this->receivedDataQ.front();
+			std::cerr << "data Proc: " << temp.data << endl;
+			this->receivedDataQ.pop();
+			this->dataQ_Pops++;
+			lck.unlock();
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			this->_onMessage(temp.clientID, temp.data);
+			std::cerr << "data Proc done: " << temp.data << endl;
+		} else {
+			lck.unlock();
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		}
+
+	}
 }
 
 }//zeitoon

@@ -11,6 +11,8 @@
 #include <map>
 #include <utility/exceptionex.hpp>
 #include <functional>
+#include <mutex>
+#include <queue>
 
 namespace zeitoon {
 namespace utility {
@@ -40,10 +42,15 @@ public:
 					_id(id), _client(client), _parent(parent), _buff(""), _lastPacketLen(0), _isConnected(false) { }
 
 			void _packetReceived() {
-				if (this->_parent->_onMessage != NULL)
-					std::thread *t = new std::thread(&client::_safeCaller, this, this->_id, this->_buff);
-				//fixme:FREE MEMORY!
+				//if (this->_parent->_onMessage != NULL)
+				receivedData temp = {this->_id, this->_buff};
+				this->_parent->receivedDataQ.push(temp);
+				this->_parent->dataQ_Pushes++;
+
+				//std::cerr << _buff<<endl;
+				//std::thread *t=new std::thread(this->_parent->_onMessage,this->_id, this->_buff);//fixme:FREE MEMORY!
 				//this->_parent->_onMessage(this->_id, this->_buff);
+
 				this->_buff = "";
 				this->_lastPacketLen = 0;
 			}
@@ -193,6 +200,23 @@ public:
 	}
 
 private:
+	struct receivedData {
+		size_t clientID;
+		std::string data;
+	};
+	std::queue<receivedData> receivedDataQ;
+
+	void dataProcessor();
+
+	void dataProcThreadMaker(int numberOfThreads = 4);
+
+	void freeThreadPool();
+
+	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
+	bool stopDataProcess = false;
+	std::mutex mtx;
+	std::vector<std::thread *> dataThreadPool;
+	uv_timer_t mainTimer;
 	int _port;
 	uv_loop_t loop;
 	uv_tcp_t server;
@@ -212,6 +236,8 @@ private:
 	static void on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf);
 
 	static void on_client_write(uv_write_t *req, int status);
+
+	static void dataProcThreadMgrTimer(uv_timer_t *handle);
 };
 
 

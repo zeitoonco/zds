@@ -29,6 +29,12 @@ public:
 
 	}
 
+	void removeConfigFile() {
+		fs.fileRemove(fileName);
+		if (fs.fileExist(fileName))
+			EXTexceptionEx("Config file remove failed");
+	}
+
 	ConfigManager(std::string moduleName, std::string ifileName) :
 			DTStruct(moduleName + "Config", 0, 0, 0), fs(baseDir + moduleName) {
 		this->fileName = ifileName;

@@ -443,7 +443,7 @@ bool Router::uninstallService(string name) {
 	extManager[name]->state = ExtensionProfile::extensionState::notInstalled;
 	extManager[name]->installID = "";
 	extManager.save();
-	string dt = "{\"name\":\"" + name + "\"}";
+	string dt = "{\"name\":\"" + extManager[name]->serviceInfo.name.getValue() + "\"}";
 	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
 	//todo:cleanup UM,PGDB
 }

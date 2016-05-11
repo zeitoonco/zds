@@ -33,6 +33,25 @@ TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLe
 	this->dataProcThreadMaker(4);
 }
 
+int ReconnectConfig::getNextInterval() {
+	size_t size = this->timingSize();
+	if (size < 1)
+		EXTNetworkNoRetryTimeSet("NO Retry Intervals.");
+	if (j < (timing[i + 1])->getValue()) {
+		j++;
+	} else if (j >= (timing[i + 1])->getValue()) {
+		if (size > i + 2) {
+			i += 2;
+			j = 1;
+		} else {
+			if (timing[size - 1]->getValue() != 0) {
+				resetInterval();
+				EXTNetworkMaxRetryReached("RECONNECT FAILED.");
+			}
+		}
+	}
+	return timing[i]->getValue();
+}
 TCPClient::TCPClient(std::string ip, int port) : TCPClient(ip, std::to_string(port)) { }
 
 TCPClient::TCPClient(std::string address, std::string service) : TCPClient() {

@@ -47,25 +47,7 @@ public: //to be removed
 		this->timing.clear();
 	}
 
-	int getNextInterval() {
-		size_t size = this->timingSize();
-		if (size < 1)
-			EXTNetworkNoRetryTimeSet("NO Retry Intervals.");
-		if (j < (timing[i + 1])->getValue()) {
-			j++;
-		} else if (j >= (timing[i + 1])->getValue()) {
-			if (size > i + 2) {
-				i += 2;
-				j = 1;
-			} else {
-				if (timing[size - 1]->getValue() != 0) {
-					resetInterval();
-					EXTNetworkMaxRetryReached("RECONNECT FAILED.");
-				}
-			}
-		}
-		return timing[i]->getValue();
-	}
+	int getNextInterval();
 
 	void resetInterval() {
 		i = 0;

@@ -100,7 +100,7 @@ void TCPServer::alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_
 }
 
 void TCPServer::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
-	cerr << "\nR" << nread << ";";
+	//cerr << "\nR" << nread << ";";
 	clientCollection::client *c = (clientCollection::client *) _client->data;
 	if (nread == -4095) { //EOF
 		c->stop();
@@ -129,7 +129,7 @@ void TCPServer::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 				}
 			} else if (ci == 0 && c->_lastPacketLen > 0) {  //Next part of last packet
 				size_t rem = (c->_lastPacketLen - c->_buff.size());
-				cerr << "NR" << nread << "," << c->_lastPacketLen << "," << rem << endl;
+				//cerr << "NR" << nread << "," << c->_lastPacketLen << "," << rem << endl;
 				if ((rem) <= nread) { // packet complated
 					c->_buff += std::string(buf->base, rem);
 					c->_packetReceived();
@@ -155,7 +155,7 @@ void TCPServer::send(size_t clientId, std::string msg) {
 void TCPServer::clientCollection::client::send(std::string data) {
 	if (!this->_isConnected)
 		return;
-	cerr << "\nSEND " << this->_id << ":" << data;
+	//cerr << "\nSEND " << this->_id << ":" << data;
 	uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
 
 	uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));
@@ -205,12 +205,12 @@ void TCPServer::dataProcThreadMgrTimer(uv_timer_t *handle) {
 	if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
 		c->dataProcThreadMaker(1);//todo: see if it makes any difference with or without a lock
 		c->check2 = 0;
-		std::cerr << "NEW THREAD No Pops since last lab" << endl;
+		//std::cerr << "NEW THREAD No Pops since last lab" << endl;
 	} else if (c->dataQ_Pushes > c->dataQ_Pops) {
 		if (c->check2 == 5) {
 			c->dataProcThreadMaker(1);
 			c->check2 = 0;
-			std::cerr << "NEW THREAD Pushez > Popz" << endl;
+			//std::cerr << "NEW THREAD Pushez > Popz" << endl;
 		} else {
 			c->check2++;
 		}//todo:: else if (pops> pushes){ threads --!!!
@@ -245,13 +245,13 @@ void TCPServer::dataProcessor() {
 		lck.lock();
 		if (receivedDataQ.size() > 0) {
 			receivedData temp = this->receivedDataQ.front();
-			std::cerr << "data Proc: " << temp.data << endl;
+			//std::cerr << "data Proc: " << temp.data << endl;
 			this->receivedDataQ.pop();
 			this->dataQ_Pops++;
 			lck.unlock();
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			this->_onMessage(temp.clientID, temp.data);
-			std::cerr << "data Proc done: " << temp.data << endl;
+			//std::cerr << "data Proc done: " << temp.data << endl;
 		} else {
 			lck.unlock();
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));

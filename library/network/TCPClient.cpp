@@ -204,8 +204,8 @@ void TCPClient::alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_
 }
 
 void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
-	std::cerr << "Client read reached" << std::endl;
-	std::cerr << "NREAD: " << nread << std::endl;
+	//std::cerr << "Client read reached" << std::endl;
+	//std::cerr << "NREAD: " << nread << std::endl;
 
 	TCPClient *c = (TCPClient *) _client->data;
 	if (nread == -4095) {
@@ -295,12 +295,12 @@ void TCPClient::dataProcThreadMgrTimer(uv_timer_t *handle) {
 	if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
 		c->dataProcThreadMaker(1);
 		c->check2 = 0;
-		std::cerr << "NEW THREAD CREATED" << endl;
+		//std::cerr << "NEW THREAD CREATED" << endl;
 	} else if (c->dataQ_Pushes > c->dataQ_Pops) {
 		if (c->check2 == 5) {
 			c->dataProcThreadMaker(1);
 			c->check2 = 0;
-			std::cerr << "NEW THREAD CREATED" << endl;
+			//std::cerr << "NEW THREAD CREATED" << endl;
 		} else {
 			c->check2++;
 		}
@@ -315,7 +315,7 @@ void TCPClient::dataProcThreadMgrTimer(uv_timer_t *handle) {
 }
 
 void TCPClient::reconnTimerCB(uv_timer_t *handle) {
-	std::cerr << "reconnTimerCB reached" << std::endl;
+	//std::cerr << "reconnTimerCB reached" << std::endl;
 	TCPClient *c = (TCPClient *) handle->data;
 	free(handle);
 	c->connect();

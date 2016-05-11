@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GUI Test</title>
+    <script src="jquery-2.2.1.js"></script>
+    <style>
+        .tabs{
+            border:3px solid black;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <input type="button" id="wscc" value="Connect" >
+        <input type="button" id="wsdc" value="Dosconnect" >
+        <span id="cstate">**</span>
+    </div>
+    <div>
+        user<input type="text" id="iUser">
+         pass<input type="password" id="iPass">
+        <input type="button" id="login" value="Login" >
+        session:<span id="sessionid"></span>
+    </div>
+    <div>
+        <div id="tabbtnBar">
+            <input type="button" id="btnTabCore" value="Core" onclick="$('.tabs').hide();$('#tabCore').show();">
+            <input type="button" id="btnTabUM" value="UserManagement" onclick="$('.tabs').hide();$('#tabUM').show();">
+        </div>
+        <div class="tabs" id="tabCore">
+            Core.<br/>
+            <input type="button" id="getServices" value="Get list of Services" onclick="Socket.send(JSON.stringify({type:'call',node:'_core.getListOfServices',id:Math.round(Math.random()*1000000000).toString()}));">
+        </div>
+        <div class="tabs" id="tabUM">
+            UserManagement.<br/>
+            <input type="button" value="Get list of Users" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.listUsers',id:Math.round(Math.random()*1000000000).toString()}));"><br>
+            <input type="button" value="Get User Info" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.getUserInfo',id:Math.round(Math.random()*1000000000).toString(),data:{value:$('#userID').val()}}));">userid:<input type="text" id="userID"><br/>
+            <input type="button" value="Get list of Permissions" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.listPermissions',id:Math.round(Math.random()*1000000000).toString()}));"><br>
+            <input type="button" value="Get Permissions of User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.listUserPermissions',id:Math.round(Math.random()*1000000000).toString(),data:{value:$('#lpuserID').val()}}));"><input type="text" id="lpuserID"><br>
+            <input type="button" value="Grant Permission to User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.addUserPermission',id:Math.round(Math.random()*1000000000).toString(),data:{userID:$('#upUID').val(),permissionID:$('#upPID').val(),state:$('#upState').val()}}));">UserID:<input type="text" id="upUID">PermissionID:<input type="text" id="upPID">State:<input type="text" id="upState"><br>
+            <input type="button" value="Deny Permission from User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.removeUserPermission',id:Math.round(Math.random()*1000000000).toString(),data:{userID:$('#upUID').val(),permissionID:$('#upPID').val(),state:$('#upState').val()}}));"><br>
+            <input type="button" value="Add User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.addUser',id:Math.round(Math.random()*1000000000).toString(),data:{username:$('#adduUN').val(),password:$('#adduPS').val(),name:$('#adduN').val()}}));">UserName<input type="text" id="adduUN">Pass<input type="text" id="adduPS">Name<input type="text" id="adduN"><br>
+
+        </div>
+    </div>
+    <div></div>
+    <div id="data">
+    </div>
+<script type="text/javascript">
+    var Socket;
+    var sessionid=-1;
+    $(document).ready(function(){
+        $('.tabs').hide();
+        $("#wscc").click(function(){
+            Socket = new WebSocket("ws://127.0.0.1:5455");
+            Socket.onmessage=dataReceived;
+            Socket.onclose=function(){$('#cstate').html("Disconnected !");}
+            Socket.onopen=function(){$('#cstate').html("Connected .");}
+            Socket.onerror=function(er){console.error("WS Error : "+er);}
+        });
+        $("#wsdc").click(function(){
+            Socket.close();
+        });
+        $("#login").click(function () {
+            var msg={type:"call",node:"userman.login",id:"1234568", data:{username:$("#iUser").val(),password:$("#iPass").val()}}
+            Socket.send(JSON.stringify(msg));
+        })
+
+    });
+//{"type":"callback","node":"_core.getListOfServices","id":123456,"data":{"extensions":[
+    // {"name":"GUI","version":1,"state":2,"istate":3}]}}
+
+    function dataReceived(ev) {
+        console.log("WSR: " + ev.data);
+        var packet = JSON.parse(ev.data);
+
+        if ((packet.type == "callback")){
+            if(packet.node == "userman.login") {
+                if (packet.data.UMLoginResult == "ok") {
+                    sessionid = packet.data.sessionID;
+                    $("#sessionid").html("ok:" + sessionid);
+                } else {
+                    $("#sessionid").html("Failed:" + packet.data.description);
+                    sessionid = -1;
+                }
+            }else
+            if (packet.node == "_core.getListOfServices") {
+                view = "List of Services:<table border=\"1\"><tr><th>Name</th><th>Version</th><th>State</th></tr>";
+                var states = ["unknown", "not Installed", "Installing", "Installed", "Enable"];
+                for (var s in packet.data.extensions) {
+                    ss = packet.data.extensions[s];
+                    view += "<tr><td>" + ss.name + "</td><td>" + ss.version + "</td><td>" + states[ss.state] + "</td></tr>";
+                }
+                view += "</table>";
+                $("#data").html(view);
+            }else
+            if (packet.node == "userman.listUsers") {
+                view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>UserName</th><th>Name</th><th>Ban</th><th>BanReason</th></tr>";
+                for (var s in packet.data.userList) {
+                    ss = packet.data.userList[s];
+                    view += "<tr><td>" + ss.userID + "</td><td>" + ss.username + "</td><td>" + ss.name + "</td><td>" + ss.banned + "</td><td>" + ss.banReason + "</td></tr>";
+                }
+                view += "</table>";
+                $("#data").html(view);
+            }else
+            if (packet.node == "userman.getUserInfo") {
+                ss=packet.data;
+                $("#data").html("User " + ss.userID + "#" + ss.username + " (" + ss.name + "). ban:" + ss.banned + " r " + ss.banReason + ".");
+            }else
+            if (packet.node == "userman.listPermissions") {
+                view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>Parent</th><th>Name</th><th>title</th><th>desc</th></tr>";
+                for (var s in packet.data.listPermissions) {
+                    ss = packet.data.listPermissions[s];
+                    view += "<tr><td>" + ss.permissionID + "</td><td>" + ss.parentID + "</td><td>" + ss.name + "</td><td>" + ss.title + "</td><td>" + ss.description + "</td></tr>";
+                }
+                view += "</table>";
+                $("#data").html(view);
+            }else
+            if (packet.node == "userman.listUserPermissions") {
+                view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>State</th></tr>";
+                for (var s in packet.data.listPermissions) {
+                    ss = packet.data.listPermissions[s];
+                    view += "<tr><td>" + ss.id + "</td><td>" + ss.state + "</td></tr>";
+                }
+                view += "</table>";
+                $("#data").html(view);
+            }
+        }else if (packet.type=="error"){
+            $("#data").html("ERROR on '"+packet.node+"' {"+packet.id+"} : "+packet.data);
+        }
+    }
+</script>
+</body>
+</html>

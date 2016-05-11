@@ -131,6 +131,6 @@ ALTER TABLE "UserManagement".userpermission
   OWNER TO "UserManagement";
 
 
-INSERT INTO permission(id,parentid,name,title) select 0,-1,'_masterPermission','Permissions' WHERE NOT EXISTS (SELECT id FROM permission WHERE id=0);
+INSERT INTO permission(id,parentid,name,title) select 0,NULL,'_masterPermission','Permissions' WHERE NOT EXISTS (SELECT id FROM permission WHERE id=0);
 
 END;

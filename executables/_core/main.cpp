@@ -40,7 +40,7 @@ int main() {
 			} else if (seq(cmd, "installinfo") || seq(cmd, "if")) {
 				cin >> p1;
 				r.getInstallInfo(r.extManager[p1]->serviceInfo.name);
-			} else if (seq(cmd, "install") || seq(cmd, "if")) {
+			} else if (seq(cmd, "install") || seq(cmd, "ins")) {
 				cin >> p1;
 				if (!r.installService(r.extManager[p1]->serviceInfo.name))
 					cerr << "\n##Install '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";

@@ -45,7 +45,7 @@ void TCPServer::listen(int port) {
 	this->mainTimer.data = this;
 	uv_timer_init(&loop, &mainTimer);
 	//this_thread::sleep_for(std::chrono::milliseconds(5000));
-	uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 300);
+	uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 50);
 }
 
 void TCPServer::_listen() {
@@ -245,13 +245,12 @@ void TCPServer::dataProcessor() {
 		lck.lock();
 		if (receivedDataQ.size() > 0) {
 			receivedData temp = this->receivedDataQ.front();
-			std::cerr << "data Proc: " << temp.data << endl;
+			//std::cerr << "data Proc: " << temp.data << endl;
 			this->receivedDataQ.pop();
 			this->dataQ_Pops++;
 			lck.unlock();
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			this->_onMessage(temp.clientID, temp.data);
-			std::cerr << "data Proc done: " << temp.data << endl;
+			//std::cerr << "data Proc done: " << temp.data << endl;
 		} else {
 			lck.unlock();
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));

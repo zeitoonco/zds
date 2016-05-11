@@ -174,5 +174,13 @@ void ConnectionManager::createDatabase(std::string userName, std::string passWor
 	}
 
 }
+
+void pgdatabase::ConnectionManager::removeExtension(std::string serviceName) {
+	int a = adminConnection.execute("DROP SCHEMA \"" + serviceName + "\" CASCADE");
+	int b = adminConnection.execute("DELETE FROM __local.extension WHERE name = '" + serviceName + "'");
+	int c = adminConnection.execute("DROP ROLE \"" + serviceName + "\"");
+	std::cerr << a << "\t" << b <<
+	std::endl;//todo:: discuss with ali about Extension names weather they can be caseSensetive or not
+}
 }
 }

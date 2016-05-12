@@ -9,6 +9,7 @@
 #include "executables/PGdatabase/pgutility.hpp"
 #include "PGConfig.hpp"
 #include <fstream>
+#include "executables/_core/coreutility.hpp"
 #include <deque>
 
 namespace zeitoon {
@@ -50,6 +51,9 @@ void PGmediator::onCallback(string node, string data, string id, string from) {
 }
 
 void PGmediator::onEvent(string node, string data, string from) {
+	JStruct temp(data);
+	auto d = temp["name"].getValue();
+	conMgr.removeExtension(d);
 }
 
 void PGmediator::onInstall(string id) {
@@ -58,49 +62,40 @@ void PGmediator::onInstall(string id) {
 }
 
 void PGmediator::onEnable() {
+//--------register cmds
 	std::string temp = "";
 	size_t length = insInfo.commands.length();
 	for (size_t i = 0; i < length; i++) {
 		temp += (i == 0 ? "" : ",") + insInfo.commands[i]->name.toString();
 	}
 	sm.communication.registerCommand(temp);
+	std::cout << temp << endl;
 
+	//--------register events
 	length = insInfo.events.length();
-	temp.clear();
+	temp = "";
 	for (size_t i = 0; i < length; i++) {
 		temp += (i == 0 ? "" : ",") + insInfo.events[i]->name.toString();
 	}
 	sm.communication.registerEvent(temp);
+
+	//--------register hooks
+	length = insInfo.hooks.length();
+	temp = "";
+	for (size_t i = 0; i < length; i++) {
+		temp += (i == 0 ? "" : ",") + insInfo.hooks[i]->name.toString();
+	}
+	sm.communication.registerHook(temp);
 }
 
 void PGmediator::onDisable() {
 	cerr << "\nDisable!";
 }
 
-void PGmediator::onUninstall() { //fixme: this is old id file!. remove db things
-	string cpath = FileSystemUtility::getAppPath();
-	std::fstream inFile(cpath + "pgMediatorConfig");
-	std::string line;
-	std::deque<std::string> deqTemp;
-	if (not inFile) {
-		EXTinvalidName("unable to find or open requested file");
-	}
-	while (std::getline(inFile, line)) {
-		deqTemp.push_back(line);
-	}
+void PGmediator::onUninstall() { //fixme: remove db things
+	PGconfiguration.serviceID = "";
+	PGconfiguration.save();
 
-	for (std::deque<std::string>::iterator iter = deqTemp.begin(); iter != deqTemp.end(); iter++) {
-		if (std::string(*iter).find(("serviceID")) != std::string::npos) {
-			deqTemp.erase(iter);
-			break;
-		}
-	}
-	std::ofstream outFile;
-	outFile.open(cpath + "pgMediatorConfig", std::ofstream::trunc);
-	for (std::deque<std::string>::iterator iter = deqTemp.begin(); iter != deqTemp.end(); iter++) {
-		outFile << *iter << std::endl;
-	}
-	outFile.close();
 }
 
 void PGmediator::onConnect() {
@@ -179,6 +174,11 @@ void PGmediator::setInstallInfo() {
 	insInfo.datatypes.add(
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(DSDBTable::getStructName(), DSDBTable::getStructVersion()),
 			true);
+	///------------set available hooks
+
+	insInfo.hooks.add(new DSInstallInfo::DSHookDetail(zeitoon::_core::eventInfo::onServiceUninstall(), "", 0), true);
+	insInfo.hooks.add(new DSInstallInfo::DSHookDetail(zeitoon::_core::eventInfo::onServiceDisable(), "", 0), true);
+
 }
 }
 }

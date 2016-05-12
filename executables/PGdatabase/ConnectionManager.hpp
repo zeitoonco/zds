@@ -24,8 +24,9 @@ namespace zeitoon {
 namespace pgdatabase {
 
 class PGmediator;
+
 class ConnectionManager {
-	PGmediator* pgMediator;
+	PGmediator *pgMediator;
 public:
 	/**ConnectionManager() constructor e class
 	 * @param adminUserName string
@@ -34,13 +35,16 @@ public:
 	 * @param adminPort string
 	 * @param adminDbname string
 	 */
-	ConnectionManager(std::string adminUserName, std::string adminPassWord, std::string adminHost, int adminPort, std::string adminDbname,
-			PGmediator* instancePtr);
+	ConnectionManager(std::string adminUserName, std::string adminPassWord, std::string adminHost, int adminPort,
+	                  std::string adminDbname,
+	                  PGmediator *instancePtr);
+
 	/**~ConnectionManager() Destructor
 	 * 1- map e connectionList ra lock mikonad,
 	 * 2- ba estefaade az iterator dar map migardad va tamami e connection haaye mojood ra ebtedaa disconnect() va sepat delete mikonad
 	 */
 	~ConnectionManager();
+
 	/**execute() ba estefaade az connection e motenaaseb baa parametr e naame  extension
 	 * az function execude class Connection estefaade mikonad va farmaan e sql e daryaafty
 	 * raa ejraa mikonad.
@@ -49,6 +53,7 @@ public:
 	 * @return meghdaar e satr-haaye tasir gerefte az farmaan e sql
 	 */
 	int execute(std::string extension, std::string sql);
+
 	/**query() ba estefaade az connection e motenaaseb baa parametr e naame  extension
 	 * az function query ee class Connection estefaade mikonad va farmaan e sql e daryaafty
 	 * raa ejra mikonad, bad az aan mitavaan az kole method-haaye ghabele dastresi e class e
@@ -57,7 +62,8 @@ public:
 	 * @param sql string
 	 * @return QueryResult bastegi be noe method entekhaabi ast.
 	 */
-DTTablePostgres query(std::string extension, std::string sql);
+	DTTablePostgres query(std::string extension, std::string sql);
+
 	/**singleFieldQuery()
 	 * ba estefaade az connection e motenaaseb baa parametr e naame  extension
 	 * az function getValue class Connection estefaade mikonad va farmaan e sql e daryaafty
@@ -69,6 +75,8 @@ DTTablePostgres query(std::string extension, std::string sql);
 
 	std::string singleFieldQuery(std::string extension, std::string sql);
 
+	void removeExtension(std::string serviceName);
+
 private:
 	/**registerNewExtension() sabt e extension e jadid .
 	 *@param extensionName string
@@ -78,12 +86,14 @@ private:
 	 * 4- sabt e naam e va moshakhasaat e extension dar __local.extension
 	 */
 	void registerNewExtension(std::string extensionName);
+
 	/** connectionMaker() be map e connectionList meghdaar midahad.
 	 * @param extensionName string
 	 * naam e extension ra az voroodi daryaaft va ba estefaade az host, port, dbname
 	 * ke dar constructor meghdar gereftand, yek object az class e Connection misaazad
 	 */
 	void connectionMaker(std::string extensionName);
+
 	/**checkIfExtensionRegistered()
 	 * @param extensionName string
 	 * Check Mikonad ke connection e extension e mored e nazar, dar __local.extension vojood daraad.
@@ -91,20 +101,25 @@ private:
 	 *
 	 */
 	bool checkIfExtensionRegistered(std::string extension);
+
 	/**getNameAndType() in function mas'ool e jam-aavari etela'aat baraye estefaade dar hangaam throw kardan e
 	 * exception ast (Hooviaye scopy ke error run-time error midahad.
 	 * @return string e etela'aat taa jayi ke mitavaanad.
 	 */
 	std::string getNameAndType();
 
-	std::string host, dbname;/** dar constructor meeghdaar migirad va bad be onvaan e
-	 *parametr e moshtarek baraye connection e har extension estefaade mishavafd */
+	std::string host, dbname;
+	/** dar constructor meeghdaar migirad va bad be onvaan e
+		 *parametr e moshtarek baraye connection e har extension estefaade mishavafd */
 
-	int port;/*dar constructor meghdar migirad va baraye extension ha be ssoorate moshtarek estefaade mishavad*/
+	int port;
+	/*dar constructor meghdar migirad va baraye extension ha be ssoorate moshtarek estefaade mishavad*/
 
-	Connection adminConnection;/**dar constructor pas az daryaaft e parametr ha in connection baraye modiriat, saakhte mishavad*/
+	Connection adminConnection;
+	/**dar constructor pas az daryaaft e parametr ha in connection baraye modiriat, saakhte mishavad*/
 
-	std::mutex mapGuard;/** baraye lock kardan e map e connectionList  dar hangaam e estefaade az map*/
+	std::mutex mapGuard;
+	/** baraye lock kardan e map e connectionList  dar hangaam e estefaade az map*/
 
 	std::map<std::string, Connection> connectionList; //list connection haye mojood baraaye extension haye mokhtalef. dar void connectionMaker() meghdaar migirad
 

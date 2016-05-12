@@ -55,8 +55,6 @@ namespace zeitoon {
 
 		class commandInfo {
 		public:
-			commandInfo() {
-			}
 
 			//----------------------------set Command names:
 			static std::string login() { return "userman.login"; }
@@ -104,12 +102,16 @@ namespace zeitoon {
 			static std::string removeUserPermission() { return "userman.removeUserPermission"; }
 
 			static std::string listUserPermissions() { return "userman.listUserPermissions"; }
+
+			static std::string addUsergroupPermission() { return "userman.addUsergroupPermission"; }
+
+			static std::string removeUsergroupPermission() { return "userman.removeUsergroupPermission"; }
+
+			static std::string listUsergroupPermissions() { return "userman.listUsergroupPermissions"; }
 		};
 
 		class eventInfo {
 		public:
-			eventInfo() {
-			}
 
 			//--------------------------set Event names:
 			static std::string usersUsergroupAdded() { return "userman.usersUsergroupAdded"; }

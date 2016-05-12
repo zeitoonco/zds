@@ -336,6 +336,34 @@ public:
 	}
 };
 
+class NetworkMaxRetryReached : public networkFailure {
+public:
+	NetworkMaxRetryReached(string imessage = "", string owner = "", string file = "",
+	                       int line = -1, exceptionEx *iinnerException = NULL) :
+			networkFailure(imessage, owner, file, line,
+			               iinnerException) {
+		setTitle(this->getDefTitle());
+	}
+
+	string getDefTitle() {
+		return "Maximum number of tries reached.";
+	}
+};
+
+class NetworkNoRetryTimeSet : public networkFailure {
+public:
+	NetworkNoRetryTimeSet(string imessage = "", string owner = "", string file = "",
+	                      int line = -1, exceptionEx *iinnerException = NULL) :
+			networkFailure(imessage, owner, file, line,
+			               iinnerException) {
+
+	}
+
+	string getDefTitle() {
+		return "Reconnect interval has not been set";
+	}
+};
+
 //exceptionEx
 #define EXexceptionEx(msg) new zeitoon::utility::exceptionEx(msg,this->getNameAndType(),__FILE__,__LINE__)
 #define EXTexceptionEx(msg) throw EXexceptionEx(msg)
@@ -489,7 +517,24 @@ public:
 #define EXTresourceNotAvailableI(msg, inner) throw EXresourceNotAvailableI(msg,inner)
 #define EXresourceNotAvailableIO(msg, owner, inner) new zeitoon::utility::resourceNotAvailable(msg,owner,__FILE__,__LINE__,inner)
 #define EXTresourceNotAvailableIO(msg, owner, inner) throw EXresourceNotAvailableIO(msg,owner,inner)
-
+//network Retries Failed:
+#define EXNetworkMaxRetryReached(msg) new zeitoon::utility::NetworkMaxRetryReached(msg,this->getNameAndType(),__FILE__,__LINE__)
+#define EXTNetworkMaxRetryReached(msg) throw EXNetworkMaxRetryReached(msg)
+#define EXNetworkMaxRetryReachedO(msg, owner) new zeitoon::utility::NetworkMaxRetryReached(msg,owner,__FILE__,__LINE__)
+#define EXTNetworkMaxRetryReachedO(msg, owner) throw EXNetworkMaxRetryReachedO(msg,owner)
+#define EXNetworkMaxRetryReachedI(msg, inner) new zeitoon::utility::NetworkMaxRetryReached(msg,this->getNameAndType(),__FILE__,__LINE__,inner)
+#define EXTNetworkMaxRetryReachedI(msg, inner) throw EXNetworkMaxRetryReachedI(msg,inner)
+#define EXNetworkMaxRetryReachedIO(msg, owner, inner) new zeitoon::utility::NetworkMaxRetryReached(msg,owner,__FILE__,__LINE__,inner)
+#define EXTNetworkMaxRetryReachedIO(msg, owner, inner) throw EXNetworkMaxRetryReachedIO(msg,owner,inner)
+//network No Retry Time Set
+#define EXNetworkNoRetryTimeSet(msg) new zeitoon::utility::NetworkNoRetryTimeSet(msg,this->getNameAndType(),__FILE__,__LINE__)
+#define EXTNetworkNoRetryTimeSet(msg) throw EXNetworkNoRetryTimeSet(msg)
+#define EXNetworkNoRetryTimeSetO(msg, owner) new zeitoon::utility::NetworkNoRetryTimeSet(msg,owner,__FILE__,__LINE__)
+#define EXTNetworkNoRetryTimeSetO(msg, owner) throw EXNetworkNoRetryTimeSetO(msg,owner)
+#define EXNetworkNoRetryTimeSetI(msg, inner) new zeitoon::utility::NetworkNoRetryTimeSet(msg,this->getNameAndType(),__FILE__,__LINE__,inner)
+#define EXTNetworkNoRetryTimeSetI(msg, inner) throw EXNetworkNoRetryTimeSetI(msg,inner)
+#define EXNetworkNoRetryTimeSetIO(msg, owner, inner) new zeitoon::utility::NetworkNoRetryTimeSet(msg,owner,__FILE__,__LINE__,inner)
+#define EXTNetworkNoRetryTimeSetIO(msg, owner, inner) throw EXNetworkNoRetryTimeSetIO(msg,owner,inner)
 }
 }
 #endif // EXCEPTIONEX_HPP

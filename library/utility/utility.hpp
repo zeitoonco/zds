@@ -445,6 +445,44 @@ public:
 		else
 			return source;
 	}
+
+	static bool isInt(string val) {
+		if (val.length() == 0)
+			return false;
+		string str = Strings::trim(val);
+		for (unsigned int i = 0; i < str.size(); i++)
+			if ((str[i] < 48 || str[i] > 57)    //Numbers
+			    && !((str[i] == 45 || str[i] == 43) && i == 0))    // '-','+'
+				return false;
+		return !((str[0] == 45 || str[0] == 43) && str.length() == 1);
+	}
+
+	static bool isFloat(string val) { //TODO: make sure that 'e','E','.' r only used once?
+		if (val.length() == 0)
+			return false;
+		int cn, cd, ce;
+		cn = ce = cd = 0;
+		string str = Strings::trim(val);
+		for (unsigned int i = 0; i < str.size(); i++)
+			if (str[i] >= 48 && str[i] <= 57)    //Numbers
+				cn += 1;
+			else if (str[i] == 46)// '.'
+				cd += 1;
+			else if ((str[i] == 45 || str[i] == 43) && i == 0)    // '-','+'
+				;//ok
+			else
+				return false;
+		//&& str[i] != 101 && str[i] != 69)    //e & E
+		return !(cn < 0 || cd > 1);
+	}
+
+	static bool isBoolian(string val) {
+		if (val.length() == 0)
+			return false;
+		string str = Strings::trim(val);
+		string tval = toLower(str);
+		return tval == "true" || tval == "false";
+	}
 };
 
 class MessageTypes {

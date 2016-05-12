@@ -10,15 +10,62 @@
 #include <functional>
 #include <thread>
 #include <iostream>
-#include <utility/exceptionex.hpp>
+#include "datatypes/dtmultifieldtypes.hpp"
+#include <queue>
+#include <mutex>
 
 namespace zeitoon {
 namespace utility {
+
+
+class ReconnectConfig : public zeitoon::datatypes::DTStruct {
+	zeitoon::datatypes::DTSet<zeitoon::datatypes::DTInteger<>> timing = {"timing"};
+	int i, j;
+public: //to be removed
+	~ReconnectConfig() {
+		this->clear();
+	}
+
+	ReconnectConfig() : DTStruct("ReconnectConfig", 0, 0, 0) {
+		this->add(&timing);
+		this->resetInterval();
+	}
+
+	ReconnectConfig(std::string JSONData) : ReconnectConfig() {
+		this->fromString(JSONData);
+	}
+
+	size_t timingSize() {
+		return timing.length();
+	}
+
+	void setTiming(std::string JSON) {
+		this->fromString(JSON);
+	}
+
+	void clearTiming() {
+		this->timing.clear();
+	}
+
+	int getNextInterval();
+
+	void resetInterval() {
+		i = 0;
+		j = 0;
+	}
+
+	std::string getNameAndType() {
+		return "ReconnectConfig ";
+	}
+};
+
 
 class TCPClient {
 public:
 	typedef std::function<void(std::string)> onMessageDLG;
 	typedef std::function<void(void)> onConnectDLG;
+
+	~TCPClient();
 
 	TCPClient();
 
@@ -68,7 +115,23 @@ public:
 		return std::string("TCPClient");
 	}
 
+	void setReconnectInterval(std::string JSON);
+
+	void dataProcessor();
+
 private:
+	void dataProcThreadMaker(int numberOfThreads = 4);
+
+	void freeThreadPool();
+
+//todo: create  a struct for thread variables.
+	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
+	bool stopDataProcess = false;
+	std::mutex mtx;
+	std::queue<std::string> receivedDataQ;
+	std::vector<std::thread *> dataThreadPool;
+	ReconnectConfig reconnectOptions;
+	uv_timer_t mainTimer;
 	uv_loop_t loop;
 	uv_tcp_t client;
 	sockaddr *addr;
@@ -77,10 +140,16 @@ private:
 	onConnectDLG _onConnect;
 	onConnectDLG _onDisconnect;
 	std::string _buff;
-	size_t _lastPacketLen;
+	size_t _lastPacketLen = 0;
 	bool _connected;
 
-	void _listen();
+	void runLoop();
+
+	void reconnect();
+
+	static void dataProcThreadMgrTimer(uv_timer_t *handle);
+
+	static void reconnTimerCB(uv_timer_t *handle);
 
 	static void on_connect(uv_connect_t *req, int status);
 
@@ -91,28 +160,22 @@ private:
 	static void on_client_write(uv_write_t *req, int status);
 
 	void _packetReceived() {
-		std::cerr << "\nNETR " << this->_buff;
-		if (this->_onMessage != NULL)
-			std::thread *t = new std::thread(&TCPClient::_safeCaller, this, this->_buff);//fixme:FREE MEMORY!
-		//this->_onMessage(this->_buff);
+		/* fixme:: this way, in case of NULL _onmsg-> this function would just empty the string, witch would
+		 * just clear the buffer and received data would be lost eventually.
+		 **/
+		if (this->_onMessage != NULL) {
+			receivedDataQ.push(this->_buff);
+			this->dataQ_Pushes++;
+		}
 		this->_buff = "";
 		this->_lastPacketLen = 0;
 	}
-
-	void _safeCaller( std::string data) {
-		try {
-			this->_onMessage( data);
-		} catch (exceptionEx *ex) {
-			cerr << "TCPC.Error.OnReceive: " << ex->what() << endl;
-		} catch (exception &ex) {
-			cerr << "TCPC.sysError.OnReceive: " << ex.what() << endl;
-		} catch (...) {
-			cerr << "TCPC.uncaughtError.OnReceive: " << endl;
-		}
-	}
+//	static void close_cb()
 };
 
 }//utility
 }//zeitoon
 
 #endif //NETTEST_TCPCLIENT_HPP
+
+

@@ -5,7 +5,7 @@
  *      Author: ajl
  */
 
-#include "Router.hpp"
+	#include "Router.hpp"
 #include <string>
 #include <mutex>
 #include <thread>
@@ -173,7 +173,7 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 			ext->state = ExtensionProfile::extensionState::installed;
 			vector<ExtensionProfile *> elist = extManager.getByServiceType(datatypes::EnmServiceType::UserManager);
 			if (elist.size() > 0 && elist[0]->isRunning()) { //UM avail
-				registerServiceCEPermissions(ext);
+				registerServiceCEPermissions(ext);//fixme: seems that it happens twise, if um is running and we install a service
 				ext->CEPermissionsRegistered = true;
 			} else {
 				ext->CEPermissionsRegistered = false;
@@ -256,7 +256,7 @@ void Router::sendMessage(string extension, string source, string node, string &d
 		if (id.length() > 0)
 			msg.add("id", id);
 		if (session.length() > 0)
-			msg.add("session", id);
+			msg.add("session", session);
 		if (data.length() > 0)
 			msg.addIgnored("data", data);
 		string msgs = msg.toString();
@@ -406,7 +406,7 @@ bool Router::checkCoreRequirements() { //we need UM if we r gonna check permissi
 
 bool Router::enableService(string name) {
 	ExtensionProfile *ext = extManager[name];
-	if (!ext)
+	if (!ext || ext->state < ExtensionProfile::extensionState::installed)
 		return false;
 	ext->requirementsSatisfied = extManager.isReqSatisfied(ext->serviceInfo.enableRequirements);
 	if (!ext->requirementsSatisfied)
@@ -414,11 +414,12 @@ bool Router::enableService(string name) {
 	string t;
 	sendMessage(name, "_core", "onenable", t, MessageTypes::MTCall, "");
 	extManager.save();
+	return true;
 }
 
 bool Router::installService(string name) {
 	ExtensionProfile *ext = extManager[name];
-	if (!ext)
+	if (!ext || ext->state >= ExtensionProfile::extensionState::installed)
 		return false;
 	if (!extManager.isReqSatisfied(ext->serviceInfo.installRequirements))
 		EXTresourceNotAvailable("Install failed: Requirements not satisfied");
@@ -430,6 +431,7 @@ bool Router::installService(string name) {
 	         utility::CommunicationUtility::makeCommand("onInstall", "ONINSTALL", "_core",
 	                                                    "{\"id\":\"" + niid + "\"}"));
 	//todo: timeout install phase after a while(~60 sec) (maybe we can add a "im on it" packet later, to reset timer
+	return true;
 }
 
 bool Router::getInstallInfo(string name) {
@@ -438,22 +440,37 @@ bool Router::getInstallInfo(string name) {
 }
 
 bool Router::uninstallService(string name) {
+	ExtensionProfile *ext = extManager[name];
+	if (!ext || ext->state < ExtensionProfile::extensionState::installed)
+		return false;
+	if (ext->state == ExtensionProfile::extensionState::enabled)
+		disableService(name);
+	if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager) {
+		for (int i = 0; i < extManager.size(); i++)
+			extManager[i]->CEPermissionsRegistered = false;
+		extManager.save();
+	}
 	string t;
 	sendMessage(name, "_core", "onuninstall", t, MessageTypes::MTCall, "");
 	extManager[name]->state = ExtensionProfile::extensionState::notInstalled;
 	extManager[name]->installID = "";
 	extManager.save();
-	string dt = "{\"name\":\"" + name + "\"}";
+	string dt = "{\"name\":\"" + extManager[name]->serviceInfo.name.getValue() + "\"}";
 	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
 	//todo:cleanup UM,PGDB
+	return true;
 }
 
 bool Router::disableService(string name) {
+	ExtensionProfile *ext = extManager[name];
+	if (!ext || ext->state != ExtensionProfile::extensionState::enabled)
+		return false;
 	string t;
 	sendMessage(name, "_core", "ondisable", t, MessageTypes::MTCall, "");
 	extManager[name]->state = ExtensionProfile::extensionState::installed;
 	string dt = "{\"name\":\"" + name + "\"}";
 	comm.fireEvent(eventInfo::onServiceDisable(), dt, "_core");
+	return true;
 }
 
 void Router::callCommandLocal(string node, string &data, string from, string id, string session) {

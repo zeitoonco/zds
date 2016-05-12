@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include "executables/PGdatabase/DTStructs.hpp"
 #include "executables/PGdatabase/pgutility.hpp"
+#include "executables/_core/coreutility.hpp"
 #include <deque>
 #include "datatypes/dtsingletypes.hpp"
 #include "UManagementUtility.hpp"
@@ -114,7 +115,7 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			DSPermissionsList permsList = userMngrInterface.listPermissions();
 			sm.communication.runCallback(node, permsList.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::listUsergroups(), false)) {
-			DSUserGroupsList usrGrpList(userMngrInterface.listUsergroups());
+			DSUserGroupsList usrGrpList = userMngrInterface.listUsergroups();
 			sm.communication.runCallback(node, usrGrpList.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::addUserUsergroup(), false)) {
 			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
@@ -137,6 +138,19 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			userID.fromString(data);
 			DSUserPermissionList permsList = userMngrInterface.listUserPermissions(userID.value.value());
 			sm.communication.runCallback(node, permsList.toString(true), id);
+		} else if (!Strings::compare(node, commandInfo::addUsergroupPermission(), false)) {
+			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
+			userMngrInterface.addUsergroupPermission(regInfo.usergroupID.getValue(), regInfo.permissionID.getValue(),
+			                                    regInfo.permissionState.getValue());
+		} else if (!Strings::compare(node, commandInfo::removeUsergroupPermission(), false)) {
+			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
+			userMngrInterface.removeUsergroupPermission(regInfo.usergroupID.getValue(), regInfo.permissionID.getValue(),
+			                                       regInfo.permissionState.getValue());
+		} else if (!Strings::compare(node, commandInfo::listUsergroupPermissions(), false)) {
+			DSInteger usergroupID;
+			usergroupID.fromString(data);
+			DSUsergroupPermissionList permsList = userMngrInterface.listUsergroupPermissions(usergroupID.value.value());
+			sm.communication.runCallback(node, permsList.toString(true), id);
 		}
 	} catch (exceptionEx *errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo->what());
@@ -155,7 +169,7 @@ void UmCHI::onEvent(string node, string data, string from) {
 
 }
 
-void UmCHI::onInstall(string id) {
+void UmCHI::onInstall(string id) {//todo: check serviceID
 	string cpath = FileSystemUtility::getAppPath();
 	//Addressing the file and checking Database tables
 	string temp = cpath + "DBTableScripts.sql";
@@ -164,11 +178,11 @@ void UmCHI::onInstall(string id) {
 	std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 	int res;
 	try {
-		res=userMngrInterface.executeSync(str);
+		res = userMngrInterface.executeSync(str);
 	} catch (exceptionEx *errorInfo) {
 		EXTDBErrorI("Unable to create default tables for UM", errorInfo);
 	}
-	if (res==-1)
+	if (res == -1)
 		EXTDBError("Sql error");
 	//set serviceID in confMgr
 	UMconfig.serviceID = id;
@@ -176,6 +190,7 @@ void UmCHI::onInstall(string id) {
 }
 
 void UmCHI::onEnable() {
+	//--------register cmds
 	std::string temp = "";
 	size_t length = insInfo.commands.length();
 	for (size_t i = 0; i < length; i++) {
@@ -183,6 +198,8 @@ void UmCHI::onEnable() {
 	}
 	sm.communication.registerCommand(temp);
 	std::cout << temp << endl;
+
+	//--------register events
 	length = insInfo.events.length();
 	temp = "";
 	for (size_t i = 0; i < length; i++) {
@@ -190,6 +207,16 @@ void UmCHI::onEnable() {
 	}
 	sm.communication.registerEvent(temp);
 	std::cout << temp << endl;
+
+	//--------register hooks
+	length = insInfo.hooks.length();
+	temp = "";
+	for (size_t i = 0; i < length; i++) {
+		temp += (i == 0 ? "" : ",") + insInfo.hooks[i]->name.toString();
+	}
+	sm.communication.registerHook(temp);
+	std::cout << temp << endl;
+
 }
 
 void UmCHI::onDisable() {
@@ -351,6 +378,20 @@ void UmCHI::setInstallInfo() {
 			                                   DSInteger::getStructVersion(),
 			                                   DSUserPermissionList::getStructName(),
 			                                   DSUserPermissionList::getStructVersion()), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::addUsergroupPermission(),
+			                                   DSUsergroupPermission::getStructName(),
+			                                   DSUsergroupPermission::getStructVersion(), "", 0), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::removeUsergroupPermission(),
+			                                   DSUsergroupPermission::getStructName(),
+			                                   DSUsergroupPermission::getStructVersion(), "",
+			                                   0), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::listUsergroupPermissions(), DSInteger::getStructName(),
+			                                   DSInteger::getStructVersion(),
+			                                   DSUsergroupPermissionList::getStructName(),
+			                                   DSUsergroupPermissionList::getStructVersion()), true);
 
 //--------set available events info
 
@@ -484,7 +525,9 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(zeitoon::usermanagement::DSUserPermission::getStructName(),
 			                                                zeitoon::usermanagement::DSUserPermission::getStructVersion()),
 			true);
+	///------------set available hooks
 
+	insInfo.hooks.add(new DSInstallInfo::DSHookDetail(zeitoon::_core::eventInfo::onServiceUninstall(), "", 0), true);
 }
 } //usermanagement
 } //zeitoon

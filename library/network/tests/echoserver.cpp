@@ -16,11 +16,11 @@ int main() {
 
 
 	a.joinOnListenThread();
-	a.disconnect();
+//	a.disconnect();
 	return 0;
 }
 
 void onmsg(size_t id, std::string msg) {
-	//std::cerr << "\nMSG received from " << id << " l " << msg.size();
+	std::cerr << "\nMSG received from " << id << " l " << msg.size();
 	a.clients[id]->send(msg);
 }

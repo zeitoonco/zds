@@ -302,7 +302,7 @@ int UMCore::registerPermission(std::string name, std::string title, std::string 
 	try {
 		executeSync(
 				"insert into permission( id, parentid, name, title, description) values(default, " +
-				std::to_string(parent) + ", '" + name + "', '" + title
+				(parent==-1?string("NULL"):std::to_string(parent)) + ", '" + name + "', '" + title
 				+ "', '" + desc + "')");
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(),
@@ -316,7 +316,7 @@ int UMCore::registerPermission(std::string name, std::string title, std::string 
 
 	std::string queryForPermissionID =
 			" select id from permission where name='" + name + "' and title='" + title + "' and description='" + desc
-			+ "'and parentid=" + std::to_string(parent);
+			+ "'and parentid=" + (parent==-1?string("NULL"):std::to_string(parent));
 
 	int permissionID = 0;
 	try {
@@ -342,7 +342,7 @@ void UMCore::updatePermission(int permissionID, std::string name, std::string ti
 	try {
 		executeResult = executeSync(
 				"update permission set name='" + name + "', title='" + title + "', description='" + desc +
-				"', parentid=" + std::to_string(parentID)
+				"', parentid=" + (parentID==-1?string("NULL"):std::to_string(parentID))
 				+ " where id =" + std::to_string(permissionID));
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(),
@@ -405,7 +405,7 @@ int UMCore::registerUsergroup(std::string title, int parentID,
 
 	try {
 		executeSync("insert into groups( id, title, parentid, description) values(default, '" + title + "', " +
-		            std::to_string(parentID) + ", '" + desc + "')");
+		            (parentID==-1?string("NULL"):std::to_string(parentID)) + ", '" + desc + "')");
 	} catch (exceptionEx *errorInfo) {
 		systemLog.log(getNameAndType(), "Unable to register usergroup[" + title + "(" + desc + ")] in database. " +
 		                                std::string(errorInfo->what()),
@@ -414,7 +414,7 @@ int UMCore::registerUsergroup(std::string title, int parentID,
 		return -1;
 	}
 	std::string queryForGroupID =
-			"select id from groups where title='" + title + "' and parentid=" + std::to_string(parentID) +
+			"select id from groups where title='" + title + "' and parentid=" + (parentID==-1?string("NULL"):std::to_string(parentID)) +
 			" and description='" + desc
 			+ "'";
 
@@ -443,7 +443,7 @@ void UMCore::updateUsergroup(int usergroupID, std::string title, int parentID, s
 	try {
 		executeSync(
 				"update groups set title='" + title + "', description='" + desc + "', parentid=" +
-				std::to_string(parentID) + " where id="
+				(parentID==-1?string("NULL"):std::to_string(parentID)) + " where id="
 				+ std::to_string(usergroupID));
 		sessionManager.userGroupParentCache.at(usergroupID) = parentID;
 		umCHI->sm.communication.runEvent(eventInfo::usergroupModified(),

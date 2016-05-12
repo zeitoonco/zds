@@ -46,27 +46,11 @@ public:
 				receivedData temp = {this->_id, this->_buff};
 				this->_parent->receivedDataQ.push(temp);
 				this->_parent->dataQ_Pushes++;
-
-				//std::cerr << _buff<<endl;
-				//std::thread *t=new std::thread(this->_parent->_onMessage,this->_id, this->_buff);//fixme:FREE MEMORY!
-				//this->_parent->_onMessage(this->_id, this->_buff);
-
 				this->_buff = "";
 				this->_lastPacketLen = 0;
 			}
 
 		public:
-			void _safeCaller(size_t id, std::string data) {
-				try {
-					this->_parent->_onMessage(id, data);
-				} catch (exceptionEx *ex) {
-					cerr << "TCPS.Error.OnReceive: " << ex->what() << endl;
-				} catch (exception &ex) {
-					cerr << "TCPS.sysError.OnReceive: " << ex.what() << endl;
-				} catch (...) {
-					cerr << "TCPS.uncaughtError.OnReceive: " << endl;
-				}
-			}
 
 			void send(std::string data);
 
@@ -228,6 +212,18 @@ private:
 	onConnectDLG _onDisconnect;
 
 	void _listen();
+
+	void _safeCaller(size_t id, std::string data) {
+		try {
+			this->_onMessage(id, data);
+		} catch (exceptionEx *ex) {
+			cerr << "TCPS.Error.OnReceive: " << ex->what() << endl;
+		} catch (exception &ex) {
+			cerr << "TCPS.sysError.OnReceive: " << ex.what() << endl;
+		} catch (...) {
+			cerr << "TCPS.uncaughtError.OnReceive: " << endl;
+		}
+	}
 
 	static void on_new_connection(uv_stream_t *server, int status);
 

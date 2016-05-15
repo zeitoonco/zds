@@ -133,6 +133,11 @@ namespace zeitoon {
                     "UPDATE userdata SET status = " + to_string(status) + "customstatusicon =" +
                     to_string(customStatusIcon) + "customstatusText =" +
                     customstatusText + " WHERE userid =" + to_string(userID));
+
+            chatCHI->sm.communication.runEvent(EventInfo::userStateChanged(),
+                                               zeitoon::chat::DSChangeUserState(userID, status, customStatusIcon,
+                                                                                customstatusText).toString(
+                                                       true));
         }
 
         void chaT::changeReachState(int userID, EnumStatus::status status) {
@@ -164,6 +169,9 @@ namespace zeitoon {
                     to_string(userID) + " ," +
                     to_string(sessionID) + ",Default,null,null)");
 
+            chatCHI->sm.communication.runEvent(EventInfo::sessionUserAdded(),
+                                               zeitoon::chat::DSAddUserSession(userID, sessionID).toString(
+                                                       true));
         }
 
         void chaT::removeUserFromSession(int userID, int sessionID) {
@@ -182,45 +190,52 @@ namespace zeitoon {
                     chatCHI->sm.database.execute(
                             "DELETE FROM session WHERE id=" + to_string(userID));
                 }
+                chatCHI->sm.communication.runEvent(EventInfo::sessionUserRemoved(),
+                                                   zeitoon::chat::DSAddUserSession(userID, sessionID).toString(
+                                                           true));
             }
         }
 
 
-    void chaT::changeLeader(int userID, int sessionID, bool Leader) {
-        chatCHI->sm.database.executeSync(
-                "UPDATE sessionuser SET Leader = 'False'  WHERE Leader = 'True' AND sessionID = '" +
-                to_string(sessionID) + "' AND NOT(userID = '" + to_string(userID) + "')");
+        void chaT::changeLeader(int userID, int sessionID, bool Leader) {
+            chatCHI->sm.database.executeSync(
+                    "UPDATE sessionuser SET Leader = 'False'  WHERE Leader = 'True' AND sessionID = '" +
+                    to_string(sessionID) + "' AND NOT(userID = '" + to_string(userID) + "')");
 
 
-        int result = chatCHI->sm.database.executeSync(
-                "UPDATE sessionuser SET Leader ='True'  WHERE userID = '" + to_string(userID) +
-                "' AND sessionID = '" + to_string(sessionID) + "'");
+            int result = chatCHI->sm.database.executeSync(
+                    "UPDATE sessionuser SET Leader ='True'  WHERE userID = '" + to_string(userID) +
+                    "' AND sessionID = '" + to_string(sessionID) + "'");
+
+            chatCHI->sm.communication.runEvent(EventInfo::sessionLeaderChanged(),
+                                               zeitoon::chat::DSAddUserSession(userID, sessionID).toString(
+                                                       true));
+        }
+
+
+        DSSessionList chaT::listSessions(int ID) {
+            zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
+                    "SELECT (sessionid) FROM sessionuser WHERE userid=" +
+                    to_string(ID));
+
+            vector<DTInteger<int>> tempVec;
+            DTInteger<> tempInt = {"sessionID"};
+            int i = 0;
+            do {
+                tempInt = stoi(result.fieldValue(i, 0));
+                tempVec.push_back(tempInt);
+                i++;
+            } while (i < result.rowCount());
+            return DSSessionList(tempVec);
+        }
+
+        DSSession chaT::getSession(int sessionID) {
+            zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
+                    "SELECT (id,creationdate) FROM session WHERE id =" + to_string(sessionID));
+
+            return DSSession(std::stoi(result.fieldValue(0, 0)), result.fieldValue(0, 1));
+        }
+
+
     }
-
-
-    DSSessionList chaT::listSessions(int ID) {
-        zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
-                "SELECT (sessionid) FROM sessionuser WHERE userid=" +
-                to_string(ID));
-
-        vector<DTInteger<int>> tempVec;
-        DTInteger<> tempInt = {"sessionID"};
-        int i = 0;
-        do {
-            tempInt = stoi(result.fieldValue(i, 0));
-            tempVec.push_back(tempInt);
-            i++;
-        } while (i < result.rowCount());
-        return DSSessionList(tempVec);
-    }
-
-    DSSession chaT::getSession(int sessionID) {
-        zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
-                "SELECT (id,creationdate) FROM session WHERE id =" + to_string(sessionID));
-
-        return DSSession(std::stoi(result.fieldValue(0, 0)), result.fieldValue(0, 1));
-    }
-
-
-}
 }

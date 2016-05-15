@@ -30,7 +30,6 @@ namespace zeitoon {
             }
 
             else if (!Strings::compare(node, CommandInfo::checkNewMessages(), false)) {
-                // DTInteger<int> temp(data);
                 DSInteger temp;
                 temp.fromString(data);
                 DSCheckMessages result;
@@ -41,10 +40,11 @@ namespace zeitoon {
 
             else if (!Strings::compare(node, CommandInfo::getMessages(), false)) {
                 DSGetMessages temp(data);
-                chatCore.getMessages(temp.userID.getValue(), temp.sessionID.getValue(),
+                DSMessageList result;
+                result =  chatCore.getMessages(temp.userID.getValue(), temp.sessionID.getValue(),
                                      (EnumGetMsgType::getMsgType) temp.type.getValue(), temp.from.getValue(),
                                      temp.to.getValue());
-
+                sm.communication.runCallback(node, result.toString(true), id);
             }
             else if (!Strings::compare(node, CommandInfo::messagesSeen(), false)) {
                 DSSeen temp(data);
@@ -52,7 +52,7 @@ namespace zeitoon {
             }
             else if (!Strings::compare(node, CommandInfo::messagesNotified(), false)) {
                 DSSeen temp(data);
-                chatCore.messagesSeen(temp.userID.getValue(), temp.sessionID.getValue(), temp.seenID.getValue());
+                chatCore.messagesNotified(temp.userID.getValue(), temp.sessionID.getValue(), temp.seenID.getValue());
             }
             else if (!Strings::compare(node, CommandInfo::getUserData(), false)) {
                 DSInteger temp;
@@ -66,31 +66,44 @@ namespace zeitoon {
                 chatCore.changeUserState(temp.userID.getValue(), (EnumStatus::status) temp.status.getValue(),
                                          (EnumCustomStatusIcon::customStatusIcon) temp.customStatusIcon.getValue(),
                                          temp.customStatus.getValue());
+
             }
             else if (!Strings::compare(node, CommandInfo::changeReachState(), false)) {
                 DSChangeUserReachState temp(data);
                 chatCore.changeReachState(temp.userID.getValue(), (EnumStatus::status) temp.status.getValue());
             }
-             else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
+            else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
                 DSInteger result;
                 result.value = chatCore.newSession();
-                sm.communication.runCallback(node,result.toString(true),id);
+                sm.communication.runCallback(node, result.toString(true), id);
             }
-             else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
+            else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
                 DSAddUserSession temp(data);
-                chatCore.addUserToSession(temp.userID.getValue(),temp.sessionID.getValue());
+                chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
             }
-             else if (!Strings::compare(node, CommandInfo::removeUserFromSession(), false)) {
+            else if (!Strings::compare(node, CommandInfo::removeUserFromSession(), false)) {
                 DSAddUserSession temp(data);
-                chatCore.addUserToSession(temp.userID.getValue(),temp.sessionID.getValue());
+                chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
             }
-             else if (!Strings::compare(node, CommandInfo::changeLeader(), false)) {
+            else if (!Strings::compare(node, CommandInfo::changeLeader(), false)) {
                 DSAddUserSession temp(data);
-                chatCore.addUserToSession(temp.userID.getValue(),temp.sessionID.getValue());
+                chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
             }
-             /*else if (!Strings::compare(node, CommandInfo::listSessions(), false)) { }
-             /*else if (!Strings::compare(node, CommandInfo::getSession(), false)) { }
-             */
+            else if (!Strings::compare(node, CommandInfo::listSessions(), false)) {
+                DSInteger temp;
+                temp.fromString(data);
+                DSSessionList result;
+                result = chatCore.listSessions(temp.value.getValue());
+                sm.communication.runCallback(node, result.toString(true), id);
+            }
+            else if (!Strings::compare(node, CommandInfo::getSession(), false)) {
+                DSInteger temp;
+                temp.fromString(data);
+                DSSession result;
+                result = chatCore.getSession(temp.value.getValue());
+                sm.communication.runCallback(node, result.toString(true), id);
+            }
+
         }
 
         void ChatCHI::onCallback(string node, string data, string id, string from) {
@@ -112,16 +125,44 @@ namespace zeitoon {
             try {
                 res = sm.database.executeSync(str);
             } catch (exceptionEx *errorInfo) {
-                EXTDBErrorI("Unable to create default tables for UM", errorInfo);
+                EXTDBErrorI("Unable to create default tables for Chat", errorInfo);
             }
             if (res == -1)
                 EXTDBError("Sql error");
+
             //set serviceID in confMgr
+
             Chatconfig.serviceID = id;
             Chatconfig.save();
         }
 
         void ChatCHI::onEnable() {
+            //--------register cmds
+            std::string temp = "";
+            size_t length = insInfo.commands.length();
+            for (size_t i = 0; i < length; i++) {
+                temp += (i == 0 ? "" : ",") + insInfo.commands[i]->name.toString();
+            }
+            sm.communication.registerCommand(temp);
+            std::cout << temp << endl;
+
+            //--------register events
+            length = insInfo.events.length();
+            temp = "";
+            for (size_t i = 0; i < length; i++) {
+                temp += (i == 0 ? "" : ",") + insInfo.events[i]->name.toString();
+            }
+            sm.communication.registerEvent(temp);
+            std::cout << temp << endl;
+
+            //--------register hooks
+            length = insInfo.hooks.length();
+            temp = "";
+            for (size_t i = 0; i < length; i++) {
+                temp += (i == 0 ? "" : ",") + insInfo.hooks[i]->name.toString();
+            }
+            sm.communication.registerHook(temp);
+            std::cout << temp << endl;
 
         }
 
@@ -131,7 +172,8 @@ namespace zeitoon {
 
         void ChatCHI::onUninstall() {
             //TODO Chatconfig.serviceID = "";
-            //Chatconfig.save();
+            Chatconfig.serviceID = "";
+            Chatconfig.save();
         }
 
         void ChatCHI::onConnect() {

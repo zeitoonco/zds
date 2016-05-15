@@ -5,7 +5,7 @@ CREATE TABLE if not exists UserData
   UserID integer NOT NULL,
   status integer NOT NULL,
   customStatusIcon integer,
-  customStatusTex character varying(255),
+  customStatusText character varying(255),
   reachState integer,
   CONSTRAINT UserData_pkey PRIMARY KEY (UserID)
 )
@@ -39,11 +39,6 @@ CREATE TABLE if not exists Message
 WITH (
   OIDS=FALSE
 );
-CREATE INDEX index_id
-  ON Message
-  USING btree
-  (id);
-
 
 CREATE TABLE if not exists SessionUser
 (
@@ -52,6 +47,7 @@ CREATE TABLE if not exists SessionUser
   joined timestamp with time zone NOT NULL,
   seenID bigserial,
   notifiedID bigserial,
+  Leader boolean,
   CONSTRAINT SessionUser_pkey PRIMARY KEY (UserID, SessionID),
   CONSTRAINT lnk_SessionUser_Message FOREIGN KEY (seenID)
       REFERENCES Message (id) MATCH FULL

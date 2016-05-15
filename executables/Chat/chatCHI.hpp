@@ -16,10 +16,11 @@ using namespace zeitoon::datatypes;
 namespace zeitoon {
     namespace chat {
         class ChatCHI : public zeitoon::utility::CommunicationHandlerInterface {
-            chaT chatCore;
             zeitoon::datatypes::DSInstallInfo insInfo;
             void setInstallInfo();
         public:
+            chaT chatCore;
+
             ChatCHI() : CommunicationHandlerInterface(this), chatCore(this) , insInfo("Chat","Chat", 1, 1, EnmServiceType::UserManager) {
                 setInstallInfo();
             }

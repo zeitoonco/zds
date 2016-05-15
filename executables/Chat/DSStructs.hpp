@@ -15,6 +15,13 @@ using namespace zeitoon::datatypes;
 
 namespace zeitoon {
     namespace chat {
+        class EnumGetMsgType {
+        public:
+            enum getMsgType {
+                date, id, seen, notified, __MAX
+            };
+            const static string typeString[];
+        };
 
         class EnumMsgType {
         public:
@@ -149,6 +156,7 @@ namespace zeitoon {
 
         class DSGetMessages : public DTStruct {
         public:
+            DTInteger<int> userID = {"userID"};
             DTInteger<int> sessionID = {"sessionID"};
             DTEnum<EnumMsgType> type = {"type"};
             DTString from = {"from"};
@@ -164,6 +172,7 @@ namespace zeitoon {
 
             DSGetMessages() :
                     DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+                this->list.push_back(&userID);
                 this->list.push_back(&sessionID);
                 this->list.push_back(&type);
                 this->list.push_back(&from);
@@ -174,8 +183,10 @@ namespace zeitoon {
                 this->fromString(data);
             }
 
-            DSGetMessages(int isessionID, EnumMsgType::msgType iEnumMsgType, std::string ifrom, std::string ito)
+            DSGetMessages(int iuserID, int isessionID, EnumMsgType::msgType iEnumMsgType, std::string ifrom,
+                          std::string ito)
                     : DSGetMessages() {
+                userID = iuserID;
                 sessionID = isessionID;
                 type = iEnumMsgType;
                 from = ifrom;
@@ -249,12 +260,12 @@ namespace zeitoon {
             }
         };
 
-        class DSChatUserData : public DTStruct {
+        class   DSChatUserData : public DTStruct {
         public:
             DTEnum<EnumReachState> reachState = {"reachState"};
             DTEnum<EnumStatus> status = {"status"};
             DTEnum<EnumCustomStatusIcon> customStatusIcon = {"customStatusIcon"};
-            DTString customStatus = {"customStatus"};
+            DTString customStatusText = {"customStatusText"};
 
             static std::string getStructName() {
                 return "DSChatUserData";
@@ -269,7 +280,7 @@ namespace zeitoon {
                 this->list.push_back(&reachState);
                 this->list.push_back(&status);
                 this->list.push_back(&customStatusIcon);
-                this->list.push_back(&customStatus);
+                this->list.push_back(&customStatusText);
             }
 
             DSChatUserData(std::string data) : DSChatUserData() {
@@ -278,18 +289,19 @@ namespace zeitoon {
 
             DSChatUserData(EnumReachState::reachState ireachState, EnumStatus::status istatus,
                            EnumCustomStatusIcon::customStatusIcon icustomStatusIcon,
-                           std::string icustomStatus)
+                           std::string icustomStatusText)
                     : DSChatUserData() {
                 reachState = ireachState;
                 status = istatus;
                 customStatusIcon = icustomStatusIcon;
-                customStatus = icustomStatus;
+                customStatusText = icustomStatusText;
             }
 
         };
 
         class DSChangeUserState : public DTStruct {
         public:
+            DTInteger<int> userID = {"userID"};
             DTEnum<EnumStatus> status = {"status"};
             DTEnum<EnumCustomStatusIcon> customStatusIcon = {"customStatusIcon"};
             DTString customStatus = {"customStatus"};
@@ -304,6 +316,7 @@ namespace zeitoon {
 
             DSChangeUserState() :
                     DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+                this->list.push_back(&userID);
                 this->list.push_back(&status);
                 this->list.push_back(&customStatusIcon);
                 this->list.push_back(&customStatus);
@@ -313,10 +326,11 @@ namespace zeitoon {
                 this->fromString(data);
             }
 
-            DSChangeUserState(EnumStatus::status istatus,
+            DSChangeUserState(int iuserID,EnumStatus::status istatus,
                               EnumCustomStatusIcon::customStatusIcon icustomStatusIcon,
                               std::string icustomStatus)
                     : DSChangeUserState() {
+                userID = iuserID;
                 status = istatus;
                 customStatusIcon = icustomStatusIcon;
                 customStatus = icustomStatus;
@@ -407,10 +421,73 @@ namespace zeitoon {
                 this->fromString(data);
             }
 
-            DSSession(int iuserID, int iid, std::string icreationDate)
+            DSSession(int iid, std::string icreationDate)
                     : DSSession() {
                 id = iid;
                 creationDate = icreationDate;
+            }
+
+        };
+
+        class DSSeen : public DTStruct {
+        public:
+            DTInteger<int> userID = {"userID"};
+            DTInteger<int> sessionID = {"sessionID"};
+            DTInteger<int> seenID = {"seenID"};
+
+            static std::string getStructName() {
+                return "DSSeen";
+            }
+
+            static int getStructVersion() {
+                return 1;
+            }
+
+            DSSeen() :
+                    DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+                this->list.push_back(&userID);
+                this->list.push_back(&sessionID);
+                this->list.push_back(&seenID);
+            }
+
+            DSSeen(std::string data) : DSSeen() {
+                this->fromString(data);
+            }
+
+            DSSeen(int iuserID, int isessionID, int iseenID) : DSSeen() {
+                userID = iuserID;
+                sessionID = isessionID;
+                seenID = iseenID;
+            }
+        };
+
+        class DSChangeUserReachState : public DTStruct {
+        public:
+            DTInteger<int> userID = {"userID"};
+            DTEnum<EnumStatus> status = {"status"};
+
+            static std::string getStructName() {
+                return "DSChangeUserReachState";
+            }
+
+            static int getStructVersion() {
+                return 1;
+            }
+
+            DSChangeUserReachState() :
+                    DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+                this->list.push_back(&userID);
+                this->list.push_back(&status);
+            }
+
+            DSChangeUserReachState(std::string data) : DSChangeUserReachState() {
+                this->fromString(data);
+            }
+
+            DSChangeUserReachState(int iuserID, EnumStatus::status istatus)
+                    : DSChangeUserReachState() {
+                userID = iuserID;
+                status = istatus;
             }
 
         };

@@ -5,6 +5,7 @@
 
 namespace zeitoon {
     namespace chat {
+        const std::string EnumGetMsgType::typeString[] = {"date", "id", "seen","notified"};
         const std::string EnumMsgType::typeString[] = {"user", "userLog", "system"};
         const std::string EnumReachState::typeString[] = {"normal", "noSearch", "noChart", "oneWay", "noChartSearch"};
         const std::string EnumStatus::typeString [] ={"normal", "custom", "invisible", "busy", "away"};

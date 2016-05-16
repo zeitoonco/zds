@@ -8,6 +8,7 @@
 #include <mediator/CommunicationHandlerInterface.hpp>
 #include "GUICore.hpp"
 #include "utility/DTStructs.hpp"
+#include "GUIConfig.hpp"
 
 namespace zeitoon {
 namespace GUI {

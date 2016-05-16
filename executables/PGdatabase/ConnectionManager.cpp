@@ -49,7 +49,7 @@ ConnectionManager::ConnectionManager(std::string adminUserName, std::string admi
 		std::cerr << "CONNECTED" << endl;
 }
 
-ConnectionManager::~ConnectionManager() {
+ConnectionManager::~ConnectionManager() {//fixme: lock guards have not been properly used
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	std::map<std::string, Connection>::iterator iter;
 	for (iter = connectionList.begin(); iter != connectionList.end(); iter++) {
@@ -60,7 +60,7 @@ ConnectionManager::~ConnectionManager() {
 }
 
 int ConnectionManager::execute(std::string extension, std::string sql) {
-	int returnAmont = 0;
+	int returnAmount = 0;
 	if (checkIfExtensionRegistered(extension) != true) {
 		registerNewExtension(extension);
 	}
@@ -68,15 +68,13 @@ int ConnectionManager::execute(std::string extension, std::string sql) {
 		connectionMaker(extension);
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
-
 	try {
-		returnAmont = connectionList.at(extension).execute(sql);
+		returnAmount = connectionList.at(extension).execute(sql);
 
 	} catch (exceptionEx *errorInfo_ConMgr) {
-		std::cerr << "ConMGR65" << errorInfo_ConMgr->what() << endl;
-		//	EXTDBError(errorInfo_ConMgr->what());
+		EXTDBErrorI("SQL Execution Error: ", errorInfo_ConMgr);
 	}
-	return returnAmont;
+	return returnAmount;
 }
 
 DTTablePostgres ConnectionManager::query(std::string extension, std::string sql) {
@@ -89,12 +87,9 @@ DTTablePostgres ConnectionManager::query(std::string extension, std::string sql)
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
-
 		return this->connectionList.at(extension).query(sql);
-		//return sqlQuery;
-
 	} catch (exceptionEx *errorInfo) {
-		EXTDBErrorIO("Unable to perform the query", this->getNameAndType(), errorInfo);
+		EXTDBErrorIO("SQL Query Error: ", this->getNameAndType(), errorInfo);
 	}
 
 }
@@ -111,11 +106,9 @@ std::string ConnectionManager::singleFieldQuery(std::string extension, std::stri
 	try {
 		val = connectionList.at(extension).getValue(sql);
 		return val;
-
 	} catch (exceptionEx *errorInfo) {
-		EXTDBErrorIO("Unable to perform the query", this->getNameAndType(), errorInfo);
+		EXTDBErrorIO("SQL SingleFieldQuery Error: ", this->getNameAndType(), errorInfo);
 	}
-
 }
 
 void ConnectionManager::registerNewExtension(std::string extensionName) {
@@ -137,7 +130,7 @@ void ConnectionManager::registerNewExtension(std::string extensionName) {
 				"ALTER ROLE \"" + extensionName + "\" SET search_path TO \"" + extensionName + "\";"
 						"END");
 	} catch (exceptionEx *errorInfo) {
-		EXTDBErrorI("unable to register new extension", errorInfo);
+		EXTDBErrorI("Register new extension FAILED", errorInfo);
 	}
 	pgMediator->sm.communication.runEvent("database.newUser", "{\"value\":\"" + extensionName + "\"}");
 	//##Event Fired
@@ -145,16 +138,20 @@ void ConnectionManager::registerNewExtension(std::string extensionName) {
 
 void ConnectionManager::connectionMaker(std::string extensionName) {
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
-	this->connectionList.insert(std::pair<string, Connection>(extensionName,
-	                                                          Connection(extensionName, extensionName, host,
-	                                                                     port, dbname)));
+	try {
+		this->connectionList.insert(std::pair<string, Connection>(extensionName,
+		                                                          Connection(extensionName, extensionName, host,
+		                                                                     port, dbname)));
+	} catch (zeitoon::utility::exceptionEx *err) {
+		EXTDBErrorI("Create Connection for \'" + extensionName + "\' FAILED. ", err);
+	}
 	pgMediator->sm.communication.runEvent("database.userLogin", "{\"value\":\"" + extensionName + "\"}");
 	//##Event Fired
 
 }
 
 bool ConnectionManager::checkIfExtensionRegistered(std::string extension) {
-	return adminConnection.query("select id from __local.extension where name =\'" + extension + "\'").rowCount() == 1;
+	return adminConnection.query("SELECT id FROM __local.extension WHERE name =\'" + extension + "\'").rowCount() == 1;
 }
 
 std::string ConnectionManager::getNameAndType() {
@@ -170,16 +167,21 @@ void ConnectionManager::createDatabase(std::string userName, std::string passWor
 		adminConnection.execute(CREATE_EXTENSIONS_INFO_TABLE);
 	} catch (exceptionEx *errorInfo) {
 		EXTDBErrorI("Admin createDatabase Failed", errorInfo);
-
 	}
 
 }
 
 void pgdatabase::ConnectionManager::removeExtension(std::string serviceName) {
-	int a = adminConnection.execute("DROP SCHEMA \"" + serviceName + "\" CASCADE");
-	int b = adminConnection.execute("DELETE FROM __local.extension WHERE name = '" + serviceName + "'");
-	int c = adminConnection.execute("DROP ROLE \"" + serviceName + "\"");
-	std::cerr << a << "\t" << b << "\t" << c << std::endl;
+	try {
+		int a = adminConnection.execute("DROP SCHEMA \"" + serviceName + "\" CASCADE");
+		int b = adminConnection.execute("DELETE FROM __local.extension WHERE name = '" + serviceName + "'");
+		int c = adminConnection.execute("DROP ROLE \"" + serviceName + "\"");
+		std::cerr << "Removing " + serviceName << "\n\tRemoving schema .... " << a << "\n\t";
+		std::cerr << "Removing service name from DB .... " << b << "\n\t";
+		std::cerr << "Removing role .... " << c << "\n";
+	} catch (zeitoon::utility::exceptionEx *err) {
+		EXTDBErrorI("Removing Extention FAILED", err);
+	}
 }
 }
 }

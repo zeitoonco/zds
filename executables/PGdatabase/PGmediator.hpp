@@ -75,9 +75,10 @@ public:
 	 * dar hangaam disable shodan e service, in method list e function haye khod raa paak mikonad
 	 */
 	void onDisable();
+
 	/**
 	 * onUninstall()
-	 * dar hangaam e unstall shodan, serviceID ra az configuration file paak mikonad
+	 * dar hangaam e uninstall shodan, serviceID ra az configuration  paak mikonad
 	 */
 	void onUninstall();
 	/**

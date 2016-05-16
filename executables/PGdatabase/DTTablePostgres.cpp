@@ -23,7 +23,7 @@ DTTablePostgres::~DTTablePostgres() {
 DTTablePostgres::DTTablePostgres(PGconn *connection, PGresult *iResult, std::string name) :
 		DTTable(name) {
 	conn = connection;
-	mapMaker(); //creates data type related maps.
+	mapMaker(); //creates OID data type related maps.
 	result = iResult;
 	if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
@@ -55,16 +55,21 @@ size_t DTTablePostgres::columnCount() const {
 	return (size_t) PQnfields(result);
 }
 
-std::string DTTablePostgres::columnName(int columnNumber) const {
+std::string DTTablePostgres::columnName(int columnNumber) const {//todo to be tested
 	if (PQfname(result, columnNumber) == NULL) {
-		EXToutOfRange("columnName()");
+		EXToutOfRange("column number is out of range");
 	}
 	return PQfname(result, columnNumber);
 
 }
 
 ColumnDataType::columnDataType DTTablePostgres::columnDataType(int columnNumber) const {
-	Oid columnOid = columnODataType(columnNumber);
+	Oid columnOid;
+	try {
+		columnOid = columnODataType(columnNumber);
+	} catch (zeitoon::utility::exceptionEx *err) {
+		EXTinvalidParameterI("Unable to fetch OID", err);
+	}
 	std::map<Oid, int>::iterator iter = mapPgCustomType.find(columnOid);
 	if (iter == mapPgCustomType.end()) {
 		EXTexceptionEx("Data type not found");
@@ -73,31 +78,44 @@ ColumnDataType::columnDataType DTTablePostgres::columnDataType(int columnNumber)
 }
 
 Oid DTTablePostgres::columnODataType(int columnNumber) const {
-
-	if ((PQftype(result, columnNumber)) == 0) {
-		EXToutOfRange("columnODataType()");
+	if (columnNumber > (columnCount() - 1) || columnNumber < (columnCount() + 1)) {
+		EXToutOfRange("Column number is out of range");
 	}
 	return PQftype(result, columnNumber);
 }
 
 size_t DTTablePostgres::columnDataSize(int columnNumber) const { //returns -1 for varchar
-	if (PQfsize(result, columnNumber) == 0) {
-		EXToutOfRange("columnDataSize");
+	if (columnNumber > (columnCount() - 1) || columnNumber < (columnCount() + 1)) {
+		EXToutOfRange("Column number is out of range");
 	}
 	return (size_t) PQfsize(result, columnNumber);
 }
 
-std::string DTTablePostgres::fieldValue(int tupleNumber, int columnNumber) const {
+std::string DTTablePostgres::fieldValue(int tupleNumber, int columnNumber) const {//todo: to be tested
 	if (PQgetvalue(result, tupleNumber, columnNumber) == NULL) {
-		EXToutOfRange("fieldValue()");
+		EXToutOfRange("Parameters out of range");
 	}
 	return PQgetvalue(result, tupleNumber, columnNumber);
 }
 
+std::string DTTablePostgres::fieldValue(int tuppleNumber, std::string columnName) const {
+	size_t length = this->columnCount();
+	try {
+		for (size_t i = 0; i < length; i++) {
+			if (this->columnName(i) == columnName) {
+				return this->fieldValue(tuppleNumber, i);
+			}
+		}
+	} catch (zeitoon::utility::exceptionEx *err) {
+		EXTinvalidNameI("Get field value by columnName failed", err);
+	}
+}
+
+
 bool DTTablePostgres::fieldIsNull(int tupleNumber, int columnNumber) const {
 	if ((tupleNumber + 1) > PQntuples(result) || tupleNumber < 0 || (columnNumber + 1) > PQnfields(result) ||
 	    columnNumber < 0) {
-		EXToutOfRange("fieldIsNull");
+		EXToutOfRange("Parameters out of range");
 	}
 	return (bool) PQgetisnull(result, tupleNumber, columnNumber);
 }
@@ -105,7 +123,7 @@ bool DTTablePostgres::fieldIsNull(int tupleNumber, int columnNumber) const {
 int DTTablePostgres::fieldSize(int tupleNumber, int columnNumber) const {
 	if ((tupleNumber + 1) > PQntuples(result) || tupleNumber < 0 || (columnNumber + 1) > PQnfields(result) ||
 	    columnNumber < 0) {
-		EXToutOfRange("fieldSize");
+		EXToutOfRange("Parameters out of range");
 	}
 	return PQgetlength(result, tupleNumber, columnNumber);
 }
@@ -126,7 +144,7 @@ void DTTablePostgres::mapMaker() { //this method only should be accessed via con
 	if (mapPgCustomType_Status) { //Check if map has already been created:
 		return; //select oid, typname from pg_type"
 	}
-	PGresult *ress = PQexec(conn, "select oid, typname from pg_type");
+	PGresult *ress = PQexec(conn, "SELECT oid, typname FROM pg_type");
 	if (PQresultStatus(ress) != PGRES_TUPLES_OK) {
 		EXTDBError("Cannot fetch Oid Type @ mapMaker()");
 	}
@@ -215,6 +233,12 @@ void DTTablePostgres::fromString(std::string data) {
 
 DTBase &DTTablePostgres::operator=(std::string str) {
 	result = PQexec(conn, str.c_str());
+	if ((PQntuples(result)) < 1) {
+		auto d = (PQresultStatus(result));
+		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
+			EXTDBError(errorSwitch(d));
+		}
+	}
 	return *this;
 }
 
@@ -222,11 +246,23 @@ DTBase &DTTablePostgres::operator=(DTBase &dtvar) {
 	auto tempDTS = dynamic_cast<DTString *>(&dtvar);
 	if (tempDTS) {
 		result = PQexec(conn, (tempDTS->getValue()).c_str());
+		if ((PQntuples(result)) < 1) {
+			auto d = (PQresultStatus(result));
+			if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
+				EXTDBError(errorSwitch(d));
+			}
+		}
 		return *this;;
 	} else {
 		auto tempDTT = dynamic_cast<DTTablePostgres *>(&dtvar);
 		if (tempDTT) {
 			result = tempDTT->result;
+			if ((PQntuples(result)) < 1) {
+				auto d = (PQresultStatus(result));
+				if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
+					EXTDBError(errorSwitch(d));
+				}
+			}
 			return *this;
 		}
 	}

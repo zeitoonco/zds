@@ -14,7 +14,7 @@ void onmsg(std::string msg) {
 
 int main() {
 	string ip;int port;
-	cin>>ip>>port;
+	//cin>>ip>>port;
 	TCPClient a("127.0.0.1", 5456);
 	a.registerOnMessageCB(onmsg);
 	a.connect();

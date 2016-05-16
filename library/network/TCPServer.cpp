@@ -45,12 +45,12 @@ void TCPServer::listen(int port) {
 	this->mainTimer.data = this;
 	uv_timer_init(&loop, &mainTimer);
 	//this_thread::sleep_for(std::chrono::milliseconds(5000));
-	uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 50);
+	uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 300);
 }
 
 void TCPServer::_listen() {
 	try {
-		std::cerr << "\nTCPServer::listen Start";//todo:Use Logger
+		std::cerr << "\nTCPServer::listen Start";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
 		if (this->_onConnect != NULL)
 			this->_onConnect();
 		int r = uv_run(&this->loop, UV_RUN_DEFAULT);
@@ -203,7 +203,7 @@ void TCPServer::dataProcThreadMgrTimer(uv_timer_t *handle) {
 	TCPServer *c = (TCPServer *) handle->data;
 	uv_timer_t sc = c->mainTimer;
 	if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
-		c->dataProcThreadMaker(1);//todo: see if it makes any difference with or without a lock
+		c->dataProcThreadMaker(1);
 		c->check2 = 0;
 		//std::cerr << "NEW THREAD No Pops since last lab" << endl;
 	} else if (c->dataQ_Pushes > c->dataQ_Pops) {
@@ -211,9 +211,11 @@ void TCPServer::dataProcThreadMgrTimer(uv_timer_t *handle) {
 			c->dataProcThreadMaker(1);
 			c->check2 = 0;
 			//std::cerr << "NEW THREAD Pushez > Popz" << endl;
+		} else if (c->dataQ_Pops > c->dataQ_Pushes && c->dataThreadPool.size() > 4) {
+			c->dataThreadPool.erase(c->dataThreadPool.begin() + 4);
 		} else {
 			c->check2++;
-		}//todo:: else if (pops> pushes){ threads --!!!
+		}
 	} else {
 		c->check2 = 0;
 	}
@@ -249,7 +251,7 @@ void TCPServer::dataProcessor() {
 			this->receivedDataQ.pop();
 			this->dataQ_Pops++;
 			lck.unlock();
-			this->_onMessage(temp.clientID, temp.data);
+			_safeCaller(temp.clientID, temp.data);
 			//std::cerr << "data Proc done: " << temp.data << endl;
 		} else {
 			lck.unlock();

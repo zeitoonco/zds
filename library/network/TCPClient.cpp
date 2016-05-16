@@ -105,7 +105,7 @@ void TCPClient::reconnect() {//uv_connect_t *connect = (uv_connect_t *) malloc(s
 	} catch (NetworkMaxRetryReached *err) {
 		std::cerr << "ERROR: " << err->what() << std::endl;
 
-		uv_unref((uv_handle_t *) &mainTimer);//STOPPING THE MAIN LOOP CREATED EARLIER IN CONSTRUCTOR
+		uv_unref((uv_handle_t *) &mainTimer);//STOPPING THE MAIN KEEP ALIVE TIMER CREATED EARLIER IN CONSTRUCTOR
 	} catch (NetworkNoRetryTimeSet *err) {
 		std::cerr << "ERROR: " << err->what() << std::endl;
 		this->setReconnectInterval("{\"timing\":[10,0]}");
@@ -124,11 +124,12 @@ void TCPClient::joinOnConnectionThread() {
 
 void TCPClient::runLoop() {
 	try {
-		std::cerr << "\nTCPClient::listen Start";//todo:Use Logger
+		std::cerr << "\nTCPClien EVENTS LOOP Start";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
 		int r = uv_run(&this->loop, UV_RUN_DEFAULT);
-		std::cerr << "\nTCPClient::listen Finished with " << r << std::endl;
+		uvEXT(r, "libuv events loop error: ");
+		std::cerr << "\nTCPClient EVENTS LOOP Finished with " << r << std::endl;
 	} catch (exceptionEx *ex) {
-		cerr << "\nERROR : " << ex->what() << std::endl;
+		cerr << "\nERROR ON TCPClient EVENTS LOOP: " << ex->what() << std::endl;
 		uv_connect_t *connect = (uv_connect_t *) malloc(sizeof(uv_connect_t));
 		uv_tcp_connect(connect, &client, addr, on_connect);
 	}
@@ -153,10 +154,12 @@ void TCPClient::dataProcessor() {
 		if (receivedDataQ.size() > 0) {
 			std::string temp = this->receivedDataQ.front();
 			this->receivedDataQ.pop();
+			this->dataQ_Pops++;
 			lck.unlock();
-			this->_onMessage(temp);
+			this->_safeCaller(temp);
 		} else {
 			lck.unlock();
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
 	std::cerr << "Thread No " << this_thread::get_id() << " terminated" << std::endl;

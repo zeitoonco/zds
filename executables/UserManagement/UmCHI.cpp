@@ -184,6 +184,8 @@ void UmCHI::onInstall(string id) {//todo: check serviceID
 	}
 	if (res == -1)
 		EXTDBError("Sql error");
+	int uid = userMngrInterface.addUser("admin", "admin", "admin");
+	userMngrInterface.addUserPermission(uid, 0, 1);
 	//set serviceID in confMgr
 	UMconfig.serviceID = id;
 	UMconfig.save();

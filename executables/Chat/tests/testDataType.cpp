@@ -8,7 +8,8 @@ using namespace std;
 using namespace zeitoon::chat;
 
 int main() {
-    EnumMsgType MsgType;
+
+  /*  EnumMsgType MsgType;
     EnumReachState ReachState;
     EnumStatus Status;
     EnumCustomStatusIcon CustomStatusIcon;
@@ -24,19 +25,19 @@ int main() {
 
     DSCheckMessageItem testCheckMessageItem(12, 13, 14);
     std::cout << testCheckMessageItem.toString("\t") << endl;
-
+*/
     /* vector<DSCheckMessageItem> Amghozi;
      Amghozi.push_back(testCheckMessageItem);
      DSCheckMessages testCheckMessages(Amghozi);
      std::cout << testCheckMessages.toString("\t") << endl;*/
 
-    DSGetMessages testGetMessages(12, MsgType.user, "Ali_Naeyrin", "DSGetMessages");
+ /*   DSGetMessages testGetMessages(12,13, MsgType.user, "Ali_Naeyrin", "DSGetMessages");
     std::cout << testGetMessages.toString("\t") << endl;
 
     DSMessageItem testMessageItem(12, "Ali_Naeyrin", "DSMessageItem", MsgType.user);
     std::cout << testMessageItem.toString("\t") << endl;
 
-    DSChangeUserState testChangeUserState(Status.normal, CustomStatusIcon.online, "DSChangeUserState");
+    DSChangeUserState testChangeUserState(12,Status.normal, CustomStatusIcon.online, "DSChangeUserState");
     std::cout << testChangeUserState.toString("\t") << endl;
 
     vector<DSCheckMessageItem> Amghozi;
@@ -57,7 +58,7 @@ int main() {
     std::cout << testSessionList.toString("\t") << endl;
 
 
-    DSSession testSession(12, 13, "1395-02-18");
+     DSSession testSession(12, "1395-02-18");
     std::cout << testSession.toString("\t") << endl;
-
+*/
 }

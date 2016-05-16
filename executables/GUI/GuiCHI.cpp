@@ -23,12 +23,8 @@ void GuiCHI::onEvent(string node, string data, string from) {
 }
 
 void GuiCHI::onInstall(string id) {
-	this->serviceID = id; //keeps serviceID in a member variable
-	string cpath = FileSystemUtility::getAppPath();
-	std::ofstream outFile;
-	outFile.open(cpath + "GuiCHIConfig", std::ofstream::out);
-	outFile << "serviceID : " + id << std::endl;
-	outFile.close();
+	GUIConfiguration.serviceID = id;
+	GUIConfiguration.save();
 	//todo:Config webserver, FTP server
 }
 
@@ -41,29 +37,8 @@ void GuiCHI::onDisable() {
 }
 
 void GuiCHI::onUninstall() {
-	string cpath = FileSystemUtility::getAppPath();
-	std::fstream inFile(cpath + "GuiCHIConfig");
-	std::string line;
-	std::deque<std::string> deqTemp;
-	if (not inFile) {
-		EXTinvalidName("unable to find or open requested file");
-	}
-	while (std::getline(inFile, line)) {
-		deqTemp.push_back(line);
-	}
-
-	for (std::deque<std::string>::iterator iter = deqTemp.begin(); iter != deqTemp.end(); iter++) {
-		if (std::string(*iter).find(("serviceID")) != std::string::npos) {
-			deqTemp.erase(iter);
-			break;
-		}
-	}
-	std::ofstream outFile;
-	outFile.open(cpath + "GuiCHIConfig", std::ofstream::trunc);
-	for (std::deque<std::string>::iterator iter = deqTemp.begin(); iter != deqTemp.end(); iter++) {
-		outFile << *iter << std::endl;
-	}
-	outFile.close();
+	GUIConfiguration.serviceID = "";
+	GUIConfiguration.save();
 }
 
 void GuiCHI::onConnect() {
@@ -79,22 +54,7 @@ string GuiCHI::getInstallInfo() {
 }
 
 string GuiCHI::getInstallID() {
-	string cpath = FileSystemUtility::getAppPath();
-	std::fstream inFile(cpath + "GuiCHIConfig");
-	std::string line;
-	if (not inFile) {
-		return "";
-	}
-	while (std::getline(inFile, line)) { //if line[0]
-		std::string::size_type tempServiceID = line.find("serviceID : ");
-		if (tempServiceID != std::string::npos) {
-			if (line.find("#") < tempServiceID)
-				break;
-			serviceID = line.substr(line.find(" :") + 3);
-			return serviceID;
-		}
-	}
-	return serviceID;
+	return GUIConfiguration.serviceID.getValue();
 }
 
 string GuiCHI::getServiceName() {

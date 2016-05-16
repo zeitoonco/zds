@@ -5,4 +5,4 @@
 #	PARENT_SCOPE
 #)
 
-AddSourceFiles(WebSocketPort.cpp GUICore.cpp GuiCHI.cpp main.cpp)
+AddSourceFiles(WebSocketPort.cpp GUICore.cpp GuiCHI.cpp GUIConfig.cpp main.cpp)

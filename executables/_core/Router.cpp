@@ -35,7 +35,11 @@ Router::Router(int port) :
 	net.registerOnClientConnectCB(bind(&Router::_onClientConnect, this, std::placeholders::_1));
 	net.registerOnClientDisconnectCB(bind(&Router::_onClientDisconnect, this, std::placeholders::_1));
 	db.connect(FileSystemUtility::getAppPath() + "data.db3");
-	net.listen();
+	try {
+		net.listen();
+	} catch (exceptionEx *err) {
+		std::cerr << "NETWORK ERROR: " << err->what() << std::endl;
+	}
 	extManager.load();
 	registerCore();
 }

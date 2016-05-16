@@ -137,7 +137,7 @@ public:
 		DTString inputDatatype = {"inputDatatype"};
 		DTInteger<> inputDatatypeVersion = {"inputDatatypeVersion"};
 		DTString outputDatatype = {"outputDatatype"};
-		DTInteger<> outputDatatypeVersion = {"inputDatatypeVersion"};
+		DTInteger<> outputDatatypeVersion = {"outputDatatypeVersion"};
 		DTString permissionRequired = {"permissionRequired"};
 
 		DSCommandDetail(string sname) : DSCommandDetail("", "", 0, "", 0) {
@@ -213,7 +213,7 @@ public:
 		DTString inputDatatype = {"inputDatatype"};
 		DTInteger<> inputDatatypeVersion = {"inputDatatypeVersion"};
 		DTString outputDatatype = {"outputDatatype"};
-		DTInteger<> outputDatatypeVersion = {"inputDatatypeVersion"};
+		DTInteger<> outputDatatypeVersion = {"outputDatatypeVersion"};
 
 		DSInstallInfoCommandCallDetail(string sname) : DSInstallInfoCommandCallDetail("", "", 0, "", 0) {
 		}

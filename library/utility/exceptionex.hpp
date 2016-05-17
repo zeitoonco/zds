@@ -342,7 +342,6 @@ public:
 	                       int line = -1, exceptionEx *iinnerException = NULL) :
 			networkFailure(imessage, owner, file, line,
 			               iinnerException) {
-		setTitle(this->getDefTitle());
 	}
 
 	string getDefTitle() {
@@ -356,7 +355,6 @@ public:
 	                      int line = -1, exceptionEx *iinnerException = NULL) :
 			networkFailure(imessage, owner, file, line,
 			               iinnerException) {
-
 	}
 
 	string getDefTitle() {

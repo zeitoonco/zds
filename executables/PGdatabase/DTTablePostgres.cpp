@@ -9,6 +9,7 @@
 #include "utility/exceptionex.hpp"
 #include "datatypes/dtmultifieldtypes.hpp"
 #include"datatypes/dtsingletypes.hpp"
+#include "pgutility.hpp"
 
 using namespace zeitoon::datatypes;
 using namespace zeitoon::utility;
@@ -25,12 +26,15 @@ DTTablePostgres::DTTablePostgres(PGconn *connection, PGresult *iResult, std::str
 	conn = connection;
 	mapMaker(); //creates OID data type related maps.
 	result = iResult;
-	if ((PQntuples(result)) < 1) {
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+		EXTDBError("SQL Query Failed. " + desc);
+	}    /*if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
 		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 			EXTDBError(errorSwitch(d));
 		}
-	}
+	}*/
 }
 
 DTTablePostgres::DTTablePostgres(PGconn *connection, std::string sql, std::string name) :
@@ -38,12 +42,16 @@ DTTablePostgres::DTTablePostgres(PGconn *connection, std::string sql, std::strin
 	conn = connection;
 	mapMaker();
 	result = PQexec(conn, sql.c_str());
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+		EXTDBError("SQL Query Failed. " + desc);
+	}/*
 	if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
 		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 			EXTDBError(std::string(PQerrorMessage(conn)) + "  " + PQresStatus(PQresultStatus(result)));
 		}
-	}
+	}*/
 }
 
 size_t DTTablePostgres::rowCount() const {
@@ -180,6 +188,7 @@ std::string DTTablePostgres::getNameAndType() const {
 	return "[" + std::string(PQuser(this->conn)) + "DTTablePostgres] ";
 }
 
+/*
 std::string DTTablePostgres::errorSwitch(int resStatusEnum) {
 	switch (resStatusEnum) {
 		case (PGRES_BAD_RESPONSE):
@@ -200,6 +209,7 @@ std::string DTTablePostgres::errorSwitch(int resStatusEnum) {
 			EXTunknownException("Unknown PQresultStatus(result), " + std::string(PQresultErrorMessage(result)));
 	}
 }
+*/
 
 std::string DTTablePostgres::toString(int indent, std::string indentContent) const {
 	stringstream buffer;
@@ -233,12 +243,16 @@ void DTTablePostgres::fromString(std::string data) {
 
 DTBase &DTTablePostgres::operator=(std::string str) {
 	result = PQexec(conn, str.c_str());
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+		EXTDBError("SQL Query Failed. " + desc);
+	}/*
 	if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
 		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 			EXTDBError(errorSwitch(d));
 		}
-	}
+	}*/
 	return *this;
 }
 
@@ -246,23 +260,31 @@ DTBase &DTTablePostgres::operator=(DTBase &dtvar) {
 	auto tempDTS = dynamic_cast<DTString *>(&dtvar);
 	if (tempDTS) {
 		result = PQexec(conn, (tempDTS->getValue()).c_str());
+		std::string desc;
+		if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+			EXTDBError("SQL Query Failed. " + desc);
+		}/*
 		if ((PQntuples(result)) < 1) {
 			auto d = (PQresultStatus(result));
 			if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 				EXTDBError(errorSwitch(d));
 			}
-		}
+		}*/
 		return *this;;
 	} else {
 		auto tempDTT = dynamic_cast<DTTablePostgres *>(&dtvar);
 		if (tempDTT) {
 			result = tempDTT->result;
+			std::string desc;
+			if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+				EXTDBError("SQL Query Failed. " + desc);
+			}/*
 			if ((PQntuples(result)) < 1) {
 				auto d = (PQresultStatus(result));
 				if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 					EXTDBError(errorSwitch(d));
 				}
-			}
+			}*/
 			return *this;
 		}
 	}

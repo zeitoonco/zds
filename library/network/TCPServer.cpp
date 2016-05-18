@@ -155,7 +155,7 @@ void TCPServer::send(size_t clientId, std::string msg) {
 void TCPServer::clientCollection::client::send(std::string data) {
 	if (!this->_isConnected)
 		return;
-	//cerr << "\nSEND " << this->_id << ":" << data;
+	cerr << "\nSEND " << this->_id << ":" << data;
 	uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
 
 	uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));

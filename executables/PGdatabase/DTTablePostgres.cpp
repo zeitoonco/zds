@@ -86,14 +86,14 @@ ColumnDataType::columnDataType DTTablePostgres::columnDataType(int columnNumber)
 }
 
 Oid DTTablePostgres::columnODataType(int columnNumber) const {
-	if (columnNumber > (columnCount() - 1) || columnNumber < (columnCount() + 1)) {
+	if (columnNumber >= columnCount() || columnNumber < 0) {
 		EXToutOfRange("Column number is out of range");
 	}
 	return PQftype(result, columnNumber);
 }
 
 size_t DTTablePostgres::columnDataSize(int columnNumber) const { //returns -1 for varchar
-	if (columnNumber > (columnCount() - 1) || columnNumber < (columnCount() + 1)) {
+	if (columnNumber >= columnCount() || columnNumber < 0) {
 		EXToutOfRange("Column number is out of range");
 	}
 	return (size_t) PQfsize(result, columnNumber);
@@ -121,7 +121,7 @@ std::string DTTablePostgres::fieldValue(int tuppleNumber, std::string columnName
 
 
 bool DTTablePostgres::fieldIsNull(int tupleNumber, int columnNumber) const {
-	if ((tupleNumber + 1) > PQntuples(result) || tupleNumber < 0 || (columnNumber + 1) > PQnfields(result) ||
+	if ((tupleNumber ) >= PQntuples(result) || tupleNumber < 0 || (columnNumber) >= PQnfields(result) ||
 	    columnNumber < 0) {
 		EXToutOfRange("Parameters out of range");
 	}
@@ -129,8 +129,8 @@ bool DTTablePostgres::fieldIsNull(int tupleNumber, int columnNumber) const {
 }
 
 int DTTablePostgres::fieldSize(int tupleNumber, int columnNumber) const {
-	if ((tupleNumber + 1) > PQntuples(result) || tupleNumber < 0 || (columnNumber + 1) > PQnfields(result) ||
-	    columnNumber < 0) {
+	if ((tupleNumber ) >= PQntuples(result) || tupleNumber < 0 || (columnNumber) >= PQnfields(result) ||
+		columnNumber < 0) {
 		EXToutOfRange("Parameters out of range");
 	}
 	return PQgetlength(result, tupleNumber, columnNumber);
@@ -168,6 +168,7 @@ void DTTablePostgres::mapMaker() { //this method only should be accessed via con
 	                                            "_float8"};
 	mapHardCodedTypes[ColumnDataType::BINARY] = {"bytea"};
 	mapHardCodedTypes[ColumnDataType::BOOLEAN] = {"bool", "_bool"};
+	mapHardCodedTypes[ColumnDataType::DATE] = {"date", "time", "timestamp", "_timestamp", "_date", "_time",	"timestamptz", "_timestamptz"};
 //Custom map of types with corresponding pg Oid:
 	for (auto it = mapHardCodedTypes.begin(); it != mapHardCodedTypes.end(); it++) {
 		for (auto iter = it->second.begin(); iter != it->second.end(); iter++) {

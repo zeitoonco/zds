@@ -300,12 +300,6 @@ namespace zeitoon {
                                                        DSSession::getStructVersion()),
                     true);
 
-            insInfo.commands.add(
-                    new DSInstallInfo::DSCommandDetail(CommandInfo::getSession(), DSInteger::getStructName(),
-                                                       DSInteger::getStructVersion(),
-                                                       DSSession::getStructName(),
-                                                       DSSession::getStructVersion()),
-                    true);
 
             //-------------------EVENTS
             insInfo.events.add(

@@ -113,8 +113,8 @@ namespace zeitoon {
                 this->list.push_back(&notifiedID);
             }
 
-            DSCheckMessageItem(std::string data) : DSCheckMessageItem() {
-                this->fromString(data);
+            DSCheckMessageItem(std::string name) : DSCheckMessageItem() {
+
             }
 
             DSCheckMessageItem(int isessionID, int iseenID, int inotifiedID) : DSCheckMessageItem() {
@@ -126,7 +126,7 @@ namespace zeitoon {
 
         class DSCheckMessages : public DTStruct {
         public:
-            DTSet<DSCheckMessageItem> mlist = {"mlist"};
+            DTSet<DSCheckMessageItem> mlist = {"list"};
 
             static std::string getStructName() {
                 return "DSCheckMessages";
@@ -143,10 +143,6 @@ namespace zeitoon {
 
             DSCheckMessages(std::string data) : DSCheckMessages() {
                 this->fromString(data);
-            }
-
-            DSCheckMessages(vector<DSCheckMessageItem> ilist) : DSCheckMessages() {
-                mlist.addRange(ilist);
             }
 
             DSCheckMessages(DTSet<DSCheckMessageItem> ilist) : DSCheckMessages() {
@@ -232,7 +228,7 @@ namespace zeitoon {
 
         class DSMessageList : public DTStruct {
         public:
-            DTSet<DSMessageItem> mmlist = {"mmlist"};
+            DTSet<DSMessageItem> mmlist = {"list"};
 
             static std::string getStructName() {
                 return "DSMessageList";
@@ -251,16 +247,12 @@ namespace zeitoon {
                 this->fromString(data);
             }
 
-            DSMessageList(vector<DSMessageItem> ilist) : DSMessageList() {
-                mmlist.addRange(ilist);
-            }
-
             DSMessageList(DTSet<DSMessageItem> ilist) : DSMessageList() {
                 mmlist = ilist;
             }
         };
 
-        class   DSChatUserData : public DTStruct {
+        class DSChatUserData : public DTStruct {
         public:
             DTEnum<EnumReachState> reachState = {"reachState"};
             DTEnum<EnumStatus> status = {"status"};
@@ -369,7 +361,7 @@ namespace zeitoon {
 
         class DSSessionList : public DTStruct {
         public:
-            DTSet<DTInteger<int>> mnlist = {"mnlist"};
+            DTSet<DTInteger<int>> mnlist = {"list"};
 
             static std::string getStructName() {
                 return "DSSessionList";
@@ -386,10 +378,6 @@ namespace zeitoon {
 
             DSSessionList(std::string data) : DSSessionList() {
                 this->fromString(data);
-            }
-
-            DSSessionList(vector<DTInteger<int>> ilist) : DSSessionList() {
-                mnlist.addRange(ilist);
             }
 
             DSSessionList(DTSet<DTInteger<int>> ilist) : DSSessionList() {

@@ -11,12 +11,13 @@ namespace zeitoon {
         int chaT::newMessage(int userID, int sessionID, std::string msg, EnumMsgType::msgType type) {
             int result = chatCHI->sm.database.executeSync(
                     "INSERT INTO Message ( userID, sessionID, msg, msgDate, type) VALUES (" + to_string(userID) + " ," +
-                    to_string(sessionID) + ", " + msg + ", Delault," + to_string(type) + ") returning id");
+                    to_string(sessionID) + ", '" + msg + "', default," + to_string(type) + ") returning id");
             if (result > 0) {
                 std::cerr << "MSG Sent!" << std::endl;
                 chatCHI->sm.communication.runEvent(EventInfo::newMessage(),
                                                    zeitoon::chat::DSNewMessage(userID, sessionID, msg, type).toString(
                                                            true));
+                return result;
                 //##Event Fired
                 /*int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
                         "SELECT LAST(id) FROM Message"));      ORDER BY id DESC");*/
@@ -32,17 +33,17 @@ namespace zeitoon {
 
 
         DSCheckMessages chaT::checkNewMessages(int userID) {
-            size_t i = 0;
             zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
-                    "SELECT (sessionid, seenid, notifiedid) FROM sessionuser  WHERE userid = " + to_string(userID));
-            vector<DSCheckMessageItem> tempVec;
-            do {
-                tempVec.push_back(
-                        DSCheckMessageItem(std::stoi(result.fieldValue(i, 0)), std::stoi(result.fieldValue(i, 1)),
-                                           std::stoi(result.fieldValue(i, 2))));
-                i++;
-            } while (i < result.rowCount());
-            DSCheckMessages temp(tempVec);
+                    "SELECT sessionid, seenid, notifiedid FROM sessionuser where userid =" + to_string(userID));
+
+            DSCheckMessages temp;
+            for (size_t i = 0; i < result.rowCount(); i++) {
+                temp.mlist.add(new DSCheckMessageItem(std::stoi(result.fieldValue(i, 0)),
+                                                      result.fieldIsNull(i, 1) ? -1 : std::stoi(
+                                                              result.fieldValue(i, 1)),
+                                                      result.fieldIsNull(i, 2) ? -1 : std::stoi(
+                                                              result.fieldValue(i, 2))), true);
+            }
             return temp;
         }
 
@@ -50,49 +51,39 @@ namespace zeitoon {
         DSMessageList chaT::getMessages(int userID, int sessionID, EnumGetMsgType::getMsgType type, string from,
                                         string to) {
             string FindMagUser = "";
-            if (!Strings::compare(EnumGetMsgType::typeString[type], EnumGetMsgType::typeString[EnumGetMsgType::date],
-                                  false)) {
-                FindMagUser = "userid = '" + to_string(userID) + "' AND sessionid = '" + to_string(sessionID) +
-                              "' AND msgdate >= " + from + " AND msgdate<= " + to;
+            if (type == EnumGetMsgType::date) {
+                FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+                              ") AND (msgdate >= '" + from + "' AND msgdate<= '" + to + "))";
 
-            } else if (!Strings::compare(EnumGetMsgType::typeString[type],
-                                         EnumGetMsgType::typeString[EnumGetMsgType::id], false)) {
+            } else if (type == EnumGetMsgType::id) {
+                FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+                              ") AND (id >= " + from + " AND id<= " + to + "))";
 
-                FindMagUser = "userid = '" + to_string(userID) + "' AND sessionid = '" + to_string(sessionID) +
-                              "' AND id >= " + from + " AND id<= " + to;
-
-            } else if (!Strings::compare(EnumGetMsgType::typeString[type],
-                                         EnumGetMsgType::typeString[EnumGetMsgType::notified], false)) {
+            } else if (type == EnumGetMsgType::notified) {
                 std::string result = chatCHI->sm.database.singleFieldQuerySync(
                         "SELECT notifiedid FROM sessionuser WHERE userid = '" + to_string(userID) +
                         "' AND sessionid = '" + to_string(sessionID) + "'");
 
-                FindMagUser = "userid = '" + to_string(userID) + "' AND sessionid = '" + to_string(sessionID) +
-                              "' AND AND id > " + result;
+                FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+                              ") AND (id > " + result + "))";
 
-            } else if (!Strings::compare(EnumGetMsgType::typeString[type],
-                                         EnumGetMsgType::typeString[EnumGetMsgType::seen], false)) {
+            } else if (type == EnumGetMsgType::seen) {
                 std::string result = chatCHI->sm.database.singleFieldQuerySync(
                         "SELECT seenid FROM sessionuser WHERE userid = '" + to_string(userID) +
                         "' AND sessionid = '" + to_string(sessionID) + "'");
-                FindMagUser = "userid = '" + to_string(userID) + "' AND sessionid = '" + to_string(sessionID) +
-                              "' AND AND id > " + result;
+                FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+                              ") AND (id > " + result +"))";
             }
 
             zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
-                    "SELECT (userid, msgdate, msg, type) FROM message WHERE " + FindMagUser);
+                    "SELECT userid, msgdate, msg, type FROM message WHERE " + FindMagUser);
 
-            vector<DSMessageItem> tempVec;
-            int i = 0;
-            do {
-
-                tempVec.push_back(
-                        DSMessageItem(std::stoi(result.fieldValue(i, 0)), result.fieldValue(i, 1),
-                                      result.fieldValue(i, 2),
-                                      (EnumMsgType::msgType) std::stoi(result.fieldValue(i, 3))));
-                i++;
-            } while (i < result.rowCount());
-            DSMessageList temp(tempVec);
+            DSMessageList temp;
+            for (int i = 0; i < result.rowCount(); i++)
+                temp.mmlist.add(new DSMessageItem(std::stoi(result.fieldValue(i, 0)),
+                                                  result.fieldValue(i, 1),
+                                                  result.fieldValue(i, 2),
+                                                  (EnumMsgType::msgType) std::stoi(result.fieldValue(i, 3))), true);
             return temp;
         }
 
@@ -150,16 +141,7 @@ namespace zeitoon {
 
             int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
                     "INSERT INTO session ( id,creationdate) VALUES (default,default) returning id"));
-            if (result > 0) {
-                /*  std::cerr << "MSG Sent!" << std::endl; //todo MR.Aliiiiiiiiiiiiiiiiiiii
-                  chatCHI->sm.communication.runEvent(EventInfo::sessionUserAdded(),
-                                                     zeitoon::chat::DSAddUserSession(user,default).toString(
-                                                             true));
-                  //##Event Fired
-                  /* int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
-                          "SELECT LAST(id) FROM session"));     */
-
-            }
+            if (result > 0) { return result; }
         }
 
 //todo MR.Ali
@@ -197,7 +179,7 @@ namespace zeitoon {
         }
 
 
-        void chaT::changeLeader(int userID, int sessionID, bool Leader) {
+        void chaT::changeLeader(int userID, int sessionID) {
             chatCHI->sm.database.executeSync(
                     "UPDATE sessionuser SET Leader = 'False'  WHERE Leader = 'True' AND sessionID = '" +
                     to_string(sessionID) + "' AND NOT(userID = '" + to_string(userID) + "')");
@@ -218,15 +200,12 @@ namespace zeitoon {
                     "SELECT (sessionid) FROM sessionuser WHERE userid=" +
                     to_string(ID));
 
-            vector<DTInteger<int>> tempVec;
-            DTInteger<> tempInt = {"sessionID"};
-            int i = 0;
-            do {
-                tempInt = stoi(result.fieldValue(i, 0));
-                tempVec.push_back(tempInt);
-                i++;
-            } while (i < result.rowCount());
-            return DSSessionList(tempVec);
+            DSSessionList res;
+            for (int i = 0; i < result.rowCount(); i++) {
+                DTInteger<> *tempInt = new DTInteger<>("", stoi(result.fieldValue(i, 0)));
+                res.mnlist.add(tempInt, true);
+            }
+            return (res);
         }
 
         DSSession chaT::getSession(int sessionID) {

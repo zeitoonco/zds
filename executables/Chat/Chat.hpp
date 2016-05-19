@@ -45,7 +45,7 @@ namespace zeitoon {
 
             void removeUserFromSession(int userID, int sessionID);
 
-            void changeLeader(int userID, int sessionID, bool Leader);
+            void changeLeader(int userID, int sessionID);
 
             DSSessionList listSessions(int ID);
 

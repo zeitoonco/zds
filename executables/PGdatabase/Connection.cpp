@@ -6,6 +6,7 @@
  */
 #include "Connection.hpp"
 #include "utility/exceptionex.hpp"
+#include "pgutility.hpp"
 
 using namespace zeitoon::utility;
 
@@ -89,25 +90,23 @@ void Connection::disconnect() {
 }
 
 std::string Connection::getValue(std::string command) {
-	if (not isConnected()) {
-		EXTconnectionErrorO("No Connection!", this->getNameAndType());
-	}
 	try {
 		return query(command).fieldValue(0, 0);
 	} catch (zeitoon::utility::exceptionEx *err) {
-		EXTconnectionErrorI("GetValue Failed", err);
+		EXTDBErrorI("GetValue Failed", err);
 	}
 }
 
 DTTablePostgres Connection::query(std::string command) {
 	if (not isConnected()) {
-		EXTconnectionErrorO("No Connection!", this->getNameAndType());
+		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
+
 	}
 	try {
 		DTTablePostgres queryObj(conn, command, "Query");
 		return queryObj;
 	} catch (exceptionEx *errorInfo) {
-		EXTDBErrorI("unable to perform the query", errorInfo);
+		EXTDBErrorI("SQL QUERY FAILED", errorInfo);
 	}
 
 }
@@ -122,14 +121,16 @@ bool Connection::isConnected() {
 
 int Connection::execute(std::string command) {
 	if (not isConnected()) {
-		EXTconnectionErrorO("No Connection!", this->getNameAndType());
+		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 	}
 	PGresult *commandResult = PQexec(conn, command.c_str());
-	if (PQresultStatus(commandResult) == PGRES_COMMAND_OK || PQresultStatus(commandResult) == PGRES_TUPLES_OK) {
-		return atoi(PQcmdTuples(commandResult));
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(commandResult, desc)) {
+		EXTDBError("SQL Execute Failed. " + desc);
 	}
-	EXTDBError(std::string(PQresultErrorMessage(commandResult)).c_str());
+	return atoi(PQcmdTuples(commandResult));
 }
+
 
 std::string Connection::getNameAndType() {
 

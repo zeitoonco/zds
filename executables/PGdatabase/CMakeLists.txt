@@ -17,9 +17,9 @@ set_target_properties(${moduleName}
     OUTPUT_NAME ${moduleName}
 ) #set output directory & binary file name
 
-
 SET(moduleLib "${executablesTestLibPrefx}${moduleName}")
 add_library(${moduleLib} ${PROJECT_SOURCE_FILES})
+target_link_libraries(${moduleLib} ${libName}) #link target to our library
 set_target_properties( ${moduleLib}
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${binDir}/${executablesDir}/${moduleName}/${testsDir}"

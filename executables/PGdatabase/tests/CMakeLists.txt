@@ -7,7 +7,7 @@ foreach (file ${files})
     SET(exeName "${moduleTestsTarget}_${fileNO}")
     #add a target for each test source file
     add_executable(${exeName} ${file})
-    target_link_libraries(${exeName} ${libName} ${moduleLib}) #link target to our library
+    target_link_libraries(${exeName} ${libName} ${moduleLib} pq) #link target to our library
     add_dependencies(${moduleTestsTarget} ${exeName}) #add this target to this module
     set_target_properties(${exeName}
             PROPERTIES

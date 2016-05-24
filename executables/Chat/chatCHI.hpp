@@ -21,7 +21,7 @@ namespace zeitoon {
         public:
             chaT chatCore;
 
-            ChatCHI() : CommunicationHandlerInterface(this), chatCore(this) , insInfo("Chat","Chat", 1, 1, EnmServiceType::UserManager) {
+            ChatCHI() : CommunicationHandlerInterface(this), chatCore(this) , insInfo("Chat","Chat", 1, 1, EnmServiceType::Chat) {
                 setInstallInfo();
             }
 

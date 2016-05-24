@@ -28,12 +28,12 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 	try {
 		if (!Strings::compare(node, commandInfo::login(), false)) {
 			DSLoginInfo logInfo(data);
-			int sessionID;
+			int sessionID, userID;
 			std::string description;
 			std::string UMlogResString =
 					UMLoginResult::typeString[userMngrInterface.login(
-							logInfo.username.getValue(), logInfo.password.getValue(), sessionID, description)];
-			DSLoginResult logResult(UMlogResString, description, sessionID);
+							logInfo.username.getValue(), logInfo.password.getValue(), sessionID, userID, description)];
+			DSLoginResult logResult(UMlogResString, description, sessionID, userID);
 			sm.communication.runCallback(node, logResult.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::logout(), false)) {
 			DSInteger sessionID;
@@ -55,7 +55,9 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			DSAddUser adUsrInfo(data);
 			DSInteger addResult;
 			addResult.value = userMngrInterface.addUser(adUsrInfo.username.getValue(), adUsrInfo.password.getValue(),
-			                                            adUsrInfo.name.getValue());//todo:return the return value?
+			                                            adUsrInfo.name.getValue());
+			sm.communication.runCallback(node, addResult.toString(true),
+			                             id);//todo:return the return value? by ajl //fixed by inf, to be checked
 		} else if (!Strings::compare(node, commandInfo::modifyUser(), false)) {
 			DSModifyUser userInfo(data);
 			userMngrInterface.modifyUser(userInfo.userID.getValue(), userInfo.username.getValue(),
@@ -141,11 +143,11 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 		} else if (!Strings::compare(node, commandInfo::addUsergroupPermission(), false)) {
 			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
 			userMngrInterface.addUsergroupPermission(regInfo.usergroupID.getValue(), regInfo.permissionID.getValue(),
-			                                    regInfo.permissionState.getValue());
+			                                         regInfo.permissionState.getValue());
 		} else if (!Strings::compare(node, commandInfo::removeUsergroupPermission(), false)) {
 			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
 			userMngrInterface.removeUsergroupPermission(regInfo.usergroupID.getValue(), regInfo.permissionID.getValue(),
-			                                       regInfo.permissionState.getValue());
+			                                            regInfo.permissionState.getValue());
 		} else if (!Strings::compare(node, commandInfo::listUsergroupPermissions(), false)) {
 			DSInteger usergroupID;
 			usergroupID.fromString(data);

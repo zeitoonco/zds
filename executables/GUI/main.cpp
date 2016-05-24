@@ -7,8 +7,10 @@
 #include "utility/exceptionex.hpp"
 #include "GuiUtility.hpp"
 #include "GuiCHI.hpp"
+#include "GUIConfig.hpp"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {//todo : load configurations
+	GUIConfiguration.load();
 	if (argc != 4) {
 		std::cerr << "Invalid number of arguments provided\n";
 		std::cerr << "Required arguments: ServerIP ServerPort WebSocketPortNo\n";

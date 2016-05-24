@@ -357,7 +357,7 @@ void Router::registerCore() {
 
 void Router::registerCEP() {
 	for (int i = 0; i < extManager.size(); i++)
-		if (!extManager[i]->CEPermissionsRegistered) {
+		if (extManager[i]->state>=ExtensionProfile::extensionState::installed && !extManager[i]->CEPermissionsRegistered) {
 			registerServiceCEPermissions(extManager[i]);
 		}
 	extManager.save();

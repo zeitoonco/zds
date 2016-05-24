@@ -189,10 +189,11 @@ void UMSessionManager::permissionParentCacheLoader(int permissionID) {
 }
 
 int UMSessionManager::getSessionIDbyUserID(int userID) {
-	if (activeSessions.count(userID) != 1) {
-		return -1;
+	auto userSession = activeSessions.find(userID);
+	if (userSession != activeSessions.end()) {
+		return userSession->second;
 	}
-	return activeSessions.find(userID)->second;
+	return -1;
 }
 
 int UMSessionManager::uniqueIdGenerator() {

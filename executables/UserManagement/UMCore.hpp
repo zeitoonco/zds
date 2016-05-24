@@ -30,7 +30,6 @@ public:
 
 	~UMCore();
 
-	void checkSession(); //for test purposes Only
 	/**login(), ba daryaaft e voroodi, eghdaaam be login mikonad,
 	 * @param username string
 	 * @param password string
@@ -81,7 +80,7 @@ public:
 	 * barmigardanad.
 	 * @param ID int UserID
 	 * @return UMUserInfo user information*/
-	UMUserInfo getUserInfo(int ID);
+	UMUserInfo getUserInfo(int userID);
 
 	/**registerPermission(), tamam e moshakhasaat e yek permission e jadid raagerefte va aan ra dar
 	 * database zakhireh mikonad va ID e aan ra barmigardaanad

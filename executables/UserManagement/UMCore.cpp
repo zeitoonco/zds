@@ -23,7 +23,7 @@ UMCore::~UMCore() {
 
 }
 
-UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string password, int &sessionID,
+UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string password, int &sessionID, int &uID,
                                                std::string &desc) {
 	auto currentUser = userLogInfo.find(username);
 	if (currentUser != userLogInfo.end()) {    //If user found on userLoginfo list.
@@ -32,6 +32,7 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 				userLogInfo.erase(currentUser);
 			} else {
 				sessionID = -1;
+				uID = -1;
 				desc = "User is temporary banned(too many false login attempts)";
 				systemLog.log(getNameAndType(), "Login Failed for User: [" + username +
 				                                "]. User is temporarily banned. (To many false login attempts) ",
@@ -59,12 +60,14 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 		name = loginResult.fieldValue(0, 3);
 		if (banned) {            //IF USER IS BANNED
 			sessionID = -1;
+			uID = -1;
 			desc = loginResult.fieldValue(0, 2);
 			return UMLoginResult::banned;
 		} else {    //SUCCESSFUL AUTHENTICATION
 			desc = "";
 			try {
 				sessionID = sessionManager.newSession(userID);
+				uID = userID;
 				umCHI->sm.communication.runEvent(eventInfo::loggedIn(),
 				                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, banned,
 				                                                                     desc).toString(
@@ -104,12 +107,14 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 			userLogInfo[username] = currentUserLogStruct;
 		}
 		sessionID = -1;
+		uID = -1;
 		desc = "Invalid Username or Password.";
 		systemLog.log(getNameAndType(), "Invalid username or password for USER: [" + username + "]. ", LogLevels::note);
 		return UMLoginResult::invalidUserPass;
 
 	} else {    //IF ANY THING OTHER THAN PREVIOUSLY DEFINED CONDITIONS HAPPEN.
 		sessionID = -1;
+		uID = -1;
 		desc = "Unknown Error!";
 		systemLog.log(getNameAndType(), "Unknown Error on login attempt for USER: [" + username + "]. ",
 		              LogLevels::trace);
@@ -799,7 +804,7 @@ int UMCore::getPermissionParent(int permissionID) {
 		//result = querySync("select parentid from permission where id=" + std::to_string(permissionID));
 		auto r = querySync("select parentid from permission where id=" + std::to_string(permissionID));
 		if (r.rowCount() < 1)
-			return NULL;//todo: whats the default value for an invalid id
+			return -1;
 		return r.fieldIsNull(0, 0) ? -1 : std::stoi(
 				r.fieldValue(0, 0));//fixme:invalid id breaks here// return -1 is aaded as a temporaty workaround
 	} catch (exceptionEx &errorInfo) {

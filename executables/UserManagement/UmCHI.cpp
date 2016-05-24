@@ -28,12 +28,12 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 	try {
 		if (!Strings::compare(node, commandInfo::login(), false)) {
 			DSLoginInfo logInfo(data);
-			int sessionID;
+			int sessionID, userID;
 			std::string description;
 			std::string UMlogResString =
 					UMLoginResult::typeString[userMngrInterface.login(
-							logInfo.username.getValue(), logInfo.password.getValue(), sessionID, description)];
-			DSLoginResult logResult(UMlogResString, description, sessionID);
+							logInfo.username.getValue(), logInfo.password.getValue(), sessionID, userID, description)];
+			DSLoginResult logResult(UMlogResString, description, sessionID, userID);
 			sm.communication.runCallback(node, logResult.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::logout(), false)) {
 			DSInteger sessionID;

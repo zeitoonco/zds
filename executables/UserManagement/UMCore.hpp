@@ -40,7 +40,7 @@ public:
 	 * @return sessionID int , sessionId e generate shode, dar soorate adam e movafaghiat -1 baaz migardaanad
 	 * @return desc string, tozihaat  e marboot be login dar soorat e adam movafaghiat!*/
 	UMLoginResult::UMLoginResultEnum login(std::string username, std::string password,
-	                                       int &sessionID,    //UMLoginResult
+	                                       int &sessionID, int &uID,    //UMLoginResult
 	                                       std::string &desc);
 
 	/**logout(), ba daryaaft e session Id logout mikonad (az map e sessionList paak mikonad)

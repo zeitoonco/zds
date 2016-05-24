@@ -19,6 +19,7 @@ set_target_properties(${moduleName}
 
 SET(moduleLib "${executablesTestLibPrefx}${moduleName}")
 add_library(${moduleLib} ${PROJECT_SOURCE_FILES})
+target_link_libraries(${moduleLib} ${libName}) #link target to our library
 set_target_properties(${moduleLib}
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${binDir}/${executablesDir}/${moduleName}/${testsDir}"
@@ -38,12 +39,14 @@ endif ()
 
 # libs
 target_link_libraries(${moduleName} pthread dl boost_system boost_thread)#boost_thread & system manually added. needs revision
+target_link_libraries(${moduleLib} pthread dl boost_system boost_thread)#boost_thread & system manually added. needs revision
 
 find_package(CryptoPP REQUIRED)
 if (CRYPTOPP_FOUND)
     message(WARNING "crypto found")
     include_directories(${CRYPTOPP_INCLUDE_DIRS})
     target_link_libraries(${moduleName} ${CRYPTOPP_LIBRARIES})
+    target_link_libraries(${moduleLib} ${CRYPTOPP_LIBRARIES})
 else ()
     message(WARNING "crypto not found")
 endif ()

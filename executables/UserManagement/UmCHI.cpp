@@ -133,8 +133,7 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			                                    regInfo.permissionState.getValue());
 		} else if (!Strings::compare(node, commandInfo::removeUserPermission(), false)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
-			userMngrInterface.removeUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(),
-			                                       regInfo.permissionState.getValue());
+			userMngrInterface.removeUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue());
 		} else if (!Strings::compare(node, commandInfo::listUserPermissions(), false)) {
 			DSInteger userID;
 			userID.fromString(data);

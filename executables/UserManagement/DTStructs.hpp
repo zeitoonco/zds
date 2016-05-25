@@ -356,7 +356,7 @@ public:
 
 	DSRegUsrGrp() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
-		list.push_back(&title);//todo: tell navidi, to add fields here( not in 3rd ctor
+		list.push_back(&title);
 		list.push_back(&parentID);
 		list.push_back(&description);
 	}

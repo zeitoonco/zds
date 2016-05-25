@@ -176,7 +176,7 @@ public:
 
 	void addUserPermission(int userID, int permissionID, int state);
 
-	void removeUserPermission(int userID, int permissionID, int state = 0);
+	void removeUserPermission(int userID, int permissionID);
 
 	DSUserPermissionList listUserPermissions(int userID);
 

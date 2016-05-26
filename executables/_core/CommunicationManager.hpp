@@ -87,7 +87,9 @@ public:
 
 	string callCommand(string cmdName, string &data, string from, string id, string sessionid="");
 
-	void callCallback(string clbName, string &data, string from, string id);
+	void callCallback(string id, string &data, string from);
+
+	void callCallbackError(string &data, string from);
 
 	void cleanup(ExtensionProfile *ext);
 

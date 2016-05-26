@@ -5,7 +5,7 @@
  *      Author: ajl
  */
 
-	#include "Router.hpp"
+#include "Router.hpp"
 #include <string>
 #include <mutex>
 #include <thread>
@@ -177,7 +177,8 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 			ext->state = ExtensionProfile::extensionState::installed;
 			vector<ExtensionProfile *> elist = extManager.getByServiceType(datatypes::EnmServiceType::UserManager);
 			if (elist.size() > 0 && elist[0]->isRunning()) { //UM avail
-				registerServiceCEPermissions(ext);//fixme: seems that it happens twise, if um is running and we install a service
+				registerServiceCEPermissions(
+						ext);//fixme: seems that it happens twise, if um is running and we install a service
 				ext->CEPermissionsRegistered = true;
 			} else {
 				ext->CEPermissionsRegistered = false;
@@ -200,7 +201,7 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 				else if (type == "fire")
 					comm.fireEvent(node, idata, ext->serviceInfo.name.getValue());
 				else if (type == "callback")
-					comm.callCallback(node, idata, ext->serviceInfo.name.getValue(), id);
+					comm.callCallback(id, idata, ext->serviceInfo.name.getValue());
 			} catch (exceptionEx *ex) {
 				cerr << "\nERR0R : " << ex->what();//todo:send error?
 				string errp = CommunicationUtility::makeError(node, id, "Error occured: " + ex->what());
@@ -216,7 +217,8 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 }
 
 void Router::sendPacket(string &data, ExtensionProfile *extension) {
-	net.send(extension->netClientId, data);
+	if (extension->netClientId >= 0)
+		net.send((size_t) extension->netClientId, data);
 }
 
 void Router::sendMessage(string extension, string source, string node, string &data, MessageTypes::MessageTypes_ msgT,
@@ -357,7 +359,8 @@ void Router::registerCore() {
 
 void Router::registerCEP() {
 	for (int i = 0; i < extManager.size(); i++)
-		if (extManager[i]->state>=ExtensionProfile::extensionState::installed && !extManager[i]->CEPermissionsRegistered) {
+		if (extManager[i]->state >= ExtensionProfile::extensionState::installed &&
+		    !extManager[i]->CEPermissionsRegistered) {
 			registerServiceCEPermissions(extManager[i]);
 		}
 	extManager.save();
@@ -525,13 +528,13 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 			      to_string((int) e->state) + "}";
 		}
 		dt += "]}";
-		comm.callCallback(node, dt, "_core", id);
+		comm.callCallback(id, dt, "_core");
 	} else if (seq(node, "_core.getServiceInfo")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL) {
 			string dt = ext->serviceInfo.toString();
-			comm.callCallback(node, dt, "_core", id);
+			comm.callCallback(id, dt, "_core");
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (seq(node, "_core.installService")) {
@@ -571,6 +574,10 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (seq(node, "_core.pingService")) {
 		//todo: later
+	} else if (seq(node, "error")) {
+		cerr << "\nERR RCV " << from << " : " << data;
+		if (jdata.contains("id"))
+			comm.callCallbackError(data,from);
 	}
 }
 

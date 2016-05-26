@@ -380,9 +380,6 @@ namespace zeitoon {
                 this->fromString(data);
             }
 
-            DSSessionList(DTSet<DTInteger<int>> ilist) : DSSessionList() {
-                mnlist = ilist;
-            }
         };
 
         class DSSession : public DTStruct {

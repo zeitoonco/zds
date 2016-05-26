@@ -205,6 +205,7 @@ namespace zeitoon {
                 DTInteger<> *tempInt = new DTInteger<>("", stoi(result.fieldValue(i, 0)));
                 res.mnlist.add(tempInt, true);
             }
+	        std::cerr << "SESSION LIST: " << res.toString(true);
             return (res);
         }
 

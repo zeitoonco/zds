@@ -26,7 +26,6 @@ namespace zeitoon {
                 DSInteger temp;
                 temp.fromString(data);
                 chatCore.removeMessage(temp.value.getValue());
-
             }
 
             else if (!Strings::compare(node, CommandInfo::checkNewMessages(), false)) {
@@ -92,8 +91,8 @@ namespace zeitoon {
             else if (!Strings::compare(node, CommandInfo::listSessions(), false)) {
                 DSInteger temp;
                 temp.fromString(data);
-                DSSessionList result;
-                result = chatCore.listSessions(temp.value.getValue());
+                DSSessionList result = chatCore.listSessions(
+                        temp.value.getValue());//see @ajl: if we "DSSessionList result; result=..." raises segmentation fault. WHY????
                 sm.communication.runCallback(node, result.toString(true), id);
             }
             else if (!Strings::compare(node, CommandInfo::getSession(), false)) {

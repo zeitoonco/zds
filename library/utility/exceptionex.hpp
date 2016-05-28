@@ -5,14 +5,14 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include "utility/utility.hpp"
+#include <cstdlib>
 
 using namespace std;
 
 namespace zeitoon {
 namespace utility {
 
-class exceptionEx {
+class exceptionEx : public exception{
 protected:
 	exceptionEx *_innerException;
 	string _message;
@@ -20,14 +20,64 @@ protected:
 	string _owner;
 	int _line;
 	string _file;
+	
+	void allocateInnerEx(){
+		if (_innerException!=NULL)
+			_innerException=(exceptionEx*)calloc(1,sizeof(exceptionEx));
+	}
+	
+	exceptionEx(){		
+		_innerException=NULL;
+	}	
 public:
-	exceptionEx(string imessage, string owner = "", string file = "", int line = -1,
-	            exceptionEx *iinnerException = NULL) :
-			exceptionEx(getDefTitle(), imessage, owner, file, line, iinnerException) {
+	exceptionEx(string imessage):
+			exceptionEx(getDefTitle(), imessage, "", "", "", NULL) {
+	}
+	
+	exceptionEx(string imessage, exceptionEx &&iinnerException) :
+			exceptionEx(getDefTitle(), imessage, "", "", "", iinnerException) {
+	}
+	
+	exceptionEx(string imessage, exceptionEx &iinnerException) :
+			exceptionEx(getDefTitle(), imessage, "", "", "", iinnerException) {
+	}
+	
+	exceptionEx(string imessage, exceptionEx *iinnerException) :
+			exceptionEx(getDefTitle(), imessage, "", "", "", iinnerException) {
 	}
 
-	exceptionEx(string ititle, string imessage, string owner = "", string file =
-	"", int line = -1, exceptionEx *iinnerException = NULL) {
+	exceptionEx(string imessage, string owner, string file,int line):
+			exceptionEx(getDefTitle(), imessage, owner, file, line, NULL) {
+	}
+	
+	exceptionEx(string imessage, string owner, string file, int line, exceptionEx &&iinnerException) :
+			exceptionEx(getDefTitle(), imessage, owner, file, line, iinnerException) {
+	}
+	
+	exceptionEx(string imessage, string owner, string file, int line, exceptionEx &iinnerException) :
+			exceptionEx(getDefTitle(), imessage, owner, file, line, iinnerException) {
+	}
+	
+	exceptionEx(string imessage, string owner, string file, int line, exceptionEx *iinnerException) :
+			exceptionEx(getDefTitle(), imessage, owner, file, line, iinnerException) {
+	}
+	
+	exceptionEx(string ititle, string imessage, string owner, string file,int line):
+			exceptionEx(ititle, imessage, owner, file, line, NULL) {
+	}
+	
+	exceptionEx(string ititle, string imessage, string owner, string file,int line, exceptionEx &iinnerException):
+			exceptionEx(ititle, imessage, owner, file, line, NULL) {
+		setInnerException(iinnerException);
+	}
+	
+	exceptionEx(string ititle, string imessage, string owner, string file,int line, exceptionEx &&iinnerException):
+			exceptionEx(ititle, imessage, owner, file, line, NULL) {
+		setInnerException(iinnerException);
+	}
+	
+	exceptionEx(string ititle, string imessage, string owner, string file,int line, exceptionEx *iinnerException):
+			exceptionEx() {
 		_title = ititle;
 		_message = imessage;
 		_innerException = iinnerException;
@@ -37,25 +87,28 @@ public:
 	}
 
 	virtual ~exceptionEx() throw() {
-		delete _innerException;
 	}
 
 	virtual string getDefTitle() {
 		return "Exception occurred";
 	}
 
-	virtual const string what() const throw() {
+	virtual const char * what() const throw() {
+		return this->toString().c_str();
+	}
+	
+	virtual string toString() const {
 		stringstream msg;
 		msg << getTitle();
 		if (_owner.length() > 0 || _file.length() > 0 || _line >= 0)
 			msg << "(from " << (_owner.length() > 0 ? _owner : "")
 			<< (_file.length() > 0 ? "file:" + _file : "")
 			<< (_line >= 0 ?
-			    string("#") + utility::Strings::itoa(_line) : "")
+			    string("#") + to_string(_line) : "")
 			<< ")";
 		msg << " : " << getMessage();
 		if (getInnerException() != NULL)
-			msg << endl << "Innerexception : " << getInnerException()->what();
+			msg << endl << "InnerException : " << getInnerException()->what();
 		return msg.str();
 	}
 
@@ -65,6 +118,14 @@ public:
 
 	virtual string getMessage() const {
 		return _message;
+	}
+
+	virtual void setInnerException(exceptionEx &&excp) {
+		_innerException = excp;
+	}
+
+	virtual void setInnerException(exceptionEx &excp) {
+		_innerException = excp;
 	}
 
 	virtual void setInnerException(exceptionEx *excp) {
@@ -218,6 +279,11 @@ protected:
 	bool hasEx;
 	exception _ex;
 public:
+	unknownException(string imessage = "", string owner = "", string file = "",
+	         int line = -1, exceptionEx *iinnerException = NULL) :
+			exceptionEx(getDefTitle(), imessage, owner, file, line,
+			            iinnerException) {
+	}
 	unknownException(exception ex, string imessage = "", string owner = "",
 	                 string file = "", int line = -1) :
 			exceptionEx(getDefTitle(), imessage, owner, file, line, NULL) {
@@ -235,7 +301,21 @@ public:
 		return "Unknown exception occurred.";
 	}
 
-	virtual const string what() const throw() {
+	virtual string toString() const {
+		stringstream msg;
+		msg << getTitle();
+		if (_owner.length() > 0 || _file.length() > 0 || _line >= 0)
+			msg << "(from " << (_owner.length() > 0 ? _owner : "")
+			<< (_file.length() > 0 ? "file:" + _file : "")
+			<< (_line >= 0 ?
+			    string("#") + utility::Strings::itoa(_line) : "")
+			<< ")";
+		msg << " : " << getMessage();
+		if (getInnerException() != NULL)
+			msg << endl << "Innerexception : " << getInnerException()->what();
+		return msg.str();
+	}
+	virtual const char * what() const throw() {
 		stringstream msg;
 		msg << getTitle() << " : " << getMessage();
 		if (hasEx)

@@ -68,6 +68,6 @@
     {
       "name": "networkNoRetryTimeSet",
       "title": "Reconnect interval has not been set"
-    },
+    }
   ]
 }

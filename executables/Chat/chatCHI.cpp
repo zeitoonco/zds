@@ -39,8 +39,8 @@ namespace zeitoon {
 
             else if (!Strings::compare(node, CommandInfo::getMessages(), false)) {
                 DSGetMessages temp(data);
-                DSMessageList result;
-                result =  chatCore.getMessages(temp.userID.getValue(), temp.sessionID.getValue(),
+
+                DSMessageList result = chatCore.getMessages(temp.userID.getValue(), temp.sessionID.getValue(),
                                      (EnumGetMsgType::getMsgType) temp.type.getValue(), temp.from.getValue(),
                                      temp.to.getValue());
                 sm.communication.runCallback(node, result.toString(true), id);

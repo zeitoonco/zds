@@ -25,6 +25,7 @@ private:
 	struct idData {
 		string data;
 		bool set;
+		bool isException;
 	};
 	map<string, idData *> idList;
 	mutex MtxIdList;

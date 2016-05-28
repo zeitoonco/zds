@@ -41,6 +41,11 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 	} catch (std::exception &ex) {
 		EXTunknownExceptionI("unable to remove from id-list", ex);
 	}
+	if (x.isException) {
+		JStruct errStruct(dt);
+		//std::string err = "FROM COMMUNICATION MEDIATOR" + errStruct[description].getValue();
+		//EXTexceptionEx();
+	}
 	return dt;
 }
 
@@ -53,11 +58,11 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 }
 
 void CommunicationMediator::runCommand(string name, string data) {
-	runCommand(name, data, "");
+	runCommand(name, data, utility::CommunicationUtility::getRandomID());
 }
 
 string CommunicationMediator::runCommandSync(string name, string data) {
-	return runCommandSync(name, data, "");
+	return runCommandSync(name, data, utility::CommunicationUtility::getRandomID());
 }
 
 void CommunicationMediator::runCallback(string name, string data, string id) {
@@ -77,11 +82,11 @@ string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &d
 }
 
 void CommunicationMediator::runCommand(string name, datatypes::DTStruct &data) {
-	runCommand(name, data, "");
+	runCommand(name, data, utility::CommunicationUtility::getRandomID());
 }
 
 string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &data) {
-	return runCommandSync(name, data, "");
+	return runCommandSync(name, data, utility::CommunicationUtility::getRandomID());
 }
 
 void CommunicationMediator::runCallback(string name, datatypes::DTStruct &data, string id) {
@@ -115,7 +120,7 @@ void CommunicationMediator::removeCommand(string name) {
 
 void CommunicationMediator::registerHook(string name, string session) {
 	sm->send(CommunicationUtility::makeCommand("_core.registerHook", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [" + name + "]}",session));
+	                                           "{\"names\" : [" + name + "]}", session));
 }
 
 void CommunicationMediator::removeHook(string name) {

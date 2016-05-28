@@ -155,6 +155,7 @@ namespace zeitoon {
             DTInteger<int> userID = {"userID"};
             DTInteger<int> sessionID = {"sessionID"};
             DTEnum<EnumGetMsgType> type = {"type"};
+            //change from EnumMsgType
             DTString from = {"from"};
             DTString to = {"to"};
 

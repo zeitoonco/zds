@@ -12,7 +12,7 @@ def fillTemplate(temp, param):
 
 def generateExceptionHeaderFromList(fileAddrs, namespace, excList, templates):
 	# cls:  $name $title
-	# mrc:  $name $namespaces,
+	# mrc:  $name $namspaces,
 	# file: $headerid, $namespaceztart, $namespaceend, $macro $class
 
 	param = {"namespaceztart": "", "namespaceend": "", "namespaces": "", "class": "", "macro": "",
@@ -20,16 +20,16 @@ def generateExceptionHeaderFromList(fileAddrs, namespace, excList, templates):
 	# extract namespace
 	if len(namespace) > 0:
 		namespaces = namespace.split('::')
-		param["namespaces"] = namespace + "::"
+		param["namspaces"] = namespace + "::"
 		for i in namespaces:
 			param["namespaceztart"] += "namespace " + i + " {\n"
 			param["namespaceend"] += "} // " + i + "\n"
 
-	param['headerid'] = param["namespaces"].replace("::", "_").upper() + \
+	param['headerid'] = param["namspaces"].replace("::", "_").upper() + \
 	                    os.path.split(fileAddrs)[1].upper().replace(".", "_")
 
 	for exc in excList:
-		paraml = {'name': exc['name'], 'title': exc['title'], 'namespaces': param["namespaces"]}
+		paraml = {'name': exc['name'], 'title': exc['title'], 'namspaces': param["namspaces"]}
 		param['class'] += fillTemplate(templates['exceptionClassTemplate'], paraml) + "\n\n"
 		param['macro'] += fillTemplate(templates['exceptionMacroTemplate'], paraml) + "\n"
 

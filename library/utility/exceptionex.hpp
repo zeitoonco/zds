@@ -300,4 +300,17 @@ public:
 
 }
 }
+
+//Macro here -----------------------------------------------------------------
+
+//unknownException
+#define EXunknownException(msg) zeitoon::utility::unknownException(msg,this->getNameAndType(),__FILE__,__func__,__LINE__)
+#define EXTunknownException(msg) throw EXunknownException(msg)
+#define EXunknownExceptionO(msg, owner) zeitoon::utility::unknownException(msg,owner,__FILE__,__func__,__LINE__)
+#define EXTunknownExceptionO(msg, owner) throw EXunknownExceptionO(msg,owner)
+#define EXunknownExceptionI(msg, inner) zeitoon::utility::unknownException(msg,this->getNameAndType(),__FILE__,__func__,__LINE__,inner)
+#define EXTunknownExceptionI(msg, inner) throw EXunknownExceptionI(msg,inner)
+#define EXunknownExceptionIO(msg, owner, inner) zeitoon::utility::unknownException(msg,owner,__FILE__,__func__,__LINE__,inner)
+#define EXTunknownExceptionIO(msg, owner, inner) throw EXunknownExceptionIO(msg,owner,inner)
+
 #endif // EXCEPTIONEX_HPP

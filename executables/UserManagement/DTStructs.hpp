@@ -56,6 +56,7 @@ public:
 	DTString UMLoginResult = {"UMLoginResult"};
 	DTString description = {"description"};
 	DTInteger<int> sessionID = {"sessionID"};
+	DTInteger<int> userID = {"userID"};
 
 	static std::string getStructName() {
 		return "DSLoginResult";
@@ -70,6 +71,7 @@ public:
 		this->list.push_back(&UMLoginResult);
 		this->list.push_back(&description);
 		this->list.push_back(&sessionID);
+		this->list.push_back(&userID);
 	}
 
 	DSLoginResult(std::string data) :
@@ -77,11 +79,12 @@ public:
 		this->fromString(data);
 	}
 
-	DSLoginResult(std::string iUMLoginResult, std::string idescription, int isessionID) :
+	DSLoginResult(std::string iUMLoginResult, std::string idescription, int isessionID, int iuID) :
 			DSLoginResult() {
 		UMLoginResult = iUMLoginResult;
 		description = idescription;
 		sessionID = isessionID;
+		userID = iuID;
 	}
 };
 
@@ -353,7 +356,7 @@ public:
 
 	DSRegUsrGrp() :
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
-		list.push_back(&title);//todo: tell navidi, to add fields here( not in 3rd ctor
+		list.push_back(&title);
 		list.push_back(&parentID);
 		list.push_back(&description);
 	}

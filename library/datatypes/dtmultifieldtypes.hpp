@@ -585,7 +585,8 @@ public:
 			str << Strings::indentMaker(indent++, indentContent) << "{";
 		}
 		if (includeVersion)
-			str << newLine << Strings::indentMaker(indent, indentContent) << "\"_version\":" << this->getVersion() <<
+			str << newLine << Strings::indentMaker(indent, indentContent) << "\"_version\":" <<
+			this->getVersion() <<
 			",";
 		for (citerator i = this->list.begin(); i != this->list.end(); i++) {
 			str << newLine << Strings::indentMaker(indent, indentContent) << '"' << (*i)->getName() << "\":" <<
@@ -821,8 +822,9 @@ private:
 		size_t pos, rePos, ver = string::npos, j = string::npos - 1;
 		pos = str.find('{');
 		rePos = str.rfind('}');
-		if (pos == string::npos || rePos == string::npos)
-			throw new cantParseString("can't find brackets.");
+		if ((pos == string::npos) || (rePos == string::npos)) {
+			EXTcantParseString("can't find brackets.");
+		}
 		str = str.substr(pos + 1, rePos - pos - 1);
 		string parsed, name, value;
 		int q = 0;
@@ -847,7 +849,8 @@ private:
 			if (!ready) {
 				if (j == string::npos)
 					EXTcantParseString(
-							"syntax error at column" + Strings::itoa(i) + " : can't find end of region:\"" + str +
+							"syntax error at column" + Strings::itoa(i) + " : can't find end of region:\"" +
+							str +
 							"\"");
 				else if (j != string::npos - 1) {
 					i = j;

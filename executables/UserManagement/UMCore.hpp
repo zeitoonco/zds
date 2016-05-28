@@ -30,7 +30,6 @@ public:
 
 	~UMCore();
 
-	void checkSession(); //for test purposes Only
 	/**login(), ba daryaaft e voroodi, eghdaaam be login mikonad,
 	 * @param username string
 	 * @param password string
@@ -41,7 +40,7 @@ public:
 	 * @return sessionID int , sessionId e generate shode, dar soorate adam e movafaghiat -1 baaz migardaanad
 	 * @return desc string, tozihaat  e marboot be login dar soorat e adam movafaghiat!*/
 	UMLoginResult::UMLoginResultEnum login(std::string username, std::string password,
-	                                       int &sessionID,    //UMLoginResult
+	                                       int &sessionID, int &uID,    //UMLoginResult
 	                                       std::string &desc);
 
 	/**logout(), ba daryaaft e session Id logout mikonad (az map e sessionList paak mikonad)
@@ -81,7 +80,7 @@ public:
 	 * barmigardanad.
 	 * @param ID int UserID
 	 * @return UMUserInfo user information*/
-	UMUserInfo getUserInfo(int ID);
+	UMUserInfo getUserInfo(int userID);
 
 	/**registerPermission(), tamam e moshakhasaat e yek permission e jadid raagerefte va aan ra dar
 	 * database zakhireh mikonad va ID e aan ra barmigardaanad
@@ -177,7 +176,7 @@ public:
 
 	void addUserPermission(int userID, int permissionID, int state);
 
-	void removeUserPermission(int userID, int permissionID, int state = 0);
+	void removeUserPermission(int userID, int permissionID);
 
 	DSUserPermissionList listUserPermissions(int userID);
 

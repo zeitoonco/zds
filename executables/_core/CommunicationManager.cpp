@@ -7,8 +7,8 @@
 
 #include "Profiles.hpp"
 #include "CommunicationManager.hpp"
-#include "utility/exceptionex.hpp"
-#include "utility/utility.hpp"
+#include <utility/exceptionex.hpp>
+#include <utility/utility.hpp>
 #include <algorithm>
 #include <string>
 #include <mutex>
@@ -172,7 +172,7 @@ string CommunicationManager::callCommand(string cmdName, string &data, string fr
 		EXTnamesMismatch("No command named '" + cmdName + "' is registered");
 }
 
-void CommunicationManager::callCallback(string clbName, string &data, string from, string id) {
+void CommunicationManager::callCallback(string id, string &data, string from) {
 	lockg(MTXCallback);
 	auto clb = callbackList.find(id);
 	if (clb != callbackList.end()) {
@@ -184,6 +184,28 @@ void CommunicationManager::callCallback(string clbName, string &data, string fro
 			x->set = true;
 		} else {            //else, send it
 			sendFunc(clb->second.extension, from, clb->second.command.name, data, MessageTypes::MTCallback,
+			         clb->second.identity, "");
+		}
+		callbackList.erase(id);
+	} else
+		EXTnamesMismatch("No callback with id '" + id + "' is registered");
+}
+
+void CommunicationManager::callCallbackError(string &data, string from) {
+	JStruct jdata(data);
+	string id = jdata["id"].getValue();
+	lockg(MTXCallback);
+	auto clb = callbackList.find(id);
+	if (clb != callbackList.end()) {
+		//in sync list?
+		if (idList.find(id) != idList.end()) {
+			lock_guard<mutex> lg(MtxIdList);
+			idList.erase(id);//todo:check mediator. does meditor erase cb on error?
+			EXTexceptionEx("Command failed.\n" + jdata["description"].getValue());
+		} else {            //else, send it
+			((JVariable &) jdata["id"]).setValue(clb->second.identity);
+			string rdata = jdata.toString();
+			sendFunc(clb->second.extension, from, "error", rdata, MessageTypes::MTCall,
 			         clb->second.identity, "");
 		}
 		callbackList.erase(id);

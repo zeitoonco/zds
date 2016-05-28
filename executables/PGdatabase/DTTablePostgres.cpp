@@ -9,6 +9,7 @@
 #include "utility/exceptionex.hpp"
 #include "datatypes/dtmultifieldtypes.hpp"
 #include"datatypes/dtsingletypes.hpp"
+#include "pgutility.hpp"
 
 using namespace zeitoon::datatypes;
 using namespace zeitoon::utility;
@@ -25,12 +26,15 @@ DTTablePostgres::DTTablePostgres(PGconn *connection, PGresult *iResult, std::str
 	conn = connection;
 	mapMaker(); //creates OID data type related maps.
 	result = iResult;
-	if ((PQntuples(result)) < 1) {
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+		EXTDBError("SQL Query Failed. " + desc);
+	}    /*if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
 		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 			EXTDBError(errorSwitch(d));
 		}
-	}
+	}*/
 }
 
 DTTablePostgres::DTTablePostgres(PGconn *connection, std::string sql, std::string name) :
@@ -38,12 +42,16 @@ DTTablePostgres::DTTablePostgres(PGconn *connection, std::string sql, std::strin
 	conn = connection;
 	mapMaker();
 	result = PQexec(conn, sql.c_str());
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+		EXTDBError("SQL Query Failed. " + desc);
+	}/*
 	if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
 		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 			EXTDBError(std::string(PQerrorMessage(conn)) + "  " + PQresStatus(PQresultStatus(result)));
 		}
-	}
+	}*/
 }
 
 size_t DTTablePostgres::rowCount() const {
@@ -78,14 +86,14 @@ ColumnDataType::columnDataType DTTablePostgres::columnDataType(int columnNumber)
 }
 
 Oid DTTablePostgres::columnODataType(int columnNumber) const {
-	if (columnNumber > (columnCount() - 1) || columnNumber < (columnCount() + 1)) {
+	if (columnNumber >= columnCount() || columnNumber < 0) {
 		EXToutOfRange("Column number is out of range");
 	}
 	return PQftype(result, columnNumber);
 }
 
 size_t DTTablePostgres::columnDataSize(int columnNumber) const { //returns -1 for varchar
-	if (columnNumber > (columnCount() - 1) || columnNumber < (columnCount() + 1)) {
+	if (columnNumber >= columnCount() || columnNumber < 0) {
 		EXToutOfRange("Column number is out of range");
 	}
 	return (size_t) PQfsize(result, columnNumber);
@@ -113,7 +121,7 @@ std::string DTTablePostgres::fieldValue(int tuppleNumber, std::string columnName
 
 
 bool DTTablePostgres::fieldIsNull(int tupleNumber, int columnNumber) const {
-	if ((tupleNumber + 1) > PQntuples(result) || tupleNumber < 0 || (columnNumber + 1) > PQnfields(result) ||
+	if ((tupleNumber ) >= PQntuples(result) || tupleNumber < 0 || (columnNumber) >= PQnfields(result) ||
 	    columnNumber < 0) {
 		EXToutOfRange("Parameters out of range");
 	}
@@ -121,8 +129,8 @@ bool DTTablePostgres::fieldIsNull(int tupleNumber, int columnNumber) const {
 }
 
 int DTTablePostgres::fieldSize(int tupleNumber, int columnNumber) const {
-	if ((tupleNumber + 1) > PQntuples(result) || tupleNumber < 0 || (columnNumber + 1) > PQnfields(result) ||
-	    columnNumber < 0) {
+	if ((tupleNumber ) >= PQntuples(result) || tupleNumber < 0 || (columnNumber) >= PQnfields(result) ||
+		columnNumber < 0) {
 		EXToutOfRange("Parameters out of range");
 	}
 	return PQgetlength(result, tupleNumber, columnNumber);
@@ -160,6 +168,7 @@ void DTTablePostgres::mapMaker() { //this method only should be accessed via con
 	                                            "_float8"};
 	mapHardCodedTypes[ColumnDataType::BINARY] = {"bytea"};
 	mapHardCodedTypes[ColumnDataType::BOOLEAN] = {"bool", "_bool"};
+	mapHardCodedTypes[ColumnDataType::DATE] = {"date", "time", "timestamp", "_timestamp", "_date", "_time",	"timestamptz", "_timestamptz"};
 //Custom map of types with corresponding pg Oid:
 	for (auto it = mapHardCodedTypes.begin(); it != mapHardCodedTypes.end(); it++) {
 		for (auto iter = it->second.begin(); iter != it->second.end(); iter++) {
@@ -180,6 +189,7 @@ std::string DTTablePostgres::getNameAndType() const {
 	return "[" + std::string(PQuser(this->conn)) + "DTTablePostgres] ";
 }
 
+/*
 std::string DTTablePostgres::errorSwitch(int resStatusEnum) {
 	switch (resStatusEnum) {
 		case (PGRES_BAD_RESPONSE):
@@ -200,6 +210,7 @@ std::string DTTablePostgres::errorSwitch(int resStatusEnum) {
 			EXTunknownException("Unknown PQresultStatus(result), " + std::string(PQresultErrorMessage(result)));
 	}
 }
+*/
 
 std::string DTTablePostgres::toString(int indent, std::string indentContent) const {
 	stringstream buffer;
@@ -233,12 +244,16 @@ void DTTablePostgres::fromString(std::string data) {
 
 DTBase &DTTablePostgres::operator=(std::string str) {
 	result = PQexec(conn, str.c_str());
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+		EXTDBError("SQL Query Failed. " + desc);
+	}/*
 	if ((PQntuples(result)) < 1) {
 		auto d = (PQresultStatus(result));
 		if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 			EXTDBError(errorSwitch(d));
 		}
-	}
+	}*/
 	return *this;
 }
 
@@ -246,23 +261,31 @@ DTBase &DTTablePostgres::operator=(DTBase &dtvar) {
 	auto tempDTS = dynamic_cast<DTString *>(&dtvar);
 	if (tempDTS) {
 		result = PQexec(conn, (tempDTS->getValue()).c_str());
+		std::string desc;
+		if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+			EXTDBError("SQL Query Failed. " + desc);
+		}/*
 		if ((PQntuples(result)) < 1) {
 			auto d = (PQresultStatus(result));
 			if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 				EXTDBError(errorSwitch(d));
 			}
-		}
+		}*/
 		return *this;;
 	} else {
 		auto tempDTT = dynamic_cast<DTTablePostgres *>(&dtvar);
 		if (tempDTT) {
 			result = tempDTT->result;
+			std::string desc;
+			if (not zeitoon::pgdatabase::PGutility::isValidResult(result, desc)) {
+				EXTDBError("SQL Query Failed. " + desc);
+			}/*
 			if ((PQntuples(result)) < 1) {
 				auto d = (PQresultStatus(result));
 				if (d != PGRES_COMMAND_OK && d != PGRES_TUPLES_OK) {
 					EXTDBError(errorSwitch(d));
 				}
-			}
+			}*/
 			return *this;
 		}
 	}

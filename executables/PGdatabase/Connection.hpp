@@ -70,6 +70,7 @@ public:
 	 */
 	int execute(std::string command);
 
+
 private:
 	/**getNameAndType() in function mas'ool e jam-aavari etela'aat baraye estefaade dar hangaam throw kardan e
 		 * exception ast (Hooviaye scopy ke error run-time error midahad.

@@ -1,21 +1,22 @@
 BEGIN;
 
-CREATE TABLE if not exists UserData
+CREATE TABLE if not exists userdata
 (
-  UserID integer NOT NULL,
+  userid integer NOT NULL,
   status integer NOT NULL,
-  customStatusIcon integer,
-  customStatusText character varying(255),
-  reachState integer,
-  CONSTRAINT UserData_pkey PRIMARY KEY (UserID)
+  customstatusicon integer,
+  customstatustext character varying(255),
+  reachstate integer,
+  CONSTRAINT userdata_pkey PRIMARY KEY (userid)
 )
 WITH (
   OIDS=FALSE
 );
-CREATE TABLE if not exists Session
+
+CREATE TABLE if not exists session
 (
   id serial NOT NULL,
-  creationDate date NOT NULL,
+  creationdate timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT unique_id PRIMARY KEY (id)
 )
 WITH (
@@ -26,14 +27,14 @@ WITH (
 CREATE TABLE if not exists Message
 (
   id serial NOT NULL,
-  userID integer NOT NULL,
-  sessionID integer NOT NULL,
+  userid integer NOT NULL,
+  sessionid integer NOT NULL,
   msg character varying(4096) NOT NULL,
-  msgDate date NOT NULL,
+  msgdate timestamp with time zone NOT NULL DEFAULT now(),
   type integer,
-  CONSTRAINT Message_pkey PRIMARY KEY (id),
-  CONSTRAINT lnk_Message_Session FOREIGN KEY (sessionID)
-      REFERENCES Session (id) MATCH FULL
+  CONSTRAINT message_pkey PRIMARY KEY (id),
+  CONSTRAINT lnk_message_session FOREIGN KEY (sessionid)
+      REFERENCES "Chat".session (id) MATCH FULL
       ON UPDATE CASCADE ON DELETE RESTRICT
 )
 WITH (
@@ -42,21 +43,20 @@ WITH (
 
 CREATE TABLE if not exists SessionUser
 (
-  UserID integer NOT NULL,
-  SessionID integer NOT NULL,
-  joined timestamp with time zone NOT NULL,
-  seenID bigserial,
-  notifiedID bigserial,
-  Leader boolean,
-  CONSTRAINT SessionUser_pkey PRIMARY KEY (UserID, SessionID),
-  CONSTRAINT lnk_SessionUser_Message FOREIGN KEY (seenID)
-      REFERENCES Message (id) MATCH FULL
+  userid integer NOT NULL,
+  sessionid integer NOT NULL,
+  joined timestamp with time zone NOT NULL DEFAULT now(),
+  seenid bigint,
+  notifiedid bigint,
+  CONSTRAINT sessionuser_pkey PRIMARY KEY (userid, sessionid),
+  CONSTRAINT lnk_sessionuser_message FOREIGN KEY (seenid)
+      REFERENCES "Chat".message (id) MATCH FULL
       ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT lnk_SessionUser_Message_2 FOREIGN KEY (notifiedID)
-      REFERENCES Message (id) MATCH FULL
+  CONSTRAINT lnk_sessionuser_message_2 FOREIGN KEY (notifiedid)
+      REFERENCES "Chat".message (id) MATCH FULL
       ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT lnk_SessionUser_Session FOREIGN KEY (SessionID)
-      REFERENCES Session (id) MATCH FULL
+  CONSTRAINT lnk_sessionuser_session FOREIGN KEY (sessionid)
+      REFERENCES "Chat".session (id) MATCH FULL
       ON UPDATE CASCADE ON DELETE RESTRICT
 )
 WITH (

@@ -27,7 +27,7 @@ ColumnDataType::columnDataType ColumnDataType::fromString(std::string str) {
 }
 
 std::string ColumnDataType::enumArray[__MAX] = {"text", "integer", "float",
-                                                "binary", "boolean", "unknown"};
+                                                "binary", "boolean","date", "unknown"};
 
 }
 }

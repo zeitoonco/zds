@@ -20,6 +20,7 @@ set_target_properties(${moduleName}
 
 SET(moduleLib "${executablesTestLibPrefx}${moduleName}")
 add_library(${moduleLib} ${PROJECT_SOURCE_FILES})
+target_link_libraries(${moduleLib} ${libName}) #link target to our library
 set_target_properties( ${moduleLib}
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${binDir}/${executablesDir}/${moduleName}/${testsDir}"
@@ -39,3 +40,5 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${testsDir}")
 endif()
 
 # libs
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DBTableScripts.sql DESTINATION ${binDir}/${executablesDir}/${moduleName})

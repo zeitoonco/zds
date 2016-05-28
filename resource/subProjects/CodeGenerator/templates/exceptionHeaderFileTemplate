@@ -18,4 +18,5 @@ $namespaceend
 //Macro here -----------------------------------------------------------------
 
 $macro
+
 #endif //$headerid

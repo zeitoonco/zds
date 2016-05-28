@@ -41,7 +41,7 @@ def generateExceptionHeaderFromList(fileAddrs, namespace, excList, templates):
 
 
 def parseList(eList, templates):
-	print("--Parsing...")
+	print('--Parsing...')
 	with open(eList, 'r') as content_file:
 		j = json.load(content_file)
 
@@ -50,7 +50,7 @@ def parseList(eList, templates):
 	if 'namespace' in j:
 		namespace = j['namespace']
 	if len(namespace) > 0:
-		print("\t--namespace:", namespace)
+		print("\t--namespace: "+ namespace)
 
 	# check for exceptions
 	if 'exceptions' in j and len(j['exceptions']) > 0:

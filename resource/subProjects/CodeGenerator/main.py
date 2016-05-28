@@ -6,7 +6,7 @@ from formatter import parseList
 def scanDirForLists(directory):
 	dirList = os.listdir(directory)
 	if '_list.json' in dirList:
-		print("-list found in :", directory)
+		print("-list found in : "+ directory)
 		parseList(os.path.join(directory, '_list.json'), templates)
 	for f in dirList:
 		npath = os.path.join(directory, f)
@@ -26,13 +26,13 @@ def loadTemplates():
 			ts[t] = open(ta).read()
 	return ts
 
-
+print('\nCode Generator -> start')
 if len(sys.argv) != 2:
 	print('Invalid number of arguments. Root path of ZDS project expected.')
 	exit()
 rootPath = os.path.abspath(sys.argv[1])
 localPath = os.path.abspath(os.path.dirname(sys.argv[0]))
-print('Root:', rootPath)
+print('Root: '+ rootPath)
 rootPathList = os.listdir(rootPath)
 localPathList = os.listdir(localPath)
 if not ('executables' in rootPathList):

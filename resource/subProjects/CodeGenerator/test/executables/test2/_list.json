@@ -1,8 +1,17 @@
 {
   "namespace": "zeitoon::utility",
   "exceptions": [
-    {"name":"exc1","title":"exc1 is the best"},
-    {"name":"invalidmamad","title":"mamad is invalid"},
-    {"name":"meepo","title":"segmentation fault"}
+    {
+      "name": "exc1",
+      "title": "exc1 is the best"
+    },
+    {
+      "name": "invalidmamad",
+      "title": "mamad is invalid"
+    },
+    {
+      "name": "meepo",
+      "title": "segmentation fault"
+    }
   ]
 }

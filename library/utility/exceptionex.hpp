@@ -304,13 +304,10 @@ public:
 //Macro here -----------------------------------------------------------------
 
 //unknownException
-#define EXunknownException(msg) zeitoon::utility::unknownException(msg,this->getNameAndType(),__FILE__,__func__,__LINE__)
-#define EXTunknownException(msg) throw EXunknownException(msg)
-#define EXunknownExceptionO(msg, owner) zeitoon::utility::unknownException(msg,owner,__FILE__,__func__,__LINE__)
-#define EXTunknownExceptionO(msg, owner) throw EXunknownExceptionO(msg,owner)
-#define EXunknownExceptionI(msg, inner) zeitoon::utility::unknownException(msg,this->getNameAndType(),__FILE__,__func__,__LINE__,inner)
-#define EXTunknownExceptionI(msg, inner) throw EXunknownExceptionI(msg,inner)
-#define EXunknownExceptionIO(msg, owner, inner) zeitoon::utility::unknownException(msg,owner,__FILE__,__func__,__LINE__,inner)
-#define EXTunknownExceptionIO(msg, owner, inner) throw EXunknownExceptionIO(msg,owner,inner)
+#define EXTunknownException(msg) throw zeitoon::utility::unknownException(msg,this->getNameAndType(),__FILE__,__func__,__LINE__)
+#define EXTunknownExceptionO(msg, owner) throw zeitoon::utility::unknownException(msg,owner,__FILE__,__func__,__LINE__)
+#define EXTunknownExceptionI(msg) throw zeitoon::utility::unknownException(msg,this->getNameAndType(),__FILE__,__func__,__LINE__,std::current_exception())
+#define EXTunknownExceptionIO(msg, owner) throw zeitoon::utility::unknownException(msg,owner,__FILE__,__func__,__LINE__,std::current_exception())
+
 
 #endif // EXCEPTIONEX_HPP

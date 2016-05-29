@@ -1,6 +1,7 @@
 import json
 import os
 import datetime
+import time
 
 
 def fillTemplate(temp, param):
@@ -42,6 +43,7 @@ def generateExceptionHeaderFromList(fileAddrs, namespace, excList, templates):
 
 def parseList(eList, templates):
 	print('--Parsing...')
+	listTime=os.path.getmtime(eList)
 	with open(eList, 'r') as content_file:
 		j = json.load(content_file)
 
@@ -54,6 +56,10 @@ def parseList(eList, templates):
 
 	# check for exceptions
 	if 'exceptions' in j and len(j['exceptions']) > 0:
-		print("\t--Generating exceptions.")
-		generateExceptionHeaderFromList(
-			os.path.join(os.path.dirname(eList), 'exceptions.hpp'), namespace, j['exceptions'], templates)
+		if 'exceptions.hpp' in os.listdir(os.path.dirname(eList)) and \
+						listTime<os.path.getmtime(os.path.join(os.path.dirname(eList),'exceptions.hpp')):
+			print("\t--exceptions already up-to-date")
+		else:
+			print("\t++Generating exceptions.")
+			generateExceptionHeaderFromList(
+				os.path.join(os.path.dirname(eList), 'exceptions.hpp'), namespace, j['exceptions'], templates)

@@ -5,7 +5,7 @@
  *      Author: inf
  */
 #include <executables/UserManagement/UMSession.hpp>
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include <executables/UserManagement/UMCore.hpp>
 
 using namespace zeitoon::utility;
@@ -29,8 +29,8 @@ UMSession::UMSession(int userIDIN, int sessionIDIN, UMCore *instance) :
 		username = coreInstance->singleFieldQuerySync(
 				"select username from users where id=" + std::to_string(userIDIN));
 		//ReImplemented above! username = PQgetvalue(queryGlobal("select username from users where id=" + std::to_string(userIDIN)), 0, 0);
-	} catch (exceptionEx *errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(), "Failed to load username. " + std::string(errorInfo->what()));
+	} catch (exceptionEx &errorInfo) {
+		coreInstance->systemLog.log(getNameAndType(), "Failed to load username. " + std::string(errorInfo.what()));
 		EXTDBErrorIO("Unable to fetch username from Database", getNameAndType(), errorInfo);
 	}
 	userID = userIDIN;
@@ -38,9 +38,9 @@ UMSession::UMSession(int userIDIN, int sessionIDIN, UMCore *instance) :
 	try {
 		updatePermissionsCache();
 		updateUsergroups();
-	} catch (exceptionEx *errorInfo) {
+	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorIO("Cache Update Failed", this->getNameAndType(), errorInfo);
-		coreInstance->systemLog.log(getNameAndType(), errorInfo->what(), LogLevels::warning);
+		coreInstance->systemLog.log(getNameAndType(), errorInfo.what(), LogLevels::warning);
 	}
 }
 
@@ -49,9 +49,9 @@ void UMSession::updatePermissionsCache() {
 	try {
 		result = coreInstance->querySync(
 				"select permissionid, state from userpermission where userid=" + std::to_string(userID));
-	} catch (exceptionEx *errorInfo) {
+	} catch (exceptionEx &errorInfo) {
 		coreInstance->systemLog.log(getNameAndType(),
-		                            "Failed to updatePermissionCache() " + std::string(errorInfo->what()),
+		                            "Failed to updatePermissionCache() " + std::string(errorInfo.what()),
 		                            LogLevels::warning);
 		EXTDBErrorIO("Failed to updatePermissionCache", getNameAndType(), errorInfo);
 	}
@@ -68,10 +68,10 @@ void UMSession::updatePermissionsCache(int permissionID) {
 		result = coreInstance->querySync(
 				"select  state from userpermission where permissionid=" + std::to_string(permissionID) +
 				" and userid=" + std::to_string(userID));
-	} catch (exceptionEx *errorInfo) {
+	} catch (exceptionEx &errorInfo) {
 		coreInstance->systemLog.log(getNameAndType(),
 		                            "Failed to updatePermissionCache(" + std::to_string(permissionID) + "). " +
-		                            std::string(errorInfo->what()));
+		                            std::string(errorInfo.what()));
 		EXTDBErrorIO("Failed to updatePermissionCache(int PermissionID)", getNameAndType(), errorInfo);
 	}
 
@@ -96,7 +96,7 @@ void UMSession::updateUsergroups() {
 	zeitoon::datatypes::DTTableString result("");
 	try {
 		result = coreInstance->querySync("select groupid from usergroup where userid=" + std::to_string(userID));
-	} catch (exceptionEx *errorInfo) {
+	} catch (exceptionEx &errorInfo) {
 		coreInstance->systemLog.log(getNameAndType(), "Failed to update usergroup IDs ", LogLevels::warning);
 		EXTDBErrorIO("Failed to update usergroup IDs", getNameAndType(), errorInfo);
 	}

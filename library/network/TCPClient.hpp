@@ -162,8 +162,8 @@ private:
 	void _safeCaller(std::string data) {
 		try {
 			this->_onMessage(data);
-		} catch (exceptionEx *ex) {
-			cerr << "TCPS.Error.OnReceive: " << ex->what() << endl;
+		} catch (exceptionEx &ex) {
+			cerr << "TCPS.Error.OnReceive: " << ex.what() << endl;
 		} catch (exception &ex) {
 			cerr << "TCPS.sysError.OnReceive: " << ex.what() << endl;
 		} catch (...) {

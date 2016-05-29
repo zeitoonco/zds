@@ -5,11 +5,12 @@
 #ifndef NETTEST_TCPSERVER_HPP
 #define NETTEST_TCPSERVER_HPP
 
+#include <iostream>
 #include <string>
 #include <thread>
 #include <uv.h>
 #include <map>
-#include <utility/exceptionex.hpp>
+#include <utility/exceptions.hpp>
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -17,6 +18,7 @@
 namespace zeitoon {
 namespace utility {
 
+using namespace std;
 
 class TCPServer {
 public:
@@ -216,8 +218,8 @@ private:
 	void _safeCaller(size_t id, std::string data) {
 		try {
 			this->_onMessage(id, data);
-		} catch (exceptionEx *ex) {
-			cerr << "TCPS.Error.OnReceive: " << ex->what() << endl;
+		} catch (exceptionEx &ex) {
+			cerr << "TCPS.Error.OnReceive: " << ex.what() << endl;
 		} catch (exception &ex) {
 			cerr << "TCPS.sysError.OnReceive: " << ex.what() << endl;
 		} catch (...) {

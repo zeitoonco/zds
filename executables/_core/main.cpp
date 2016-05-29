@@ -67,8 +67,8 @@ int main() {
 			} else {
 				cerr<<"\n>> INVALID COMMAND \n";
 			}
-		} catch (exceptionEx *ex) {
-			cerr << "\nERRR:" << ex->what() << endl;
+		} catch (exceptionEx &ex) {
+			cerr << "\nERRR:" << ex.what() << endl;
 		}
 
 	}

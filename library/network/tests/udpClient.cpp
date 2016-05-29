@@ -1,5 +1,5 @@
 #include "network/UDPClient.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include <iostream>
 
 using zeitoon::utility::exceptionEx;
@@ -19,7 +19,7 @@ int main() {
 
 		//x.send("127.0.0.1",15001,"Hellow");
 		//x.listen("127.0.0.1",15001);
-	} catch (exceptionEx *err) {
+	} catch (exceptionEx &err) {
 		std::cerr << err->what();
 	}
 }

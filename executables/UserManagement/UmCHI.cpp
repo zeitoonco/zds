@@ -153,9 +153,9 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			DSUsergroupPermissionList permsList = userMngrInterface.listUsergroupPermissions(usergroupID.value.value());
 			sm.communication.runCallback(node, permsList.toString(true), id);
 		}
-	} catch (exceptionEx *errorInfo) {
-		sm.communication.errorReport(node, id, errorInfo->what());
-		userMngrInterface.systemLog.log("node: " + node + " id:" + id + " errMsg:" + errorInfo->what());
+	} catch (exceptionEx &errorInfo) {
+		sm.communication.errorReport(node, id, errorInfo.what());
+		userMngrInterface.systemLog.log("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 	} catch (exception &errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo.what());
 		userMngrInterface.systemLog.log("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
@@ -180,7 +180,7 @@ void UmCHI::onInstall(string id) {//todo: check serviceID
 	int res;
 	try {
 		res = userMngrInterface.executeSync(str);
-	} catch (exceptionEx *errorInfo) {
+	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to create default tables for UM", errorInfo);
 	}
 	if (res == -1)

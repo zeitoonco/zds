@@ -68,6 +68,10 @@
     {
       "name": "networkNoRetryTimeSet",
       "title": "Reconnect interval has not been set"
+    },
+    {
+      "name": "filesystemFailure",
+      "title": "Filesystem Error"
     }
   ]
 }

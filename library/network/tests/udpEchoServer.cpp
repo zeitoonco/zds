@@ -40,7 +40,7 @@ int main() {
 
 		x.joinListenThread();
 
-	} catch (exceptionEx *err) {
+	} catch (exceptionEx &err) {
 		std::cerr << err->what();
 	}
 }

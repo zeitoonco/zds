@@ -9,7 +9,7 @@
 #define MEDIATOR_COMMUNICATIONMEDIATOR_HPP_
 
 #include <map>
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include "datatypes/dtmultifieldtypes.hpp"
 #include "SettingMediator.hpp"
 #include <mutex>

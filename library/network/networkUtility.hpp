@@ -7,7 +7,7 @@
 
 #include <uv.h>
 #include <string>
-#include <utility/exceptionex.hpp>
+#include <utility/exceptions.hpp>
 
 #define uvEXT(r, msg) if (r) EXTnetworkFailure(std::string(msg) + ".\n\t" + uv_err_name(r) + "[" +std::to_string(r) + "]: " + uv_strerror(r));
 #define uvEXTO(r, msg, owner) if (r) EXTnetworkFailureO(std::string(msg) + ".\n\t" + uv_err_name(r) + "[" +std::to_string(r) + "]: " + uv_strerror(r), owner);

@@ -7,7 +7,7 @@
  */
 #include <executables/UserManagement/usergroupInfo.hpp>
 #include <executables/UserManagement/UMCore.hpp>
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 
 using namespace zeitoon::utility;
 
@@ -31,9 +31,9 @@ usergroupInfo::usergroupInfo(int groupIDn, UMCore* instance) :
 	//PGresult * result = nullptr;
 	try {
 		result = coreInstance->querySync("select permissionid, state from grouppermission where groupid=" + std::to_string(groupIDn));
-	} catch (exceptionEx * errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(), "Unable to fetch usergroupInfo from database. " + std::string(errorInfo->what()), LogLevels::warning);
-		EXTDBErrorIO("Unable to fetch usergroupInfo from database " + std::to_string(groupID), getNameAndType(), errorInfo);
+	} catch (exceptionEx & errorInfo) {
+		coreInstance->systemLog.log(getNameAndType(), "Unable to fetch usergroupInfo from database. " + std::string(errorInfo.what()), LogLevels::warning);
+		EXTDBErrorI("Unable to fetch usergroupInfo from database " + std::to_string(groupID), errorInfo);
 	}
 
 	for (size_t i = 0; i < result.rowCount(); i++) {

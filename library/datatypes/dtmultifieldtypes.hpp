@@ -465,7 +465,7 @@ private:
 				T *temp = new T("");
 				try {
 					temp->fromString(parsed);
-				} catch (exceptionEx *ex) {
+				} catch (exceptionEx &ex) {
 					EXTcantParseStringI(
 							"Failed to parse string:\"" + parsed + "\" as '"
 							+ temp->getNameAndType() + "'", ex);
@@ -615,28 +615,26 @@ public:
 	 */
 	void fromString(string data, bool createIfNotExist) {
 		string backup = toString();
-		exceptionEx *ex = NULL;
 		size_t ver;
 
 		try {
 			ver = parseJSONString(data, createIfNotExist);
+		} catch (exceptionEx &excp) {
+			fromString(backup);
+			EXTcantParseStringI("Failed", excp);
 		} catch (exception &excp) {
-			ex = EXcantParseStringI("Failed.",
-			                        EXunknownExceptionI("", excp));
-		} catch (exceptionEx *excp) {
-			ex = EXcantParseStringI("Failed.", excp);
+			fromString(backup);
+			EXTcantParseString(std::string("Failed:") + excp.what());
 		} catch (...) {
-			ex = EXcantParseString("Unknown error occurred.");
+			fromString(backup);
+			EXTcantParseString("Unknown error occurred.");
 		}
-		if (ver != string::npos && ver < getMinSupportedVersion())
-			ex = EXobsolete(
+		if (ver != string::npos && ver < getMinSupportedVersion()) {
+			fromString(backup);
+			EXTobsolete(
 					"This version (" + Strings::itoa(ver) + ") of '" + this->getNameAndType()
 					+ ") struct, is not supported anymore. Minimum supported version : "
 					+ Strings::itoa(this->getMinSupportedVersion()));
-
-		if (ex != NULL) {
-			fromString(backup);
-			throw ex;
 		}
 	}
 
@@ -712,34 +710,20 @@ public:
 				for (iterator j = this->list.begin(); j != this->list.end();
 				     j++)
 					if (!Strings::compare((*i)->getName(), (*j)->getName())) {
-						exceptionEx *ex = NULL;
 						try {
 							(*j) = (*i);
-						} catch (exception &excp) {
-							ex = EXdataTypeMismatchI(
-									"Assignment between '"
-									+ (*i)->getNameAndType() + "' and '"
-									+ (*i)->getNameAndType()
-									+ "' failed",
-									EXunknownExceptionI("", excp));
-						} catch (exceptionEx *excp) {
-							ex = EXdataTypeMismatchI(
-									"Assignment between '"
-									+ (*i)->getNameAndType() + "' and '"
-									+ (*i)->getNameAndType()
-									+ "' failed", excp);
-						} catch (...) {
-							ex =
-									EXdataTypeMismatch(
-											"Assignment between '"
-											+ (*i)->getNameAndType()
-											+ "' and '"
-											+ (*i)->getNameAndType()
-											+ "' failed. Unknown error occurred.");
-						}
-						if (ex) {
+						} catch (exceptionEx &excp) {
 							fromString(backup);
-							throw ex;
+							EXTdataTypeMismatchI("Assignment between '" + (*i)->getNameAndType() + "' and '" +
+							                     (*i)->getNameAndType() + "' failed", excp);
+						} catch (exception &excp) {
+							fromString(backup);
+							EXTdataTypeMismatch("Assignment between '" + (*i)->getNameAndType() + "' and '" +
+							                    (*i)->getNameAndType() + "' failed: " + excp.what());
+						} catch (...) {
+							fromString(backup);
+							EXTdataTypeMismatch("Assignment between '" + (*i)->getNameAndType() + "' and '" +
+							                    (*i)->getNameAndType() + "' failed. Unknown error occurred.");
 						}
 					}
 			return *this;
@@ -880,22 +864,17 @@ private:
 				else if ((*this).contains(name)) {
 					try {
 						(*this)[name]->fromString(value);
+					} catch (exceptionEx &excp) {
+						EXTcantParseStringI(
+								"Parsing string '" + value + "' as '" + (*this)[name]->getNameAndType() + "' failed",
+								excp);
 					} catch (exception &excp) {
-						EXTcantParseStringI(
-								"Parsing string '" + value + "' as '"
-								+ (*this)[name]->getNameAndType()
-								+ "' failed",
-								EXunknownExceptionI("", excp));
-					} catch (exceptionEx *excp) {
-						EXTcantParseStringI(
-								"Parsing string '" + value + "' as '"
-								+ (*this)[name]->getNameAndType()
-								+ "' failed", excp);
+						EXTcantParseString(
+								"Parsing string '" + value + "' as '" + (*this)[name]->getNameAndType() + "' failed: " +
+								excp.what());
 					} catch (...) {
 						EXTcantParseString(
-								"Parsing string '" + value + "' as '"
-								+ (*this)[name]->getNameAndType()
-								+ "' failed");
+								"Parsing string '" + value + "' as '" + (*this)[name]->getNameAndType() + "' failed");
 					}
 				} else if (createIfNotExist) {
 					DTString *temp = new DTString(name, "");

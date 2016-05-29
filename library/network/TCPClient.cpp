@@ -36,7 +36,7 @@ TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLe
 int ReconnectConfig::getNextInterval() {
 	size_t size = this->timingSize();
 	if (size < 1)
-		EXTNetworkNoRetryTimeSet("NO Retry Intervals.");
+		EXTnetworkNoRetryTimeSet("NO Retry Intervals.");
 	if (j < (timing[i + 1])->getValue()) {
 		j++;
 	} else if (j >= (timing[i + 1])->getValue()) {
@@ -46,7 +46,7 @@ int ReconnectConfig::getNextInterval() {
 		} else {
 			if (timing[size - 1]->getValue() != 0) {
 				resetInterval();
-				EXTNetworkMaxRetryReached("RECONNECT FAILED.");
+				EXTnetworkMaxRetryReached("RECONNECT FAILED.");
 			}
 		}
 	}
@@ -102,11 +102,11 @@ void TCPClient::reconnect() {//uv_connect_t *connect = (uv_connect_t *) malloc(s
 		uv_timer_start(Rtimer_req, reconnTimerCB, (_interval * 1000), 0);
 		std::cerr << "Reconnect in " << _interval << " seconds" << std::endl;
 
-	} catch (NetworkMaxRetryReached *err) {
+	} catch (networkMaxRetryReached *err) {
 		std::cerr << "ERROR: " << err->what() << std::endl;
 
 		uv_unref((uv_handle_t *) &mainTimer);//STOPPING THE MAIN KEEP ALIVE TIMER CREATED EARLIER IN CONSTRUCTOR
-	} catch (NetworkNoRetryTimeSet *err) {
+	} catch (networkNoRetryTimeSet *err) {
 		std::cerr << "ERROR: " << err->what() << std::endl;
 		this->setReconnectInterval("{\"timing\":[10,0]}");
 
@@ -128,8 +128,8 @@ void TCPClient::runLoop() {
 		int r = uv_run(&this->loop, UV_RUN_DEFAULT);
 		uvEXT(r, "libuv events loop error: ");
 		std::cerr << "\nTCPClient EVENTS LOOP Finished with " << r << std::endl;
-	} catch (exceptionEx *ex) {
-		cerr << "\nERROR ON TCPClient EVENTS LOOP: " << ex->what() << std::endl;
+	} catch (exceptionEx &ex) {
+		cerr << "\nERROR ON TCPClient EVENTS LOOP: " << ex.what() << std::endl;
 		uv_connect_t *connect = (uv_connect_t *) malloc(sizeof(uv_connect_t));
 		uv_tcp_connect(connect, &client, addr, on_connect);
 	}

@@ -40,8 +40,8 @@ void PGmediator::onCommand(string node, string data, string id, string from) {
 			DSString result(conMgr.singleFieldQuery(from, sql.query.getValue()), false);
 			this->sm.communication.runCallback(node, result.toString(), id);
 		}
-	} catch (exceptionEx *errorInfo) {
-		sm.communication.errorReport(node, id, errorInfo->what());
+	} catch (exceptionEx &errorInfo) {
+		sm.communication.errorReport(node, id, errorInfo.what());
 	} catch (exception &errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo.what());
 	}

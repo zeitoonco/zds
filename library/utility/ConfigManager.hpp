@@ -7,7 +7,7 @@
 
 #include "datatypes/dtmultifieldtypes.hpp"
 #include "utility/FileSystem.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include <iostream>
 
 #define baseDir "/etc/zds/"
@@ -32,7 +32,7 @@ public:
 	void removeConfigFile() {
 		fs.fileRemove(fileName);
 		if (fs.fileExist(fileName))
-			EXTexceptionEx("Config file remove failed");
+			EXTfilesystemFailure("Config file remove failed");
 	}
 
 	ConfigManager(std::string moduleName, std::string ifileName) :

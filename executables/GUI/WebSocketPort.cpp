@@ -4,12 +4,14 @@
  *  Created on: Jan 6, 2016
  *      Author: inf
  */
-#include"WebSocketPort.hpp"
-#include "utility/exceptionex.hpp"
-#include<thread>
+#include "WebSocketPort.hpp"
+#include <utility/exceptions.hpp>
+#include <thread>
+#include <iostream>
 
 using websocketpp::server;
 using namespace zeitoon::utility;
+using namespace std;
 
 typedef std::map<websocketpp::connection_hdl, int, std::owner_less<websocketpp::connection_hdl>>::iterator ConnetionListIterator;
 
@@ -42,8 +44,8 @@ void WebSocketPort::listenThreads(int iport) {
 		GUI_WebSocketServer.listen(this->port);
 		GUI_WebSocketServer.start_accept();
 		GUI_WebSocketServer.run();
-	} catch (exceptionEx *ex) {
-		cerr << "WS.Error.OnReceive: " << ex->what() << endl;
+	} catch (exceptionEx &ex) {
+		cerr << "WS.Error.OnReceive: " << ex.what() << endl;
 	} catch (exception &ex) {
 		cerr << "WS.sysError.OnReceive: " << ex.what() << endl;
 	} catch (...) {
@@ -133,8 +135,8 @@ void WebSocketPort::receivedThreads(websocketpp::connection_hdl client, std::str
 				this->threadsList.erase(this->threadsList.begin() + i);
 			}
 		}
-	} catch (exceptionEx *ex) {
-		cerr << "WSR.Error.OnReceive: " << ex->what() << endl;
+	} catch (exceptionEx &ex) {
+		cerr << "WSR.Error.OnReceive: " << ex.what() << endl;
 	} catch (exception &ex) {
 		cerr << "WSR.sysError.OnReceive: " << ex.what() << endl;
 	} catch (...) {

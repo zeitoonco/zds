@@ -6,7 +6,7 @@
  */
 
 #include"DTTablePostgres.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include "datatypes/dtmultifieldtypes.hpp"
 #include"datatypes/dtsingletypes.hpp"
 #include "pgutility.hpp"
@@ -75,12 +75,12 @@ ColumnDataType::columnDataType DTTablePostgres::columnDataType(int columnNumber)
 	Oid columnOid;
 	try {
 		columnOid = columnODataType(columnNumber);
-	} catch (zeitoon::utility::exceptionEx *err) {
+	} catch (zeitoon::utility::exceptionEx &err) {
 		EXTinvalidParameterI("Unable to fetch OID", err);
 	}
 	std::map<Oid, int>::iterator iter = mapPgCustomType.find(columnOid);
 	if (iter == mapPgCustomType.end()) {
-		EXTexceptionEx("Data type not found");
+		EXTdataTypeMismatch("Data type not found");
 	}
 	return (ColumnDataType::columnDataType) iter->second;
 }
@@ -114,7 +114,7 @@ std::string DTTablePostgres::fieldValue(int tuppleNumber, std::string columnName
 				return this->fieldValue(tuppleNumber, i);
 			}
 		}
-	} catch (zeitoon::utility::exceptionEx *err) {
+	} catch (zeitoon::utility::exceptionEx &err) {
 		EXTinvalidNameI("Get field value by columnName failed", err);
 	}
 }

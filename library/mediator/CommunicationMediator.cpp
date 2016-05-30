@@ -42,9 +42,7 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 		EXTunknownExceptionI("unable to remove from id-list", ex);
 	}
 	if (x.isException) {
-		JStruct errStruct(dt);
-		//std::string err = "FROM COMMUNICATION MEDIATOR" + errStruct[description].getValue();
-		//EXTexceptionEx();
+		EXTexceptionEx("FROM COMMUNICATION MEDIATOR" + dt);
 	}
 	return dt;
 }
@@ -149,6 +147,28 @@ bool CommunicationMediator::dataReceive(string data) {
 	x->set = true;
 	return true;
 }
+
+bool CommunicationMediator::errorReceive(string data) {
+	JStruct js(data);
+	string id, dt;
+	try {
+		id = js["id"].getValue();
+		dt = js["data"]["description"].getValue();
+		std::cerr << dt;
+	} catch (exceptionEx *ex) {
+		return false;
+	}
+	if (idList.find(id) == idList.end())
+		return false;
+	lock_guard<mutex> lg(MtxIdList);
+	idData *x = idList[id];
+	x->data = dt;
+	x->set = true;
+	x->isException = true;
+	return true;
+
+}
+
 
 } /* namespace utility */
 } /* namespace zeitoon */

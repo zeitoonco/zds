@@ -12,98 +12,115 @@ namespace zeitoon {
     namespace chat {
 
 
-        void ChatCHI::onCommand(string node, string data, string id, string from) {
-            if (!Strings::compare(node, CommandInfo::newMessage(), false)) {
-                DSNewMessage input(data);
-                DSInteger result;
-                result.value = chatCore.newMessage(input.userID.getValue(), input.sessionID.getValue(),
-                                                   input.msg.getValue(),
-                                                   (EnumMsgType::msgType) input.type.getValue());
-                sm.communication.runCallback(node, result.toString(true), id);
-            }
+    void ChatCHI::onCommand(string node, string data, string id, string from) {
+        try {
+        if (!Strings::compare(node, CommandInfo::newMessage(), false)) {
+            DSNewMessage input(data);
+            DSInteger result;
+            result.value = chatCore.newMessage(input.userID.getValue(), input.sessionID.getValue(),
+                                               input.msg.getValue(),
+                                               (EnumMsgType::msgType) input.type.getValue());
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
 
-            else if (!Strings::compare(node, CommandInfo::removeMessage(), false)) {
-                DSInteger temp;
-                temp.fromString(data);
-                chatCore.removeMessage(temp.value.getValue());
-            }
+        else if (!Strings::compare(node, CommandInfo::removeMessage(), false)) {
+            DSInteger temp;
+            temp.fromString(data);
+            chatCore.removeMessage(temp.value.getValue());
+        }
 
-            else if (!Strings::compare(node, CommandInfo::checkNewMessages(), false)) {
-                DSInteger temp;
-                temp.fromString(data);
-                DSCheckMessages result;
-                result = chatCore.checkNewMessages(temp.value.getValue());
-                sm.communication.runCallback(node, result.toString(true), id);
-            }
+        else if (!Strings::compare(node, CommandInfo::checkNewMessages(), false)) {
+            DSInteger temp;
+            temp.fromString(data);
+            DSCheckMessages result;
+            result = chatCore.checkNewMessages(temp.value.getValue());
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
 
 
-            else if (!Strings::compare(node, CommandInfo::getMessages(), false)) {
-                DSGetMessages temp(data);
+        else if (!Strings::compare(node, CommandInfo::getMessages(), false)) {
+            DSGetMessages temp(data);
 
-                DSMessageList result = chatCore.getMessages(temp.userID.getValue(), temp.sessionID.getValue(),
-                                     (EnumGetMsgType::getMsgType) temp.type.getValue(), temp.from.getValue(),
-                                     temp.to.getValue());
-                sm.communication.runCallback(node, result.toString(true), id);
-            }
-            else if (!Strings::compare(node, CommandInfo::messagesSeen(), false)) {
-                DSSeen temp(data);
-                chatCore.messagesSeen(temp.userID.getValue(), temp.sessionID.getValue(), temp.seenID.getValue());
-            }
-            else if (!Strings::compare(node, CommandInfo::messagesNotified(), false)) {
-                DSSeen temp(data);
-                chatCore.messagesNotified(temp.userID.getValue(), temp.sessionID.getValue(), temp.seenID.getValue());
-            }
-            else if (!Strings::compare(node, CommandInfo::getUserData(), false)) {
-                DSInteger temp;
-                temp.fromString(data);
+            DSMessageList result = chatCore.getMessages(temp.userID.getValue(), temp.sessionID.getValue(),
+                                                        (EnumGetMsgType::getMsgType) temp.type.getValue(),
+                                                        temp.from.getValue(),
+                                                        temp.to.getValue());
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
+        else if (!Strings::compare(node, CommandInfo::messagesSeen(), false)) {
+            DSSeen temp(data);
+            chatCore.messagesSeen(temp.userID.getValue(), temp.sessionID.getValue(), temp.seenID.getValue());
+        }
+        else if (!Strings::compare(node, CommandInfo::messagesNotified(), false)) {
+            DSSeen temp(data);
+            chatCore.messagesNotified(temp.userID.getValue(), temp.sessionID.getValue(), temp.seenID.getValue());
+        }
+        else if (!Strings::compare(node, CommandInfo::getUserData(), false)) {
+            DSInteger temp;
+            temp.fromString(data);
 
-                DSChatUserData result = chatCore.getUserData(temp.value.getValue());
-                sm.communication.runCallback(node, result.toString(true), id);
-            }
-            else if (!Strings::compare(node, CommandInfo::changeUserState(), false)) {
-                DSChangeUserState temp(data);
-                chatCore.changeUserState(temp.userID.getValue(), (EnumStatus::status) temp.status.getValue(),
-                                         (EnumCustomStatusIcon::customStatusIcon) temp.customStatusIcon.getValue(),
-                                         temp.customStatus.getValue());
-
-            }
-            else if (!Strings::compare(node, CommandInfo::changeReachState(), false)) {
-                DSChangeUserReachState temp(data);
-                chatCore.changeReachState(temp.userID.getValue(), (EnumStatus::status) temp.status.getValue());
-            }
-            else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
-                DSInteger result;
-                result.value = chatCore.newSession();
-                sm.communication.runCallback(node, result.toString(true), id);
-            }
-            else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
-                DSAddUserSession temp(data);
-                chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
-            }
-            else if (!Strings::compare(node, CommandInfo::removeUserFromSession(), false)) {
-                DSAddUserSession temp(data);
-                chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
-            }
-            else if (!Strings::compare(node, CommandInfo::changeLeader(), false)) {
-                DSAddUserSession temp(data);
-                chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
-            }
-            else if (!Strings::compare(node, CommandInfo::listSessions(), false)) {
-                DSInteger temp;
-                temp.fromString(data);
-                DSSessionList result = chatCore.listSessions(
-                        temp.value.getValue());//see @ajl: if we "DSSessionList result; result=..." raises segmentation fault. WHY????
-                sm.communication.runCallback(node, result.toString(true), id);
-            }
-            else if (!Strings::compare(node, CommandInfo::getSession(), false)) {
-                DSInteger temp;
-                temp.fromString(data);
-                DSSession result;
-                result = chatCore.getSession(temp.value.getValue());
-                sm.communication.runCallback(node, result.toString(true), id);
-            }
+            DSChatUserData result = chatCore.getUserData(temp.value.getValue());
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
+        else if (!Strings::compare(node, CommandInfo::changeUserState(), false)) {
+            DSChangeUserState temp(data);
+            chatCore.changeUserState(temp.userID.getValue(), (EnumStatus::status) temp.status.getValue(),
+                                     (EnumCustomStatusIcon::customStatusIcon) temp.customStatusIcon.getValue(),
+                                     temp.customStatus.getValue());
 
         }
+        else if (!Strings::compare(node, CommandInfo::changeReachState(), false)) {
+            DSChangeUserReachState temp(data);
+            chatCore.changeReachState(temp.userID.getValue(), (EnumStatus::status) temp.status.getValue());
+        }
+        else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
+            DSInteger result;
+            result.value = chatCore.newSession();
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
+        else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
+            DSAddUserSession temp(data);
+            chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
+        }
+        else if (!Strings::compare(node, CommandInfo::removeUserFromSession(), false)) {
+            DSAddUserSession temp(data);
+            chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
+        }
+        else if (!Strings::compare(node, CommandInfo::changeLeader(), false)) {
+            DSAddUserSession temp(data);
+            chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
+        }
+        else if (!Strings::compare(node, CommandInfo::listSessions(), false)) {
+            DSInteger temp;
+            temp.fromString(data);
+            DSSessionList result = chatCore.listSessions(
+                    temp.value.getValue());//see @ajl: if we "DSSessionList result; result=..." raises segmentation fault. WHY????
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
+        else if (!Strings::compare(node, CommandInfo::getSession(), false)) {
+            DSInteger temp;
+            temp.fromString(data);
+            DSSession result;
+            result = chatCore.getSession(temp.value.getValue());
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
+        else if (!Strings::compare(node, CommandInfo::SessionUserList(), false)) {
+            DSInteger temp;
+            temp.fromString(data);
+            zeitoon::usermanagement::DSUserList result = chatCore.SessionUserList(temp.value.getValue());
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
+        else if (!Strings::compare(node, CommandInfo::removeSession(), false)) {
+            DSInteger temp;
+            temp.fromString(data);
+            DSSession result;
+            //   result = chatCore.removeSession(temp.value.getValue());
+            sm.communication.runCallback(node, result.toString(true), id);
+        }
+    }catch(zeitoon::utility::exceptionEx *err){
+            sm.communication.errorReport(node, id, err->what());
+    }
+    }
 
         void ChatCHI::onCallback(string node, string data, string id, string from) {
 
@@ -297,6 +314,12 @@ namespace zeitoon {
                                                        DSInteger::getStructVersion(),
                                                        DSSession::getStructName(),
                                                        DSSession::getStructVersion()),
+                    true);
+            insInfo.commands.add(
+                    new DSInstallInfo::DSCommandDetail(CommandInfo::SessionUserList(), DSInteger::getStructName(),
+                                                       DSInteger::getStructVersion(),
+                                                       zeitoon::usermanagement::DSUserList::getStructName(),
+                                                       zeitoon::usermanagement::DSUserList::getStructVersion()),
                     true);
 
 

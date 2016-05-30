@@ -81,6 +81,8 @@ public:
 
 	bool dataReceive(string data);
 
+	bool errorReceive(string data);
+
 	string getNameAndType() {
 		return "CommunicationMediator";
 	}

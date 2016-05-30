@@ -46,7 +46,7 @@ ConnectionManager::ConnectionManager(std::string adminUserName, std::string admi
 		EXTconnectionError("Admin Connection Failed");
 	}
 	if (adminConnection.isConnected())
-		std::cerr << "CONNECTED" << endl;
+		std::cerr << "CONNECTED TO DATABASE" << endl;
 }
 
 ConnectionManager::~ConnectionManager() {//fixme: lock guards have not been properly used
@@ -61,11 +61,15 @@ ConnectionManager::~ConnectionManager() {//fixme: lock guards have not been prop
 
 int ConnectionManager::execute(std::string extension, std::string sql) {
 	int returnAmount = 0;
-	if (checkIfExtensionRegistered(extension) != true) {
-		registerNewExtension(extension);
-	}
-	if (connectionList.find(extension) == connectionList.end()) {
-		connectionMaker(extension);
+	try {
+		if (checkIfExtensionRegistered(extension) != true) {
+			registerNewExtension(extension);
+		}
+		if (connectionList.find(extension) == connectionList.end()) {
+			connectionMaker(extension);
+		}
+	} catch (zeitoon::utility::exceptionEx &err) {
+		EXTDBErrorIO("DB Connection Error for execute ", this->getNameAndType(), err);
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
@@ -78,12 +82,15 @@ int ConnectionManager::execute(std::string extension, std::string sql) {
 }
 
 DTTablePostgres ConnectionManager::query(std::string extension, std::string sql) {
-
-	if (checkIfExtensionRegistered(extension) != true) {
-		registerNewExtension(extension);
-	}
-	if (connectionList.find(extension) == connectionList.end()) {
-		connectionMaker(extension);
+	try {
+		if (checkIfExtensionRegistered(extension) != true) {
+			registerNewExtension(extension);
+		}
+		if (connectionList.find(extension) == connectionList.end()) {
+			connectionMaker(extension);
+		}
+	} catch (zeitoon::utility::exceptionEx &err) {
+		EXTDBErrorIO("DB Connection Error for query ", this->getNameAndType(), err);
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
@@ -96,11 +103,15 @@ DTTablePostgres ConnectionManager::query(std::string extension, std::string sql)
 
 std::string ConnectionManager::singleFieldQuery(std::string extension, std::string sql) {
 	std::string val = "";
-	if (checkIfExtensionRegistered(extension) != true) {
-		registerNewExtension(extension);
-	}
-	if (connectionList.find(extension) == connectionList.end()) {
-		connectionMaker(extension);
+	try {
+		if (checkIfExtensionRegistered(extension) != true) {
+			registerNewExtension(extension);
+		}
+		if (connectionList.find(extension) == connectionList.end()) {
+			connectionMaker(extension);
+		}
+	} catch (zeitoon::utility::exceptionEx &err) {
+		EXTDBErrorIO("DB Connection Error for singleFieldQuery ", this->getNameAndType(), err);
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
@@ -138,16 +149,15 @@ void ConnectionManager::registerNewExtension(std::string extensionName) {
 
 void ConnectionManager::connectionMaker(std::string extensionName) {
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
-	try {
-		this->connectionList.insert(std::pair<string, Connection>(extensionName,
-		                                                          Connection(extensionName, extensionName, host,
-		                                                                     port, dbname)));
-	} catch (zeitoon::utility::exceptionEx &err) {
-		EXTDBErrorI("Create Connection for \'" + extensionName + "\' FAILED. ", err);
-	}
+	auto insertResult = this->connectionList.insert(std::pair<string, Connection>(extensionName,
+	                                                                              Connection(extensionName,
+	                                                                                         extensionName, host,
+	                                                                                         port, dbname)));
+	if (!insertResult.second)//false if not successfully inserted into the map
+		EXTDBError("Create Connection for \'" + extensionName + "\' FAILED");
+
 	pgMediator->sm.communication.runEvent("database.userLogin", "{\"value\":\"" + extensionName + "\"}");
 	//##Event Fired
-
 }
 
 bool ConnectionManager::checkIfExtensionRegistered(std::string extension) {

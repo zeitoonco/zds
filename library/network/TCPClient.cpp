@@ -124,7 +124,8 @@ void TCPClient::joinOnConnectionThread() {
 
 void TCPClient::runLoop() {
 	try {
-		std::cerr << "\nTCPClien EVENTS LOOP Start";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
+		std::cerr <<
+		"\nTCPClien EVENTS LOOP Start\n";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
 		int r = uv_run(&this->loop, UV_RUN_DEFAULT);
 		uvEXT(r, "libuv events loop error: ");
 		std::cerr << "\nTCPClient EVENTS LOOP Finished with " << r << std::endl;
@@ -191,14 +192,11 @@ void TCPClient::on_connect(uv_connect_t *req, int status) {
 		}
 	} else {
 		c->_connected = true;
-		cerr << c->client.flags << std::endl;
 		if (c->_onConnect != NULL)
 			c->_onConnect();
 		fprintf(stderr, "Connected.\n");
 		uv_read_start((uv_stream_t *) &c->client, TCPClient::alloc_buffer, TCPClient::on_client_read);
 	}
-	std::cerr << "EXIT On Connect reached" << std::endl;
-
 }
 
 

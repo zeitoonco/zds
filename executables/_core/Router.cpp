@@ -37,8 +37,8 @@ Router::Router(int port) :
 	db.connect(FileSystemUtility::getAppPath() + "data.db3");
 	try {
 		net.listen();
-	} catch (exceptionEx *err) {
-		std::cerr << "NETWORK ERROR: " << err->what() << std::endl;
+	} catch (exceptionEx &err) {
+		std::cerr << "NETWORK ERROR: " << err.what() << std::endl;
 	}
 	extManager.load();
 	registerCore();
@@ -202,9 +202,9 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 					comm.fireEvent(node, idata, ext->serviceInfo.name.getValue());
 				else if (type == "callback")
 					comm.callCallback(id, idata, ext->serviceInfo.name.getValue());
-			} catch (exceptionEx *ex) {
-				cerr << "\nERR0R : " << ex->what();//todo:send error?
-				string errp = CommunicationUtility::makeError(node, id, "Error occured: " + ex->what());
+			} catch (exceptionEx &ex) {
+				cerr << "\nERR0R : " << ex.what();//todo:send error?
+				string errp = CommunicationUtility::makeError(node, id, "Error occured: " + ex.toString());
 				this->sendPacket(errp, ext);
 			} catch (exception &ex) {
 				cerr << "\nERR0R unk : " << ex.what();

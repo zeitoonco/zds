@@ -250,8 +250,8 @@ int main() {
 							break;
 
 					}//END_Switch
-				} catch (exceptionEx *err) {
-					std::cerr << "Error: " << err->what() << endl;
+				} catch (exceptionEx &err) {
+					std::cerr << "Error: " << err.what() << endl;
 				}
 
 			} while (op != 0);
@@ -261,7 +261,7 @@ int main() {
 
 
 		dummy->sm.joinNet();
-	} catch (zeitoon::utility::exceptionEx *rr) {
-		std::cerr << "ERR: " << rr->what() << std::endl;
+	} catch (zeitoon::utility::exceptionEx &rr) {
+		std::cerr << "ERR: " << rr.what() << std::endl;
 	}
 }

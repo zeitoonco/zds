@@ -1,0 +1,9 @@
+{
+  "namespace": "zeitoon::_core",
+  "exceptions": [
+    {
+      "name": "exceptionRedirect",
+      "title": "Exception received from service"
+    }
+  ]
+}

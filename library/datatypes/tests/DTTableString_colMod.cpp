@@ -23,7 +23,7 @@ int main() {
 		std::cerr<<"clear rows : "<< testdb.toString()<<std::endl;
 		testdb.clear();
 		std::cerr<<"clear      : "<< testdb.toString()<<std::endl;
-	} catch (exceptionEx *exc) {
+	} catch (exceptionEx &exc) {
 		std::cerr << std::endl << exc->what();
 	}
 }

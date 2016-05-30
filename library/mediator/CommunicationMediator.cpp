@@ -29,7 +29,7 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 		lock_guard<mutex> lg(MtxIdList);
 		idList[id] = &x;
 	} catch (std::exception ex) {
-		EXTunknownExceptionI("unable to add to id-list", ex);
+		EXTunknownExceptionI("unable to add to id-list");
 	}
 	while (!x.set) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
@@ -39,10 +39,10 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 		lock_guard<mutex> lg(MtxIdList);
 		idList.erase(id);
 	} catch (std::exception &ex) {
-		EXTunknownExceptionI("unable to remove from id-list", ex);
+		EXTunknownExceptionI("unable to remove from id-list");
 	}
 	if (x.isException) {
-		EXTexceptionEx("FROM COMMUNICATION MEDIATOR" + dt);
+		EXTrunCommandSyncFailed("Error received from Core: " + dt);
 	}
 	return dt;
 }
@@ -136,7 +136,7 @@ bool CommunicationMediator::dataReceive(string data) {
 	try {
 		id = js["id"].getValue();
 		dt = js["data"].getValue();
-	} catch (exceptionEx *ex) {
+	} catch (exceptionEx &ex) {
 		return false;
 	}
 	if (idList.find(id) == idList.end())

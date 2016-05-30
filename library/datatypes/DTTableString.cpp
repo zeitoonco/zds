@@ -6,7 +6,7 @@
  */
 
 #include "datatypes/DTTableString.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include "utility/jsonParser.hpp"
 #include "datatypes/dtmultifieldtypes.hpp"
 #include "datatypes/dtsingletypes.hpp"
@@ -152,7 +152,7 @@ void DTTableString::columnRemoveAt(size_t index) {
 		if (cols.size() < 1) {
 			this->clear();
 		}
-	} catch (exceptionEx *errorInfo) {
+	} catch (exceptionEx &errorInfo) {
 		EXToutOfRangeI("invalid column index", errorInfo);
 	}
 
@@ -181,7 +181,7 @@ void DTTableString::rowAdd(std::vector<std::string> newTupple) {
 	JArray &tupples = (JArray &) (*jsonData)["rows"];
 	JArray &cols = (JArray &) (*jsonData)["columns"];
 	if (newTupple.size() != cols.fields.size())
-		EXTexceptionEx("Number of new row parameters does not match the number of columns");
+		EXTinvalidParameter("Number of new row parameters does not match the number of columns");
 	tupples.add(JArray(newTupple).getValue());
 }
 

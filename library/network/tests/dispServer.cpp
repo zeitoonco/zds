@@ -18,7 +18,7 @@ int main() {
 while (true){cin.get();cout<<counter<<"#";}
 
 		a.stop();
-	} catch (exceptionEx *e) {
+	} catch (exceptionEx &e) {
 		cerr<<"\nERRx:"<<e->what();
 	} catch (exception &e) {
 		cerr<<"\nERR:"<<e.what();

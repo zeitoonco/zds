@@ -6,7 +6,7 @@
  */
 
 #include "datatypes/DTTable.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 
 using namespace zeitoon::utility;
 

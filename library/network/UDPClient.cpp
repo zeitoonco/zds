@@ -2,8 +2,9 @@
 // Created by inf on 3/10/16.
 //
 
+#include <string.h>
 #include "UDPClient.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 
 using namespace zeitoon::utility;
 namespace zeitoon {
@@ -78,7 +79,7 @@ void UDPClient::disconnect(bool wait = false) {
 
 void UDPClient::alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
 	buf->base = (char *) malloc(suggested_size), suggested_size;
-	std::cerr << "buf:" << (long int) buf->base << endl;
+	std::cerr << "buf:" << (long int) buf->base << std::endl;
 	buf->len = suggested_size;
 
 
@@ -111,7 +112,7 @@ void UDPClient::on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const
 		}
 	}
 	free(buf->base);
-	cerr << "free" << endl;
+	std::cerr << "free" << std::endl;
 }
 
 void UDPClient::on_send(uv_udp_send_t *req, int status) {
@@ -130,7 +131,7 @@ void UDPClient::send(std::string address, int port, std::string data) {
 
 	bufw->len = data.size();
 	memcpy(bufw->base, data.c_str(), data.size());
-	struct sockaddr *temp = networkUtility::uv_resolveAddress(&loop, address, to_string(port));
+	struct sockaddr *temp = networkUtility::uv_resolveAddress(&loop, address, std::to_string(port));
 	uv_udp_send(&send_req, &client, bufw, 1, temp, on_send);
 	uv_run(&loop, UV_RUN_DEFAULT);
 
@@ -151,7 +152,7 @@ void UDPClient::send(std::string address, int port, char *data, int dataLength) 
 
 	bufw->len = dataLength;
 	//memcpy(bufw->base, data.c_str(), data.size());
-	struct sockaddr *temp = networkUtility::uv_resolveAddress(&loop, address, to_string(port));
+	struct sockaddr *temp = networkUtility::uv_resolveAddress(&loop, address, std::to_string(port));
 	uv_udp_send(&send_req, &client, bufw, 1, temp, on_send);
 	uv_run(&loop, UV_RUN_DEFAULT);
 

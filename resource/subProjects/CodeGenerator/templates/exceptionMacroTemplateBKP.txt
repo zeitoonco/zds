@@ -1,0 +1,10 @@
+//THIS IS A TEMP FILE
+//$name
+#define EX$name(msg) $namspaces$name(msg,this->getNameAndType(),__FILE__,__func__,__LINE__)
+#define EXT$name(msg) throw EX$name(msg)
+#define EX$nameO(msg, owner) $namspaces$name(msg,owner,__FILE__,__func__,__LINE__)
+#define EXT$nameO(msg, owner) throw EX$nameO(msg,owner)
+#define EX$nameI(msg, inner) $namspaces$name(msg,this->getNameAndType(),__FILE__,__func__,__LINE__,inner)
+#define EXT$nameI(msg, inner) throw EX$nameI(msg,inner)
+#define EX$nameIO(msg, owner, inner) $namspaces$name(msg,owner,__FILE__,__func__,__LINE__,inner)
+#define EXT$nameIO(msg, owner, inner) throw EX$nameIO(msg,owner,inner)

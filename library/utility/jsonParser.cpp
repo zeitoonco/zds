@@ -8,7 +8,7 @@
 #include <sstream>
 #include "utility/jsonParser.hpp"
 #include "utility/utility.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 
 using namespace zeitoon;
 using namespace utility;

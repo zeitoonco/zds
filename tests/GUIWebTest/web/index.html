@@ -5,130 +5,345 @@
     <title>GUI Test</title>
     <script src="jquery-2.2.1.js"></script>
     <style>
-        .tabs{
-            border:3px solid black;
+        .tabs {
+            border: 3px solid black;
             min-height: 200px;
         }
+
+        .pad10 {
+            padding: 10px;
+            border-left: solid black 2px;
+        }
+
+        .tblST td, th {
+            border: 1px solid lightblue;
+            border-top: none;
+            border-right: none;
+            padding: 4px;
+        }
+
+        .tblST th {
+            border-left: none;
+            font-size: larger;
+            font-weight: bold;
+            background-color: chartreuse;
+        }
+
     </style>
+
 </head>
 <body>
-    <div>
-        <input type="button" id="wscc" value="Connect" >
-        <input type="button" id="wsdc" value="Dosconnect" >
-        <span id="cstate">**</span>
+<div>
+    <input type="button" id="wscc" value="Connect">
+    <input type="button" id="wsdc" value="Dosconnect">
+    <span id="cstate">**</span>
+</div>
+<div>
+    user<input type="text" id="iUser">
+    pass<input type="password" id="iPass">
+    <input type="button" id="login" value="Login">
+    session:<span id="sessionid"></span>
+</div>
+<div>
+    <div id="tabbtnBar">
+        <input type="button" id="btnTabCore" value="Core" onclick="$('.tabs').hide();$('#tabCore').show();">
+        <input type="button" id="btnTabUM" value="UserManagement" onclick="$('.tabs').hide();$('#tabUM').show();">
     </div>
-    <div>
-        user<input type="text" id="iUser">
-         pass<input type="password" id="iPass">
-        <input type="button" id="login" value="Login" >
-        session:<span id="sessionid"></span>
+    <div class="tabs" id="tabCore">
+        _core
+        <br/><input type="button" value="Get list of Services" onclick="sendCMD('_core.getListOfServices')">
+        <br/><input type="button" value="Get info about Services" onclick="sendCMD('_core.getServiceInfo',{name:$('#suSN').val()})">
+        Service Name:<input type="text" id="suSN">
+        <br/><input type="button" value="Install Services" onclick="sendCMD('_core.installService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Enable Services" onclick="sendCMD('_core.enableService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Disable Services" onclick="sendCMD('_core.disableService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Uninstall Services" onclick="sendCMD('_core.uninstallService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Kick Services" onclick="sendCMD('_core.kickService',{name:$('#suSN').val()})">
     </div>
-    <div>
-        <div id="tabbtnBar">
-            <input type="button" id="btnTabCore" value="Core" onclick="$('.tabs').hide();$('#tabCore').show();">
-            <input type="button" id="btnTabUM" value="UserManagement" onclick="$('.tabs').hide();$('#tabUM').show();">
-        </div>
-        <div class="tabs" id="tabCore">
-            Core.<br/>
-            <input type="button" id="getServices" value="Get list of Services" onclick="Socket.send(JSON.stringify({type:'call',node:'_core.getListOfServices',id:Math.round(Math.random()*1000000000).toString()}));">
-        </div>
-        <div class="tabs" id="tabUM">
-            UserManagement.<br/>
-            <input type="button" value="Get list of Users" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.listUsers',id:Math.round(Math.random()*1000000000).toString()}));"><br>
-            <input type="button" value="Get User Info" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.getUserInfo',id:Math.round(Math.random()*1000000000).toString(),data:{value:$('#userID').val()}}));">userid:<input type="text" id="userID"><br/>
-            <input type="button" value="Get list of Permissions" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.listPermissions',id:Math.round(Math.random()*1000000000).toString()}));"><br>
-            <input type="button" value="Get Permissions of User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.listUserPermissions',id:Math.round(Math.random()*1000000000).toString(),data:{value:$('#lpuserID').val()}}));"><input type="text" id="lpuserID"><br>
-            <input type="button" value="Grant Permission to User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.addUserPermission',id:Math.round(Math.random()*1000000000).toString(),data:{userID:$('#upUID').val(),permissionID:$('#upPID').val(),state:$('#upState').val()}}));">UserID:<input type="text" id="upUID">PermissionID:<input type="text" id="upPID">State:<input type="text" id="upState"><br>
-            <input type="button" value="Deny Permission from User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.removeUserPermission',id:Math.round(Math.random()*1000000000).toString(),data:{userID:$('#upUID').val(),permissionID:$('#upPID').val(),state:$('#upState').val()}}));"><br>
-            <input type="button" value="Add User" onclick="Socket.send(JSON.stringify({type:'call',node:'userman.addUser',id:Math.round(Math.random()*1000000000).toString(),data:{username:$('#adduUN').val(),password:$('#adduPS').val(),name:$('#adduN').val()}}));">UserName<input type="text" id="adduUN">Pass<input type="text" id="adduPS">Name<input type="text" id="adduN"><br>
+    <div class="tabs" id="tabUM">
+        userman
+        <br/><input type="button" value="Get list of Users" onclick="sendCMD('userman.listUsers')">
+        <br/><input type="button" value="Get list of Users from Group" onclick="sendCMD('userman.listUsersByGroup',{value:parseInt($('#luugid').val())})">
+        userGroupID:<input type="text" id="luugid">
+        <br/><input type="button" value="Get User Info" onclick="sendCMD('userman.getUserInfo',{value:parseInt($('#userID').val())})">
+        userID:<input type="text" id="userID">
+        <br/><input type="button" value="Add User"
+                    onclick="sendCMD('userman.addUser',{username:$('#adduUN').val(),password:$('#adduPS').val(),name:$('#adduN').val()})">
+        UserName<input type="text" id="adduUN">
+        Pass<input type="text" id="adduPS">
+        Name<input type="text" id="adduN">
+        <br/><input type="button" value="Modify User"
+                    onclick="sendCMD('userman.modifyUser',{userID:parseInt($('#userIDren').val()),username:$('#adduUN').val(),password:$('#adduPS').val(),name:$('#adduN').val()})">
+        userID:<input type="text" id="userIDren">
+        <br/><input type="button" value="Remove User" onclick="sendCMD('userman.removeUser',{value:parseInt($('#userIDrem').val())})">
+        userID:<input type="text" id="userIDrem">
 
-        </div>
+
+        <br/>
+        <br/><input type="button" value="Register new Permission"
+                    onclick="sendCMD('userman.registerPermission',{name:$('#newpName').val(),title:$('#newpTitl').val(),description:$('#newpDsc').val(),parentID:parseInt($('#newpPID').val())})">
+        name:<input type="text" id="newpName">
+        title:<input type="text" id="newpTitl">
+        description:<input type="text" id="newpDsc">
+        parentID:<input type="text" id="newpPID" value="-1">
+        <br/><input type="button" value="Modify Permission"
+                    onclick="sendCMD('userman.updatePermission',{permissionID:parseInt($('#modpPID').val()),name:$('#newpName').val(),title:$('#newpTitl').val(),description:$('#newpDsc').val(),parentID:parseInt($('#newpPID').val())})">
+        PermissionID:<input type="text" id="modpPID">
+        <br/><input type="button" value="Remove Permission" onclick="sendCMD('userman.removePermission',{value:parseInt($('#rempPID').val())})">
+        PermissionID:<input type="text" id="rempPID">
+
+        <br/><input type="button" value="Get list of Permissions" onclick="sendCMD('userman.listPermissions')">
+        <br/><input type="button" value="Get Permissions of User" onclick="sendCMD('userman.listUserPermissions',{value:parseInt($('#lpuserID').val())})">
+        userID:<input type="text" id="lpuserID">
+        <br/><input type="button" value="Set Permission for User"
+                    onclick="sendCMD('userman.addUserPermission',{userID:parseInt($('#upUID').val()),permissionID:parseInt($('#upPID').val()),state:parseInt($('#upState').val())})">
+        UserID:<input type="text" id="upUID">
+        PermissionID:<input type="text" id="upPID">
+        State:<input type="text" id="upState">
+        <br/><input type="button" value="Remove Permission from User"
+                    onclick="sendCMD('userman.removeUserPermission',{userID:parseInt($('#upUID').val()),permissionID:parseInt($('#upPID').val()),state:parseInt($('#upState').val())})">
+        <br/><input type="button" value="Check Permission of this user"
+                    onclick="sendCMD('userman.checkPermission',{sessionID:sessionid,permissionID:parseInt($('#pchPID').val())})">
+        PermissionID:<input type="text" id="pchPID">
+        <br/><input type="button" value="Check Permission of this user"
+                    onclick="sendCMD('userman.checkPermissionByName',{sessionID:sessionid,name:$('#pchPN').val()})">
+        PermissionName:<input type="text" id="pchPN">
+
+        <br/>
+        <br/><input type="button" value="Register new UserGroup"
+                    onclick="sendCMD('userman.registerUsergroup',{title:$('#nugTitl').val(),parentID:parseInt($('#nugPID').val()),description:$('#nugDsc').val()})">
+        title:<input type="text" id="nugTitl">
+        parentID:<input type="text" id="nugPID">
+        description:<input type="text" id="nugDsc">
+        <br/><input type="button" value="Modify UserGroup"
+                    onclick="sendCMD('userman.updateUsergroup',{userGroupID:parseInt($('#mugUGID').val()),title:$('#nugTitl').val(),parentID:parseInt($('#nugPID').val()),description:$('#nugDsc').val()})">
+        userGroupID:<input type="text" id="mugUGID">
+        <br/><input type="button" value="Remove UserGroup" onclick="sendCMD('userman.removeUsergroup',{value:parseInt($('#remugid').val())})">
+        userGroupID:<input type="text" id="remugid">
+        <br/><input type="button" value="Get list of UserGroups" onclick="sendCMD('userman.listUsergroups')">
+        <br/><input type="button" value="Add User to UserGroup"
+                    onclick="sendCMD('userman.addUserUsergroup',{userID:parseInt($('#auuguid').val()),groupID:parseInt($('#auugugid').val())})">
+        UserID:<input type="text" id="auuguid">
+        usergroupID:<input type="text" id="auugugid">
+        <br/><input type="button" value="Remove User from UserGroup"
+                    onclick="sendCMD('userman.removeUserUsergroup',{userID:parseInt($('#auuguid').val()),groupID:parseInt($('#auugugid').val())})">
+        <br/><input type="button" value="Set Permission for UserGroup"
+                    onclick="sendCMD('userman.addUsergroupPermission',{usergroupID:parseInt($('#augUGID').val()),permissionID:parseInt($('#augPID').val()),state:parseInt($('#augState').val())})">
+        UserGroupID:<input type="text" id="augUGID">
+        PermissionID:<input type="text" id="augPID">
+        State:<input type="text" id="augState">
+        <br/><input type="button" value="Remove Permission from UserGroup"
+                    onclick="sendCMD('userman.removeUsergroupPermission',{usergroupID:parseInt($('#augUGID').val()),permissionID:parseInt($('#augPID').val()),state:parseInt($('#augState').val())})">
+        <br/><input type="button" value="Get Permissions of Usergroup" onclick="sendCMD('userman.listUsergroupPermissions',{value:parseInt($('#lpusergID').val())})">
+        usergroupID:<input type="text" id="lpusergID">
     </div>
-    <div></div>
-    <div id="data">
-    </div>
+</div>
+<div></div>
+<div id="data">
+</div>
 <script type="text/javascript">
     var Socket;
-    var sessionid=-1;
-    $(document).ready(function(){
+    var sessionid = -1;
+
+    var CBProcs = {
+        "userman.login": cbLogin,
+
+        "_core.getListOfServices": "List of registered Services",
+        "_core.getServiceInfo": "Service Info",
+
+        "userman.registerPermission": "New Permission ID",
+        "userman.listUsers": "List of Users",
+        "userman.listUsersByGroup": "List of Users",
+        "userman.addUser": "UserID",
+        "userman.getUserInfo": "User Info",
+
+        "userman.listPermissions": "List of Permissions",
+        "userman.listUserPermissions": "List of User Permissions",
+        "userman.checkPermission": "Permissions State",
+        "userman.checkPermissionByName": "Permissions State",
+
+        "userman.registerUsergroup": "New UserGroup ID",
+        "userman.listUsergroups": "List of UserGroups",
+        "userman.listUsergroupPermissions": "List of Usergroup Permissions",
+    };
+
+    $(document).ready(function () {
         $('.tabs').hide();
-        $("#wscc").click(function(){
+        $("#wscc").click(function () {
             Socket = new WebSocket("ws://127.0.0.1:5455");
-            Socket.onmessage=dataReceived;
-            Socket.onclose=function(){$('#cstate').html("Disconnected !");}
-            Socket.onopen=function(){$('#cstate').html("Connected .");}
-            Socket.onerror=function(er){console.error("WS Error : "+er);}
+            Socket.onmessage = dataReceived;
+            Socket.onclose = function () {
+                $('#cstate').html("Disconnected !");
+            }
+            Socket.onopen = function () {
+                $('#cstate').html("Connected .");
+            }
+            Socket.onerror = function (er) {
+                console.error("WS Error : " + er);
+            }
         });
-        $("#wsdc").click(function(){
+        $("#wsdc").click(function () {
             Socket.close();
         });
         $("#login").click(function () {
-            var msg={type:"call",node:"userman.login",id:"1234568", data:{username:$("#iUser").val(),password:$("#iPass").val()}}
+            var msg = {
+                type: "call",
+                node: "userman.login",
+                id: "1234568",
+                data: {username: $("#iUser").val(), password: $("#iPass").val()}
+            }
             Socket.send(JSON.stringify(msg));
         })
 
     });
-//{"type":"callback","node":"_core.getListOfServices","id":123456,"data":{"extensions":[
-    // {"name":"GUI","version":1,"state":2,"istate":3}]}}
 
     function dataReceived(ev) {
         console.log("WSR: " + ev.data);
         var packet = JSON.parse(ev.data);
 
-        if ((packet.type == "callback")){
-            if(packet.node == "userman.login") {
-                if (packet.data.UMLoginResult == "ok") {
-                    sessionid = packet.data.sessionID;
-                    $("#sessionid").html("ok:" + sessionid);
-                } else {
-                    $("#sessionid").html("Failed:" + packet.data.description);
-                    sessionid = -1;
-                }
-            }else
-            if (packet.node == "_core.getListOfServices") {
-                view = "List of Services:<table border=\"1\"><tr><th>Name</th><th>Version</th><th>State</th></tr>";
-                var states = ["unknown", "not Installed", "Installing", "Installed", "Enable"];
-                for (var s in packet.data.extensions) {
-                    ss = packet.data.extensions[s];
-                    view += "<tr><td>" + ss.name + "</td><td>" + ss.version + "</td><td>" + states[ss.state] + "</td></tr>";
-                }
-                view += "</table>";
-                $("#data").html(view);
-            }else
-            if (packet.node == "userman.listUsers") {
-                view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>UserName</th><th>Name</th><th>Ban</th><th>BanReason</th></tr>";
-                for (var s in packet.data.userList) {
-                    ss = packet.data.userList[s];
-                    view += "<tr><td>" + ss.userID + "</td><td>" + ss.username + "</td><td>" + ss.name + "</td><td>" + ss.banned + "</td><td>" + ss.banReason + "</td></tr>";
-                }
-                view += "</table>";
-                $("#data").html(view);
-            }else
-            if (packet.node == "userman.getUserInfo") {
-                ss=packet.data;
-                $("#data").html("User " + ss.userID + "#" + ss.username + " (" + ss.name + "). ban:" + ss.banned + " r " + ss.banReason + ".");
-            }else
-            if (packet.node == "userman.listPermissions") {
-                view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>Parent</th><th>Name</th><th>title</th><th>desc</th></tr>";
-                for (var s in packet.data.listPermissions) {
-                    ss = packet.data.listPermissions[s];
-                    view += "<tr><td>" + ss.permissionID + "</td><td>" + ss.parentID + "</td><td>" + ss.name + "</td><td>" + ss.title + "</td><td>" + ss.description + "</td></tr>";
-                }
-                view += "</table>";
-                $("#data").html(view);
-            }else
-            if (packet.node == "userman.listUserPermissions") {
-                view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>State</th></tr>";
-                for (var s in packet.data.listPermissions) {
-                    ss = packet.data.listPermissions[s];
-                    view += "<tr><td>" + ss.id + "</td><td>" + ss.state + "</td></tr>";
-                }
-                view += "</table>";
-                $("#data").html(view);
-            }
-        }else if (packet.type=="error"){
-            $("#data").html("ERROR on '"+packet.node+"' {"+packet.id+"} : "+packet.data);
+        if ((packet.type == "callback")) {
+            /*if (packet.node == "_core.getListOfServices") {
+             view = "List of Services:<table border=\"1\"><tr><th>Name</th><th>Version</th><th>State</th></tr>";
+             var states = ["unknown", "not Installed", "Installing", "Installed", "Enable"];
+             for (var s in packet.data.extensions) {
+             ss = packet.data.extensions[s];
+             view += "<tr><td>" + ss.name + "</td><td>" + ss.version + "</td><td>" + states[ss.state] + "</td></tr>";
+             }
+             view += "</table>";
+             $("#data").html(view);
+             }else
+             if (packet.node == "userman.listUsers") {
+             view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>UserName</th><th>Name</th><th>Ban</th><th>BanReason</th></tr>";
+             for (var s in packet.data.userList) {
+             ss = packet.data.userList[s];
+             view += "<tr><td>" + ss.userID + "</td><td>" + ss.username + "</td><td>" + ss.name + "</td><td>" + ss.banned + "</td><td>" + ss.banReason + "</td></tr>";
+             }
+             view += "</table>";
+             $("#data").html(view);
+             }else
+             if (packet.node == "userman.getUserInfo") {
+             ss=packet.data;
+             $("#data").html("User " + ss.userID + "#" + ss.username + " (" + ss.name + "). ban:" + ss.banned + " r " + ss.banReason + ".");
+             }else
+             if (packet.node == "userman.listPermissions") {
+             view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>Parent</th><th>Name</th><th>title</th><th>desc</th></tr>";
+             for (var s in packet.data.listPermissions) {
+             ss = packet.data.listPermissions[s];
+             view += "<tr><td>" + ss.permissionID + "</td><td>" + ss.parentID + "</td><td>" + ss.name + "</td><td>" + ss.title + "</td><td>" + ss.description + "</td></tr>";
+             }
+             view += "</table>";
+             $("#data").html(view);
+             }else
+             if (packet.node == "") {
+             view = "List of Services:<table border=\"1\"><tr><th>ID</th><th>State</th></tr>";
+             for (var s in packet.data.listPermissions) {
+             ss = packet.data.listPermissions[s];
+             view += "<tr><td>" + ss.id + "</td><td>" + ss.state + "</td></tr>";
+             }
+             view += "</table>";
+             $("#data").html(view);
+             }*/
+            CBProcessor(packet.node, packet.data);
+        } else if (packet.type == "error") {
+            $("#data").html("ERROR on '" + packet.node + "' {" + packet.id + "} : " + packet.data);
         }
+    }
+
+    function cbLogin(data) {
+        if (data.UMLoginResult == "ok") {
+            sessionid = data.sessionID;
+            $("#sessionid").html("ok:" + sessionid);
+        } else {
+            $("#sessionid").html("Failed:" + data.description);
+            sessionid = -1;
+        }
+    }
+
+    function CBProcessor(node, data) {//data is structure for sure. its childs can be anything
+        var v = CBProcs[node];
+        switch (typeof(v)) {
+            case "function":
+                v(data);
+                break;
+            case "string":
+                var view = "<h1>" + v + " :</h1>" + CBPDrawer(data);
+                $("#data").html(view);
+                break;
+            case "undefined":
+                console.log("CBP Err type '" + typeof(v) + "' for " + node);
+                break;
+        }
+    }
+    function CBPDrawer(data) {
+        var view = "";
+        if (typeof(data) == "object") {
+            if (Array.isArray(data)) {
+                if (data.length == 0)
+                    view = "[]";
+                else if (typeof(data[0]) == "object" && !Array.isArray(data[0])) {//table
+                    view = "<table class='tblST'><tr>";
+                    for (var s in data[0])
+                        view += "<th>" + s + "</th>";
+                    view += "</tr><tr>";
+                    for (var i = 0; i < data.length; i++) {
+                        for (var s in data[i]) {
+                            view += "<td>" + CBPDrawer(data[i][s]) + "</td>";
+                        }
+                        view += "</tr><tr>";
+                    }
+                    view += "</tr></table>";
+                } else {
+                    view = "<table class='tblST'>";
+                    for (var i = 0; i < data.length; i++) {
+                        view += "<tr><td>" + CBPDrawer(data[i]) + "</td></tr>";
+                    }
+                    view += "</table>";
+                }
+            } else {//struct
+                if (structLength(data) < 3) {
+                    view = "<div class='pad10'>";
+                    for (var s in data)
+                        view = "<h3>" + s + ":</h3>" + CBPDrawer(data[s]);
+                    view += "</div>";
+                } else {
+                    view = "<table class='tblST pad10'>";
+                    for (var s in data) {
+                        view += "<tr><th>" + s + "</th><td>" + CBPDrawer(data[s]) + "</td></tr>";
+                    }
+                    view += "</table>";
+                }
+            }
+        } else {
+            view = data.toString();
+        }
+        return view;
+    }
+
+    function sendCMD(inode, idata) {
+        var ss="";
+        if (!idata)
+            ss=(JSON.stringify({
+                type: 'call',
+                node: inode,
+                id: Math.round(Math.random() * 1000000000).toString()
+            }));
+        else
+            ss=(JSON.stringify({
+                type: 'call',
+                node: inode,
+                id: Math.round(Math.random() * 1000000000).toString(),
+                data: idata
+            }));
+        console.log("SenD:"+ss);
+        Socket.send(ss);
+    }
+
+    function structLength(st) {
+        var c = 0;
+        for (var s in st) {
+            c++;
+        }
+        return c;
     }
 </script>
 </body>

@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <utility/exceptionex.hpp>
+#include <utility/exceptions.hpp>
 #include "utility/utility.hpp"
 
 const std::string defaultIndentContent = "\t";

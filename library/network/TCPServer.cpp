@@ -4,6 +4,7 @@
 
 #include "TCPServer.hpp"
 #include "networkUtility.hpp"
+#include <cstring>
 
 #define DEFAULT_BACKLOG 128
 
@@ -57,8 +58,8 @@ void TCPServer::_listen() {
 		if (this->_onDisconnect != NULL)
 			this->_onDisconnect();
 		std::cerr << "\nTCPServer::listen Finished with " << r;
-	} catch (exceptionEx *ex) {
-		cerr << "Uncought ERROR: " << ex->what();
+	} catch (exceptionEx &ex) {
+		cerr << "Uncought ERROR: " << ex.what();
 	} /*catch (exception &ex){
 		cerr << "Uncought ERROR: " << ex.what();
 	}*/

@@ -1,0 +1,13 @@
+{
+  "namespace": "zeitoon::usermanagement",
+  "exceptions": [
+    {
+      "name": "loginFail",
+      "title": "Login failed"
+    },
+    {
+      "name": "checkPermissionFail",
+      "title": "Check-Permission failed"
+    }
+  ]
+}

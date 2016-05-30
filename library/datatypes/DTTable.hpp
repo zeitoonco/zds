@@ -9,7 +9,7 @@
 #define DTTABLE_HPP_
 
 #include <datatypes/dtbase.hpp>
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 
 namespace zeitoon {
 namespace datatypes {

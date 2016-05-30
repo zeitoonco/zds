@@ -8,10 +8,12 @@
 #ifndef MEDIATOR_SETTINGMEDIATOR_HPP_
 #define MEDIATOR_SETTINGMEDIATOR_HPP_
 
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 
 namespace zeitoon {
 namespace utility {
+
+using std::string;
 
 class ServerMediator;
 

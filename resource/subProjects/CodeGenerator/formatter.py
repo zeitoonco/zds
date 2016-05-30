@@ -1,6 +1,7 @@
 import json
 import os
 import datetime
+import time
 
 
 def fillTemplate(temp, param):
@@ -12,7 +13,7 @@ def fillTemplate(temp, param):
 
 def generateExceptionHeaderFromList(fileAddrs, namespace, excList, templates):
 	# cls:  $name $title
-	# mrc:  $name $namespaces,
+	# mrc:  $name $namspaces,
 	# file: $headerid, $namespaceztart, $namespaceend, $macro $class
 
 	param = {"namespaceztart": "", "namespaceend": "", "namespaces": "", "class": "", "macro": "",
@@ -20,16 +21,16 @@ def generateExceptionHeaderFromList(fileAddrs, namespace, excList, templates):
 	# extract namespace
 	if len(namespace) > 0:
 		namespaces = namespace.split('::')
-		param["namespaces"] = namespace + "::"
+		param["namspaces"] = namespace + "::"
 		for i in namespaces:
 			param["namespaceztart"] += "namespace " + i + " {\n"
 			param["namespaceend"] += "} // " + i + "\n"
 
-	param['headerid'] = param["namespaces"].replace("::", "_").upper() + \
+	param['headerid'] = param["namspaces"].replace("::", "_").upper() + \
 	                    os.path.split(fileAddrs)[1].upper().replace(".", "_")
 
 	for exc in excList:
-		paraml = {'name': exc['name'], 'title': exc['title'], 'namespaces': param["namespaces"]}
+		paraml = {'name': exc['name'], 'title': exc['title'], 'namspaces': param["namspaces"]}
 		param['class'] += fillTemplate(templates['exceptionClassTemplate'], paraml) + "\n\n"
 		param['macro'] += fillTemplate(templates['exceptionMacroTemplate'], paraml) + "\n"
 
@@ -42,6 +43,7 @@ def generateExceptionHeaderFromList(fileAddrs, namespace, excList, templates):
 
 def parseList(eList, templates):
 	print('--Parsing...')
+	listTime=os.path.getmtime(eList)
 	with open(eList, 'r') as content_file:
 		j = json.load(content_file)
 
@@ -54,6 +56,10 @@ def parseList(eList, templates):
 
 	# check for exceptions
 	if 'exceptions' in j and len(j['exceptions']) > 0:
-		print("\t--Generating exceptions.")
-		generateExceptionHeaderFromList(
-			os.path.join(os.path.dirname(eList), 'exceptions.hpp'), namespace, j['exceptions'], templates)
+		if 'exceptions.hpp' in os.listdir(os.path.dirname(eList)) and \
+						listTime<os.path.getmtime(os.path.join(os.path.dirname(eList),'exceptions.hpp')):
+			print("\t--exceptions already up-to-date")
+		else:
+			print("\t++Generating exceptions.")
+			generateExceptionHeaderFromList(
+				os.path.join(os.path.dirname(eList), 'exceptions.hpp'), namespace, j['exceptions'], templates)

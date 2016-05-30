@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include "datatypes/DTTableString.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include "utility/utility.hpp"
 
 namespace zeitoon {

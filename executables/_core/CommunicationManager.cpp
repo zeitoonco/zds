@@ -7,7 +7,8 @@
 
 #include "Profiles.hpp"
 #include "CommunicationManager.hpp"
-#include <utility/exceptionex.hpp>
+#include <utility/exceptions.hpp>
+#include "exceptions.hpp"
 #include <utility/utility.hpp>
 #include <algorithm>
 #include <string>
@@ -135,7 +136,7 @@ string CommunicationManager::callCommandSync(string cmdName, string &data, strin
 		lock_guard<mutex> lg(MtxIdList);
 		idList[cid] = &x;
 	} catch (std::exception ex) {
-		EXTunknownExceptionI("unable to add to id-list", ex);
+		EXTunknownExceptionI("unable to add to id-list");
 	}
 	while (!x.set) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
@@ -145,7 +146,7 @@ string CommunicationManager::callCommandSync(string cmdName, string &data, strin
 		lock_guard<mutex> lg(MtxIdList);
 		idList.erase(cid);
 	} catch (std::exception &ex) {
-		EXTunknownExceptionI("unable to remove from id-list", ex);
+		EXTunknownExceptionI("unable to remove from id-list");
 	}
 	return dt;
 }
@@ -201,7 +202,7 @@ void CommunicationManager::callCallbackError(string &data, string from) {
 		if (idList.find(id) != idList.end()) {
 			lock_guard<mutex> lg(MtxIdList);
 			idList.erase(id);//todo:check mediator. does meditor erase cb on error?
-			EXTexceptionEx("Command failed.\n" + jdata["description"].getValue());
+			EXTexceptionRedirect("Command failed.\n" + jdata["description"].getValue());
 		} else {            //else, send it
 			((JVariable &) jdata["id"]).setValue(clb->second.identity);
 			string rdata = jdata.toString();

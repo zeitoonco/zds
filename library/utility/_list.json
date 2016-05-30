@@ -1,0 +1,81 @@
+{
+  "namespace": "zeitoon::utility",
+  "exceptions": [
+    {
+      "name": "invalidParameter",
+      "title": "Input parameter is invalid"
+    },
+    {
+      "name": "namesMismatch",
+      "title": "Variable names doesn't match"
+    },
+    {
+      "name": "dataTypeMismatch",
+      "title": "Can not convert between DataTypes"
+    },
+    {
+      "name": "cantParseString",
+      "title": "Unreadable string format"
+    },
+    {
+      "name": "outOfRange",
+      "title": "Value is out of range"
+    },
+    {
+      "name": "notImplemented",
+      "title": "Not Implemented"
+    },
+    {
+      "name": "invalidName",
+      "title": "Invalid Name"
+    },
+    {
+      "name": "obsolete",
+      "title": "Obsolete"
+    },
+    {
+      "name": "connectionError",
+      "title": "connection failed"
+    },
+    {
+      "name": "DBError",
+      "title": "Database Error"
+    },
+    {
+      "name": "duplicateName",
+      "title": "Duplicate Name"
+    },
+    {
+      "name": "nullValue",
+      "title": "Null value received"
+    },
+    {
+      "name": "networkFailure",
+      "title": "Network Failure"
+    },
+    {
+      "name": "accessDenied",
+      "title": "Access Denied"
+    },
+    {
+      "name": "resourceNotAvailable",
+      "title": "Resource is not available"
+    },
+    {
+      "name": "networkMaxRetryReached",
+      "title": "Maximum number of tries reached"
+    },
+    {
+      "name": "networkNoRetryTimeSet",
+      "title": "Reconnect interval has not been set"
+    },
+    {
+      "name": "filesystemFailure",
+      "title": "Filesystem Error"
+    },
+    {
+      "name": "runCommandSyncFailed",
+      "title": "Running command failed"
+    }
+  ]
+}

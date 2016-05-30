@@ -16,8 +16,8 @@ int main(int argc, char *argv[]) {
 		try {
 			serverIP = UMconfig.serverIP.getValue();
 			serverPort = UMconfig.serverPort.getValue();
-		} catch (exceptionEx *err) {
-			std::cerr << "Error:\n" << err->what() << std::endl;
+		} catch (exceptionEx &err) {
+			std::cerr << "Error:\n" << err.what() << std::endl;
 		}
 	} else {
 		serverIP = argv[1];
@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
 		Umediator.connect(serverIP, std::stoi(serverPort));
 		std::cout << "Server Addr:\t" << serverIP << "\tPort:\t" << serverPort << std::endl;
 		Umediator.sm.joinNet();
-	} catch (exceptionEx *err) {
-		std::cout << "ERROR:\n" << err->what() << endl;
+	} catch (exceptionEx &err) {
+		std::cout << "ERROR:\n" << err.what() << endl;
 	} catch (exception &err) {
 		std::cout << "UnknownERROR:\n" << err.what() << std::endl;
 	}

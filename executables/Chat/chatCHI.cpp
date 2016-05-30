@@ -140,7 +140,7 @@ namespace zeitoon {
             int res;
             try {
                 res = sm.database.executeSync(str);
-            } catch (exceptionEx *errorInfo) {
+            } catch (exceptionEx &errorInfo) {
                 EXTDBErrorI("Unable to create default tables for Chat", errorInfo);
             }
             if (res == -1)

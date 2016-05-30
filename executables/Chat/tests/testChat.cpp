@@ -14,7 +14,7 @@ int main() {
         cout<<a.toString();
 
 
-    }catch(zeitoon::utility::exceptionEx *rr){
+    }catch(zeitoon::utility::exceptionEx &rr){
         std::cerr<< "ERR: "<<rr->what()<<std::endl;
     }
 }

@@ -8,7 +8,7 @@
 #ifndef MEDIATOR_DATABASEMEDIATOR_HPP_
 #define MEDIATOR_DATABASEMEDIATOR_HPP_
 
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include  "datatypes/DTTableString.hpp"
 
 namespace zeitoon {

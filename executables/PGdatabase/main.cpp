@@ -1,7 +1,7 @@
 //
 // Created by inf on 3/5/16.
 //
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include "PGmediator.hpp"
 #include "pgutility.hpp"
 #include "PGConfig.hpp"
@@ -37,8 +37,8 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
 			PwPGDB = argv[4];
 			DBName = argv[7];
 
-		} catch (exceptionEx *err) {
-			std::cerr << "ERROR:\n" << err->what();
+		} catch (exceptionEx &err) {
+			std::cerr << "ERROR:\n" << err.what();
 		} catch (exception &err) {
 			std::cerr << "UnknownERROR:\n" << err.what();
 		}
@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
 		PGmediator pg(UsrPGDB, PwPGDB, DBAddr, std::stoi(DBPort), DBName);
 		pg.connect(serverIP, std::stoi(serverPort));
 		pg.sm.joinNet();
-	} catch (exceptionEx *err) {
-		std::cerr << "ERROR:\n" << err->what();
+	} catch (exceptionEx &err) {
+		std::cerr << "ERROR:\n" << err.what();
 	} catch (exception &err) {
 		std::cerr << "UnknownERROR:\n" << err.what();
 	}

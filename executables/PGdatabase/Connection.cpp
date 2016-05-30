@@ -5,7 +5,7 @@
  *      Author: inf
  */
 #include "Connection.hpp"
-#include "utility/exceptionex.hpp"
+#include <utility/exceptions.hpp>
 #include "pgutility.hpp"
 
 using namespace zeitoon::utility;
@@ -40,7 +40,7 @@ Connection::~Connection() {
 	if (isConnected()) {
 		try {
 			this->disconnect();
-		} catch (zeitoon::utility::exceptionEx *err) {
+		} catch (zeitoon::utility::exceptionEx &err) {
 			EXTconnectionErrorI("Disconnect FAILED", err);
 		}
 	}
@@ -113,7 +113,7 @@ DTTablePostgres Connection::query(std::string command) {
 		lock_guard<mutex> lck(*mtxLock);
 		DTTablePostgres queryObj(conn, command, "Query");
 		return queryObj;
-	} catch (exceptionEx *errorInfo) {
+	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("SQL QUERY FAILED", errorInfo);
 	}
 

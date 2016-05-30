@@ -41,6 +41,11 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 	} catch (std::exception &ex) {
 		EXTunknownExceptionI("unable to remove from id-list", ex);
 	}
+	if (x.isException) {
+		JStruct errStruct(dt);
+		//std::string err = "FROM COMMUNICATION MEDIATOR" + errStruct[description].getValue();
+		//EXTexceptionEx();
+	}
 	return dt;
 }
 
@@ -115,7 +120,7 @@ void CommunicationMediator::removeCommand(string name) {
 
 void CommunicationMediator::registerHook(string name, string session) {
 	sm->send(CommunicationUtility::makeCommand("_core.registerHook", "", sm->owner->getServiceName(),
-	                                           "{\"names\" : [" + name + "]}",session));
+	                                           "{\"names\" : [" + name + "]}", session));
 }
 
 void CommunicationMediator::removeHook(string name) {

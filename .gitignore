@@ -16,6 +16,8 @@ Release
 obj\Debug
 obj\Release
 .idea
+resource/subProjects/CodeGenerator/__pycache__
+resource/subProjects/CodeGenerator/formatter.pyc
 
 # Packages #
 ############

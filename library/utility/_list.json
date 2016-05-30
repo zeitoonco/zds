@@ -72,6 +72,10 @@
     {
       "name": "filesystemFailure",
       "title": "Filesystem Error"
+    },
+    {
+      "name": "runCommandSyncFailed",
+      "title": "Running command failed"
     }
   ]
 }

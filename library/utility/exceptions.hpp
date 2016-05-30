@@ -1,7 +1,7 @@
 /** ***   WARNING   ***
   * This file has been generated using CodeGenerator.
   *   any manual modification will be erased in next cmake build.
-  * Generated on : 2016-05-29 21:51:13.483644
+  * Generated on : 2016-05-30 12:08:54.462317
   *
   * By ajl.
   */
@@ -536,6 +536,35 @@ public:
 
 };
 
+class runCommandSyncFailed : public exceptionExWithInnerEx {
+public:
+	runCommandSyncFailed(std::string imessage) :
+			runCommandSyncFailed(imessage, "", "", "", -1) {
+	}
+
+	runCommandSyncFailed(std::string imessage, exceptionEx &innerException) :
+			runCommandSyncFailed(imessage, "", "", "", -1, innerException) {
+	}
+
+	runCommandSyncFailed(std::string imessage, std::string owner, std::string file, std::string function, int line,
+	                 exceptionEx &innerException) :
+			exceptionExWithInnerEx(getDefTitle(), imessage, owner, file, function, line, innerException) {
+	}
+
+	runCommandSyncFailed(std::string imessage, std::string owner, std::string file, std::string function, int line) :
+			exceptionExWithInnerEx(getDefTitle(), imessage, owner, file, function, line) {
+	}
+
+	virtual std::string getDefTitle() {
+		return "Running command failed";
+	}
+
+	virtual std::string getName() {
+		return "runCommandSyncFailed";
+	}
+
+};
+
 
 } // zeitoon
 } // utility
@@ -650,6 +679,12 @@ public:
 #define EXTfilesystemFailureO(msg, owner) throw zeitoon::utility::filesystemFailure(msg,owner,__FILE__,__func__,__LINE__)
 #define EXTfilesystemFailureI(msg, inner) throw zeitoon::utility::filesystemFailure(msg,this->getNameAndType(),__FILE__,__func__,__LINE__,inner)
 #define EXTfilesystemFailureIO(msg, owner, inner) throw zeitoon::utility::filesystemFailure(msg,owner,__FILE__,__func__,__LINE__,inner)
+
+//runCommandSyncFailed
+#define EXTrunCommandSyncFailed(msg) throw zeitoon::utility::runCommandSyncFailed(msg,this->getNameAndType(),__FILE__,__func__,__LINE__)
+#define EXTrunCommandSyncFailedO(msg, owner) throw zeitoon::utility::runCommandSyncFailed(msg,owner,__FILE__,__func__,__LINE__)
+#define EXTrunCommandSyncFailedI(msg, inner) throw zeitoon::utility::runCommandSyncFailed(msg,this->getNameAndType(),__FILE__,__func__,__LINE__,inner)
+#define EXTrunCommandSyncFailedIO(msg, owner, inner) throw zeitoon::utility::runCommandSyncFailed(msg,owner,__FILE__,__func__,__LINE__,inner)
 
 
 

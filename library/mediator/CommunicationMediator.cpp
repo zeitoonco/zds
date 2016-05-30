@@ -42,7 +42,7 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 		EXTunknownExceptionI("unable to remove from id-list");
 	}
 	if (x.isException) {
-		EXTexceptionEx("FROM COMMUNICATION MEDIATOR" + dt);
+		EXTrunCommandSyncFailed("Error received from Core: " + dt);
 	}
 	return dt;
 }

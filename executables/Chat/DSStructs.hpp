@@ -193,6 +193,7 @@ namespace zeitoon {
 
         class DSMessageItem : public DTStruct {
         public:
+            DTInteger<int> id = {"id"};
             DTInteger<int> userID = {"userID"};
             DTString date = {"date"};
             DTString msg = {"msg"};
@@ -208,6 +209,7 @@ namespace zeitoon {
 
             DSMessageItem() :
                     DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+                this->list.push_back(&id);
                 this->list.push_back(&userID);
                 this->list.push_back(&date);
                 this->list.push_back(&msg);
@@ -218,8 +220,9 @@ namespace zeitoon {
                 this->fromString(data);
             }
 
-            DSMessageItem(int iuserID, std::string idate, std::string imsg, EnumMsgType::msgType iEnumMsgType)
+            DSMessageItem(int iid,int iuserID, std::string idate, std::string imsg, EnumMsgType::msgType iEnumMsgType)
                     : DSMessageItem() {
+                id = iid;
                 userID = iuserID;
                 date = idate;
                 msg = imsg;

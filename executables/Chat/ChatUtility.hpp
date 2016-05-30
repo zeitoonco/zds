@@ -8,55 +8,61 @@
 #include "string"
 
 namespace zeitoon {
-    namespace chat {
-        class CommandInfo {
-        public:
-            static std::string newMessage() { return "chat.newMessage"; }
+namespace chat {
+class CommandInfo {
+public:
+	static std::string newMessage() { return "chat.newMessage"; }
 
-            static std::string removeMessage() { return "chat.removeMessage"; }
+	static std::string removeMessage() { return "chat.removeMessage"; }
 
-            static std::string checkNewMessages() { return "chat.checkNewMessages"; }
+	static std::string checkNewMessages() { return "chat.checkNewMessages"; }
 
-            static std::string getMessages() { return "chat.getMessages"; }
+	static std::string getMessages() { return "chat.getMessages"; }
 
-            static std::string messagesSeen() { return "chat.messagesSeen"; }
+	static std::string messagesSeen() { return "chat.messagesSeen"; }
 
-            static std::string messagesNotified() { return "chat.messagesNotified"; }
+	static std::string messagesNotified() { return "chat.messagesNotified"; }
 
-            static std::string getUserData() { return "chat.getUserData"; }
+	static std::string getUserData() { return "chat.getUserData"; }
 
-            static std::string changeUserState() { return "chat.changeUserState"; }
+	static std::string changeUserState() { return "chat.changeUserState"; }
 
-            static std::string changeReachState() { return "chat.changeReachState"; }
+	static std::string changeReachState() { return "chat.changeReachState"; }
 
-            static std::string newSession() { return "chat.newSession"; }
+	static std::string newSession() { return "chat.newSession"; }
 
-            static std::string addUserToSession() { return "chat.addUserToSession"; }
+	static std::string addUserToSession() { return "chat.addUserToSession"; }
 
-            static std::string removeUserFromSession() { return "chat.removeUserFromSession"; }
+	static std::string removeUserFromSession() { return "chat.removeUserFromSession"; }
 
-            static std::string changeLeader() { return "chat.changeLeader"; }
+	static std::string changeLeader() { return "chat.changeLeader"; }
 
-            static std::string listSessions() { return "chat.listSessions"; }
+	static std::string listSessions() { return "chat.listSessions"; }
 
-            static std::string getSession() { return "chat.getSession"; }
-        };
+	static std::string getSession() { return "chat.getSession"; }
+
+	static std::string SessionUserList() { return "chat.SessionUserList"; }
+
+	static std::string removeSession() { return "chat.removeSession"; }
 
 
-        class EventInfo {
-        public:
-            static std::string newMessage() { return "chat.newMessage"; }
+};
 
-            static std::string sessionUserAdded() { return "chat.sessionUserAdded"; }
 
-            static std::string sessionUserRemoved() { return "chat.sessionUserRemoved"; }
+class EventInfo {
+public:
+	static std::string newMessage() { return "chat.newMessage"; }
 
-            static std::string sessionLeaderChanged() { return "chat.sessionLeaderChanged"; }
+	static std::string sessionUserAdded() { return "chat.sessionUserAdded"; }
 
-            static std::string userStateChanged() { return "chat.userStateChanged"; }
-        };
+	static std::string sessionUserRemoved() { return "chat.sessionUserRemoved"; }
 
-    }
+	static std::string sessionLeaderChanged() { return "chat.sessionLeaderChanged"; }
+
+	static std::string userStateChanged() { return "chat.userStateChanged"; }
+};
+
+}
 }
 
 

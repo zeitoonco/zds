@@ -25,7 +25,7 @@ int main() {
 		std::cout << "10- ChangeUserState" << endl;
 		std::cout << "11- ChangeReachState" << endl;
 		std::cout << "12- RemoveUserFromSession" << endl;
-		std::cout << "13- ListSessions" << endl;
+		std::cout << "13- ChangeLeader" << endl;
 		std::cout << "14- ListSessions" << endl;
 		std::cout << "15- GetSession" << endl;
 		//std::cout << "12- RemoveUserFromSession" << endl;

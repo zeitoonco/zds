@@ -6,53 +6,55 @@
 #define ZDS_CHAT_HPP
 
 #include "DSStructs.hpp"
-
+#include "executables/UserManagement/UManagementUtility.hpp"
 #include <string>
+#include <executables/UserManagement/DTStructs.hpp>
 
 namespace zeitoon {
-    namespace chat {
+namespace chat {
 
-        class ChatCHI;
+class ChatCHI;
 
-        class chaT {
-            ChatCHI *chatCHI;
-        public:
-            chaT(ChatCHI *ptr);
+class chaT {
+	ChatCHI *chatCHI;
+public:
+	chaT(ChatCHI *ptr);
 
-            int newMessage(int userID, int sessionID, std::string msg, EnumMsgType::msgType type);
+	int newMessage(int userID, int sessionID, std::string msg, EnumMsgType::msgType type);
 
-            void removeMessage(int id);
+	void removeMessage(int id);
 
-            DSCheckMessages checkNewMessages(int userID);
+	DSCheckMessages checkNewMessages(int userID);
 
-            DSMessageList getMessages(int userID, int sessionID, EnumGetMsgType::getMsgType type, string from,
-                                      string to);
+	DSMessageList getMessages(int userID, int sessionID, EnumGetMsgType::getMsgType type, string from,
+	                          string to);
 
-            void messagesSeen(int userID, int sessionID, int seenID);
+	void messagesSeen(int userID, int sessionID, int seenID);
 
-            void messagesNotified(int userID, int sessionID, int notifiedid);
+	void messagesNotified(int userID, int sessionID, int notifiedid);
 
-            DSChatUserData getUserData(int userID);
+	DSChatUserData getUserData(int userID);
 
-            void changeUserState(int userID, EnumStatus::status status,
-                                 EnumCustomStatusIcon::customStatusIcon customStatusIcon, std::string customstatusText);
+	void changeUserState(int userID, EnumStatus::status status,
+	                     EnumCustomStatusIcon::customStatusIcon customStatusIcon, std::string customstatusText);
 
-            void changeReachState(int userID, EnumStatus::status status);
+	void changeReachState(int userID, EnumStatus::status status);
 
-            int newSession();
+	int newSession();
 
-            void addUserToSession(int userID, int sessionID);
+	void addUserToSession(int userID, int sessionID);
 
-            void removeUserFromSession(int userID, int sessionID);
+	void removeUserFromSession(int userID, int sessionID);
 
-            void changeLeader(int userID, int sessionID);
+	void changeLeader(int userID, int sessionID);
 
-            DSSessionList listSessions(int ID);
+	DSSessionList listSessions(int ID);
 
-            DSSession getSession(int ID);
+	DSSession getSession(int ID);
 
+	zeitoon::usermanagement::DSUserList SessionUserList(int sessionID);
 
-        };
-    }
+};
+}
 }
 #endif //ZDS_CHAT_HPP

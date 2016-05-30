@@ -229,7 +229,7 @@ void Router::sendMessage(string extension, string source, string node, string &d
 		if (elist.size() > 0) {
 			if (elist[0]->isRunning()) { //UM avail
 				datatypes::DSBoolean res;
-				string cmddata = "{\"sessionID\":" + session + ",\"name\":" + node + "}";
+				string cmddata = "{\"sessionID\":" + session + ",\"name\":\"" + node + "\"}";
 				res.fromString(
 						comm.callCommandSync("userman.checkPermissionByName", cmddata, "_core",
 						                     CommunicationUtility::getRandomID()));

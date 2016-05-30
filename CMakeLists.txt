@@ -7,6 +7,7 @@ include(generalSettings.cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${libDir})
 
+execute_process(COMMAND ${PYTHON3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/resource/subProjects/CodeGenerator/main.py ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_target(
         autoCodeGenerator

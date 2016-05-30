@@ -93,6 +93,8 @@ std::string Connection::getValue(std::string command) {
 	if (not isConnected()) {
 		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 	}
+	std::lock_guard<std::mutex> lck(mtxLock);
+
 	PGresult *commandResult = PQexec(conn, command.c_str());
 	std::string desc;
 	if (not zeitoon::pgdatabase::PGutility::isValidResult(commandResult, desc)) {
@@ -108,6 +110,7 @@ DTTablePostgres Connection::query(std::string command) {
 		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 
 	}
+	std::lock_guard<std::mutex> lck(mtxLock);
 	try {
 		DTTablePostgres queryObj(conn, command, "Query");
 		return queryObj;
@@ -129,6 +132,7 @@ int Connection::execute(std::string command) {
 	if (not isConnected()) {
 		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 	}
+	std::lock_guard<std::mutex> lck(mtxLock);
 	PGresult *commandResult = PQexec(conn, command.c_str());
 	std::string desc;
 	if (not zeitoon::pgdatabase::PGutility::isValidResult(commandResult, desc)) {

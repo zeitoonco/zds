@@ -9,6 +9,8 @@
 #define CONNECTION_HPP_
 
 #include"DTTablePostgres.hpp"
+#include "mutex"
+
 namespace zeitoon{
 namespace pgdatabase{
 class Connection {
@@ -85,7 +87,10 @@ private:
 	std::string HOST = "";/**moteghayyer baraye host address  */
 	int PORT = 0;			/**moteghayyer baraye shomaareye port  */
 	std::string DBNAME = "";/**moteghayyer baraye database name  */
+
 };
+
+std::mutex mtxLock;
 }
 }
 

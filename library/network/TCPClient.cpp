@@ -124,12 +124,13 @@ void TCPClient::joinOnConnectionThread() {
 
 void TCPClient::runLoop() {
 	try {
-		std::cerr << "\nTCPClien EVENTS LOOP Start";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
+		std::cerr <<
+		"\nTCPClien EVENTS LOOP Start\n";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
 		int r = uv_run(&this->loop, UV_RUN_DEFAULT);
 		uvEXT(r, "libuv events loop error: ");
-		std::cerr << "\nTCPClient EVENTS LOOP Finished with " << r << std::endl;
+		std::cerr << "\nTCPClient EVENTS LOOP Finished with " << r << "\n";
 	} catch (exceptionEx *ex) {
-		cerr << "\nERROR ON TCPClient EVENTS LOOP: " << ex->what() << std::endl;
+		cerr << "\nERROR ON TCPClient EVENTS LOOP: " << ex->what() << "\n";
 		uv_connect_t *connect = (uv_connect_t *) malloc(sizeof(uv_connect_t));
 		uv_tcp_connect(connect, &client, addr, on_connect);
 	}
@@ -162,7 +163,7 @@ void TCPClient::dataProcessor() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
-	std::cerr << "Thread No " << this_thread::get_id() << " terminated" << std::endl;
+	std::cerr << "Thread No " << this_thread::get_id() << " terminated\n";
 }
 
 void TCPClient::freeThreadPool() {
@@ -181,24 +182,20 @@ void TCPClient::on_connect(uv_connect_t *req, int status) {
 	TCPClient *c = (TCPClient *) req->data;
 	free(req);
 	if (status) {
-		std::cerr << "ERROR: " << uv_err_name(status) << ": " << uv_strerror(status) << std::endl;
+		std::cerr << "ERROR: " << uv_err_name(status) << ": " << uv_strerror(status) << "\n";
 		if (c->reconnectOptions.timingSize() > 0) {
 			uv_close((uv_handle_t *) &c->client, NULL);
 			c->reconnect();
 		} else {
-			std::cerr << "No reconnect intervals specified." << std::endl;
+			std::cerr << "No reconnect intervals specified.\n";
 			uv_unref((uv_handle_t *) &c->mainTimer);//STOPPING THE MAIN LOOP CREATED EARLIER IN CONSTRUCTOR
 		}
 	} else {
 		c->_connected = true;
-		cerr << c->client.flags << std::endl;
 		if (c->_onConnect != NULL)
 			c->_onConnect();
-		fprintf(stderr, "Connected.\n");
 		uv_read_start((uv_stream_t *) &c->client, TCPClient::alloc_buffer, TCPClient::on_client_read);
 	}
-	std::cerr << "EXIT On Connect reached" << std::endl;
-
 }
 
 

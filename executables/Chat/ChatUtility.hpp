@@ -48,7 +48,6 @@ public:
 
 };
 
-
 class EventInfo {
 public:
 	static std::string newMessage() { return "chat.newMessage"; }

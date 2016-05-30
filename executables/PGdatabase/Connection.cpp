@@ -14,12 +14,12 @@ namespace zeitoon {
 namespace pgdatabase {
 
 Connection::Connection() {
+	mtxLock = new mutex;
 	conn = nullptr;
-
 }
 
 Connection::Connection(std::string USERin, std::string PASSin, std::string HOSTin, int PORTin,
-                       std::string DBNAMEin) {
+                       std::string DBNAMEin) : Connection() {
 	USER = USERin;
 	PASS = PASSin;
 	HOST = HOSTin;
@@ -93,8 +93,7 @@ std::string Connection::getValue(std::string command) {
 	if (not isConnected()) {
 		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 	}
-	std::lock_guard<std::mutex> lck(mtxLock);
-
+	lock_guard<mutex> lck(*mtxLock);
 	PGresult *commandResult = PQexec(conn, command.c_str());
 	std::string desc;
 	if (not zeitoon::pgdatabase::PGutility::isValidResult(commandResult, desc)) {
@@ -110,8 +109,8 @@ DTTablePostgres Connection::query(std::string command) {
 		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 
 	}
-	std::lock_guard<std::mutex> lck(mtxLock);
 	try {
+		lock_guard<mutex> lck(*mtxLock);
 		DTTablePostgres queryObj(conn, command, "Query");
 		return queryObj;
 	} catch (exceptionEx *errorInfo) {
@@ -132,7 +131,7 @@ int Connection::execute(std::string command) {
 	if (not isConnected()) {
 		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 	}
-	std::lock_guard<std::mutex> lck(mtxLock);
+	lock_guard<mutex> lck(*mtxLock);
 	PGresult *commandResult = PQexec(conn, command.c_str());
 	std::string desc;
 	if (not zeitoon::pgdatabase::PGutility::isValidResult(commandResult, desc)) {

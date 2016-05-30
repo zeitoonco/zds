@@ -149,10 +149,8 @@ void ConnectionManager::registerNewExtension(std::string extensionName) {
 
 void ConnectionManager::connectionMaker(std::string extensionName) {
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
-	auto insertResult = this->connectionList.insert(std::pair<string, Connection>(extensionName,
-	                                                                              Connection(extensionName,
-	                                                                                         extensionName, host,
-	                                                                                         port, dbname)));
+	auto insertResult = this->connectionList.insert(
+			std::pair<string, Connection>(extensionName, Connection(extensionName, extensionName, host, port, dbname)));
 	if (!insertResult.second)//false if not successfully inserted into the map
 		EXTDBError("Create Connection for \'" + extensionName + "\' FAILED. ");
 

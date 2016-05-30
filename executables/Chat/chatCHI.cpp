@@ -84,11 +84,11 @@ namespace zeitoon {
         }
         else if (!Strings::compare(node, CommandInfo::removeUserFromSession(), false)) {
             DSAddUserSession temp(data);
-            chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
+            chatCore.removeUserFromSession(temp.userID.getValue(), temp.sessionID.getValue());
         }
         else if (!Strings::compare(node, CommandInfo::changeLeader(), false)) {
             DSAddUserSession temp(data);
-            chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
+            chatCore.changeLeader(temp.userID.getValue(), temp.sessionID.getValue());
         }
         else if (!Strings::compare(node, CommandInfo::listSessions(), false)) {
             DSInteger temp;

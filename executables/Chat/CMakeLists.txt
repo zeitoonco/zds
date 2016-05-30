@@ -40,3 +40,5 @@ if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${testsDir}")
 endif()
 
 # libs
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/DBTableScripts.sql DESTINATION ${binDir}/${executablesDir}/${moduleName})

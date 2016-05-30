@@ -7,8 +7,8 @@
 
 #include "Profiles.hpp"
 #include "CommunicationManager.hpp"
-#include "utility/exceptionex.hpp"
-#include "utility/utility.hpp"
+#include <utility/exceptionex.hpp>
+#include <utility/utility.hpp>
 #include <algorithm>
 #include <string>
 #include <mutex>

@@ -1,0 +1,22 @@
+/** ***   WARNING   ***
+  * This file has been generated using CodeGenerator.
+  *   any manual modification will be erased in next cmake build.
+  * Generated on : $datetime
+  *
+  * By ajl.
+  */
+
+#ifndef $headerid
+#define $headerid
+
+#include <utility/exceptionex.hpp>
+
+$namespaceztart
+$class
+$namespaceend
+
+//Macro here -----------------------------------------------------------------
+
+$macro
+
+#endif //$headerid

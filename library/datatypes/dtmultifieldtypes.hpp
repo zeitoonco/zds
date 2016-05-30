@@ -600,6 +600,8 @@ public:
 	}
 
 	virtual void fromString(string data) {
+		if (data.length() == 0)
+			return;
 		fromString(data, false);
 	}
 

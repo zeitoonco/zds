@@ -1,0 +1,28 @@
+class $name : public exceptionExWithInnerEx {
+public:
+	$name(std::string imessage) :
+			$name(imessage, "", "", "", -1) {
+	}
+
+	$name(std::string imessage, exceptionEx &innerException) :
+			$name(imessage, "", "", "", -1, innerException) {
+	}
+
+	$name(std::string imessage, std::string owner, std::string file, std::string function, int line,
+	                 exceptionEx &innerException) :
+			exceptionExWithInnerEx(getDefTitle(), imessage, owner, file, function, line, innerException) {
+	}
+
+	$name(std::string imessage, std::string owner, std::string file, std::string function, int line) :
+			exceptionExWithInnerEx(getDefTitle(), imessage, owner, file, function, line) {
+	}
+
+	virtual std::string getDefTitle() {
+		return "$title";
+	}
+
+	virtual std::string getName() {
+		return "$name";
+	}
+
+};

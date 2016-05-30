@@ -500,7 +500,11 @@ public:
 class CommunicationUtility {
 public:
 	static string getRandomID() {
-		srand(time(NULL));
+		static int flag=0;
+		if (flag==0){
+			flag=9;
+			srand(time(NULL));
+		}
 		return Strings::itoa(rand());
 	}
 

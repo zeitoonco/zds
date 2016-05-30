@@ -90,11 +90,17 @@ void Connection::disconnect() {
 }
 
 std::string Connection::getValue(std::string command) {
-	try {
-		return query(command).fieldValue(0, 0);
-	} catch (zeitoon::utility::exceptionEx *err) {
-		EXTDBErrorI("GetValue Failed", err);
+	if (not isConnected()) {
+		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
 	}
+	PGresult *commandResult = PQexec(conn, command.c_str());
+	std::string desc;
+	if (not zeitoon::pgdatabase::PGutility::isValidResult(commandResult, desc)) {
+		EXTDBError("SQL GetSingleFieldValue Failed. " + desc);
+	}
+	if (PQntuples(commandResult) < 1)
+		EXTDBError("SQL GetSingleFieldValue Failed. No tuples returned from database");
+	return PQgetvalue(commandResult, 0, 0);
 }
 
 DTTablePostgres Connection::query(std::string command) {

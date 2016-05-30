@@ -13,7 +13,7 @@ namespace utility {
 
 ServerMediator::ServerMediator(CommunicationHandlerInterface *chi) :
 		owner(chi), communication(this), setting(this), database(this) {
-	tcpc.registerOnMessageCB(std::bind(&ServerMediator::dataReceived,this,placeholders::_1));
+	tcpc.registerOnMessageCB(std::bind(&ServerMediator::dataReceived, this, placeholders::_1));
 	tcpc.registerOnClientConnectCB(std::bind(&ServerMediator::onNetConnect, this));
 	tcpc.registerOnClientDisconnectCB(std::bind(&ServerMediator::onNetDisconnect, this));
 } //todo:#LT: we need auto connect constructor ( auto-detect server )
@@ -33,7 +33,7 @@ void ServerMediator::connect() {
 }
 
 void ServerMediator::connect(string address, int port) {
-	tcpc.connect(address,port);
+	tcpc.connect(address, port);
 }
 
 void ServerMediator::disconnect() {
@@ -48,10 +48,13 @@ void ServerMediator::dataReceived(string data) {
 	JStruct js(data);
 	string type = js["type"].getValue();
 	string node = js["node"].getValue();
+	//todo: if type call  && node error ->> errReceived()
 	if (!Strings::compare(type, "internal") && !Strings::compare(node, "ping")) {
 		send("{\"type\" : \"internal\" , \"node\" : \"pong\" , \"id\" : \"" + js["id"].getValue() + "\"}");
 	} else {
 		if (!Strings::compare(type, "callback")) if (communication.dataReceive(data))
+			return;
+		if (!Strings::compare(type, "call") && seq(node, "error")) if (communication.errorReceive(data))
 			return;
 		owner->datareceive(data);
 	}
@@ -66,12 +69,12 @@ void ServerMediator::send(string data) {
 	tcpc.send(data);
 }
 
-	void ServerMediator::onNetConnect() {
-		owner->onConnect();
-	}
+void ServerMediator::onNetConnect() {
+	owner->onConnect();
+}
 
-	void ServerMediator::onNetDisconnect() {
-		owner->onDisconnect();//todo: called after destruction of owner! sigabrt
+void ServerMediator::onNetDisconnect() {
+	owner->onDisconnect();//todo: called after destruction of owner! sigabrt
 }
 
 } /* namespace utility */

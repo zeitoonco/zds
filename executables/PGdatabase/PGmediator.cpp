@@ -27,7 +27,6 @@ void PGmediator::onCommand(string node, string data, string id, string from) {
 	try {
 		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), false)) {
 			DSDBQuery sql(data, true);
-			conMgr.query(from, sql.query.getValue());
 			DTTableString result(conMgr.query(from, sql.query.getValue()).toString(), "");
 			this->sm.communication.runCallback(node, result.toString(), id);
 		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), false)) {
@@ -51,9 +50,15 @@ void PGmediator::onCallback(string node, string data, string id, string from) {
 }
 
 void PGmediator::onEvent(string node, string data, string from) {
-	JStruct temp(data);
-	auto d = temp["name"].getValue();
-	conMgr.removeExtension(d);
+	try {
+		JStruct temp(data);
+		if (!Strings::compare(node, zeitoon::_core::eventInfo::onServiceUninstall(), false)) {
+			auto d = temp["name"].getValue();
+			conMgr.removeExtension(d);
+		}
+	} catch (zeitoon::utility::exceptionEx *err) {
+		std::cerr << "PGDB OnEvent Error: " << err->what() << "\n";
+	}
 }
 
 void PGmediator::onInstall(string id) {

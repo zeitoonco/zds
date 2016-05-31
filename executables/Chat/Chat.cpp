@@ -180,7 +180,7 @@ void chaT::removeUserFromSession(int userID, int sessionID) {
 //If the user in the 'Session' was another of the 'Session' is deleted if the 'Leader' is not
 	std::string result = chatCHI->sm.database.singleFieldQuerySync(
 			"SELECT count(sessionid) FROM sessionuser WHERE userid =" + to_string(userID) + " AND sessionid = " +
-			to_string(sessionID) + " AND Leader = 'True'");
+			to_string(sessionID) + " AND Leader = " + to_string(userID) + "");
 
 	chatCHI->sm.database.execute(
 			"DELETE FROM sessionuser WHERE userid=" + to_string(userID) + " AND sessionid=" +

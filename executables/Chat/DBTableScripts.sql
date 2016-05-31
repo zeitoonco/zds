@@ -17,12 +17,12 @@ CREATE TABLE if not exists session
 (
   id serial NOT NULL,
   creationdate timestamp with time zone NOT NULL DEFAULT now(),
+  Leader bigint,
   CONSTRAINT unique_id PRIMARY KEY (id)
 )
 WITH (
   OIDS=FALSE
 );
-
 
 CREATE TABLE if not exists Message
 (

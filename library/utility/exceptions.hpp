@@ -1,7 +1,6 @@
 /** ***   WARNING   ***
   * This file has been generated using CodeGenerator.
   *   any manual modification will be erased in next cmake build.
-  * Generated on : 2016-05-30 12:08:54.462317
   *
   * By ajl.
   */

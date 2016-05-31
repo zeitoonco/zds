@@ -19,14 +19,13 @@ namespace usermanagement {
 
 class UmCHI: public CommunicationHandlerInterface {
 
-	std::string serviceID;
 	zeitoon::datatypes::DSInstallInfo insInfo;
 	void setInstallInfo();
 	void checkDBTables();
-public:
-	zeitoon::usermanagement::UMCore userMngrInterface;
 
-	//todo::place this back to private section.
+	zeitoon::usermanagement::UMCore userMngrInterface;
+public:
+
 	UmCHI();
 	void onCommand(string node, string data, string id, string from);
 	void onCallback(string node, string data, string id, string from);

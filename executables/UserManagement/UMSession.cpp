@@ -30,8 +30,7 @@ UMSession::UMSession(int userIDIN, int sessionIDIN, UMCore *instance) :
 				"select username from users where id=" + std::to_string(userIDIN));
 		//ReImplemented above! username = PQgetvalue(queryGlobal("select username from users where id=" + std::to_string(userIDIN)), 0, 0);
 	} catch (exceptionEx &errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(), "Failed to load username. " + std::string(errorInfo.what()));
-		EXTDBErrorIO("Unable to fetch username from Database", getNameAndType(), errorInfo);
+		EXTDBErrorI("Unable to fetch username from Database", errorInfo);
 	}
 	userID = userIDIN;
 	sessionID = sessionIDIN;
@@ -39,8 +38,7 @@ UMSession::UMSession(int userIDIN, int sessionIDIN, UMCore *instance) :
 		updatePermissionsCache();
 		updateUsergroups();
 	} catch (exceptionEx &errorInfo) {
-		EXTDBErrorIO("Cache Update Failed", this->getNameAndType(), errorInfo);
-		coreInstance->systemLog.log(getNameAndType(), errorInfo.what(), LogLevels::warning);
+		EXTDBErrorI("Cache Update Failed", errorInfo);
 	}
 }
 
@@ -50,10 +48,7 @@ void UMSession::updatePermissionsCache() {
 		result = coreInstance->querySync(
 				"select permissionid, state from userpermission where userid=" + std::to_string(userID));
 	} catch (exceptionEx &errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(),
-		                            "Failed to updatePermissionCache() " + std::string(errorInfo.what()),
-		                            LogLevels::warning);
-		EXTDBErrorIO("Failed to updatePermissionCache", getNameAndType(), errorInfo);
+		EXTDBErrorI("Failed to updatePermissionCache", errorInfo);
 	}
 
 	for (size_t i = 0; i < result.rowCount(); i++) {
@@ -69,10 +64,7 @@ void UMSession::updatePermissionsCache(int permissionID) {
 				"select  state from userpermission where permissionid=" + std::to_string(permissionID) +
 				" and userid=" + std::to_string(userID));
 	} catch (exceptionEx &errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(),
-		                            "Failed to updatePermissionCache(" + std::to_string(permissionID) + "). " +
-		                            std::string(errorInfo.what()));
-		EXTDBErrorIO("Failed to updatePermissionCache(int PermissionID)", getNameAndType(), errorInfo);
+		EXTDBErrorI("Failed to updatePermissionCache(int PermissionID)", errorInfo);
 	}
 
 	if (result.rowCount() == 1) {
@@ -97,8 +89,7 @@ void UMSession::updateUsergroups() {
 	try {
 		result = coreInstance->querySync("select groupid from usergroup where userid=" + std::to_string(userID));
 	} catch (exceptionEx &errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(), "Failed to update usergroup IDs ", LogLevels::warning);
-		EXTDBErrorIO("Failed to update usergroup IDs", getNameAndType(), errorInfo);
+		EXTDBErrorI("Failed to update usergroup IDs", errorInfo);
 	}
 
 	for (size_t i = 0; i < result.rowCount(); i++) {

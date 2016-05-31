@@ -31,8 +31,7 @@ UMUserInfo::UMUserInfo(int userID, UMCore* instance) :
 	try {
 		result = coreInstance->querySync("select username, name, banned, banreason from users where id =" + std::to_string(userID));
 	} catch (exceptionEx & errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(), "Unable to fetch info on userID: " + std::to_string(userID) + errorInfo.what(), LogLevels::warning);
-		EXTDBErrorIO("Unable to fetch infor for UserID: " + std::to_string(userID), getNameAndType(), errorInfo);
+		EXTDBErrorI("Unable to fetch info for UserID: " + std::to_string(userID), errorInfo);
 	}
 	if (result.rowCount() == 1) { //if tupple ==1 , means that it has found a match for the particular userID
 		if (result.fieldValue(0, 2) == "f") {

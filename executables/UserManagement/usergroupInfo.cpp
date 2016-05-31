@@ -32,7 +32,6 @@ usergroupInfo::usergroupInfo(int groupIDn, UMCore* instance) :
 	try {
 		result = coreInstance->querySync("select permissionid, state from grouppermission where groupid=" + std::to_string(groupIDn));
 	} catch (exceptionEx & errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(), "Unable to fetch usergroupInfo from database. " + std::string(errorInfo.what()), LogLevels::warning);
 		EXTDBErrorI("Unable to fetch usergroupInfo from database " + std::to_string(groupID), errorInfo);
 	}
 

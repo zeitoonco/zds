@@ -57,7 +57,7 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			addResult.value = userMngrInterface.addUser(adUsrInfo.username.getValue(), adUsrInfo.password.getValue(),
 			                                            adUsrInfo.name.getValue());
 			sm.communication.runCallback(node, addResult.toString(true),
-			                             id);//todo:return the return value? by ajl //fixed by inf, to be checked
+			                             id);
 		} else if (!Strings::compare(node, commandInfo::modifyUser(), false)) {
 			DSModifyUser userInfo(data);
 			userMngrInterface.modifyUser(userInfo.userID.getValue(), userInfo.username.getValue(),
@@ -170,7 +170,7 @@ void UmCHI::onEvent(string node, string data, string from) {
 
 }
 
-void UmCHI::onInstall(string id) {//todo: check serviceID
+void UmCHI::onInstall(string id) {
 	string cpath = FileSystemUtility::getAppPath();
 	//Addressing the file and checking Database tables
 	string temp = cpath + "DBTableScripts.sql";

@@ -63,3 +63,4 @@ def parseList(eList, templates):
 			print("\t++Generating exceptions.")
 			generateExceptionHeaderFromList(
 				os.path.join(os.path.dirname(eList), 'exceptions.hpp'), namespace, j['exceptions'], templates)
+			#todo:update only if generatedFile differs

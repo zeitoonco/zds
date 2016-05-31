@@ -50,7 +50,7 @@ public:
 
 class EventInfo {
 public:
-	static std::string newMessage() { return "chat.newMessage"; }
+	static std::string newMessageReceived() { return "chat.newMessageReceived"; }
 
 	static std::string sessionUserAdded() { return "chat.sessionUserAdded"; }
 

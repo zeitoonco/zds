@@ -325,7 +325,7 @@ namespace zeitoon {
 
             //-------------------EVENTS
             insInfo.events.add(
-                    new DSInstallInfo::DSEventDetail(EventInfo::newMessage(), DSNewMessage::getStructName(),
+                    new DSInstallInfo::DSEventDetail(EventInfo::newMessageReceived(), DSNewMessage::getStructName(),
                                                      DSNewMessage::getStructVersion()), true);
             insInfo.events.add(
                     new DSInstallInfo::DSEventDetail(EventInfo::sessionUserAdded(), DSAddUserSession::getStructName(),

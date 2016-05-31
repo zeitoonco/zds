@@ -16,7 +16,7 @@ int chaT::newMessage(int userID, int sessionID, std::string msg, EnumMsgType::ms
 			to_string(sessionID) + ", '" + msg + "', default," + to_string(type) + ") returning id");
 	if (result > 0) {
 		std::cerr << "MSG Sent!" << std::endl;
-		chatCHI->sm.communication.runEvent(EventInfo::newMessage(),
+		chatCHI->sm.communication.runEvent(EventInfo::newMessageReceived(),
 		                                   zeitoon::chat::DSNewMessage(userID, sessionID, msg, type).toString(
 				                                   true));
 		return result;

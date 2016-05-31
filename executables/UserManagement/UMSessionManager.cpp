@@ -67,11 +67,7 @@ int UMSessionManager::newSession(int userID) {
 		try {
 			updateUsergroupCache(sessionList[sessionID].usergruops[i]);
 		} catch (exceptionEx &errorInfo) {
-			coreInstance->systemLog.log(getNameAndType(),
-			                            "newSession: unable to update usergroupCache for userID: " +
-			                            std::to_string(userID) + std::string(errorInfo.what()), LogLevels::warning);
-			EXTDBErrorI("newSession: unable to update usergroupCache for userID: " + std::to_string(userID),
-			             errorInfo);
+			EXTDBErrorI("newSession: unable to update usergroupCache for userID: " + std::to_string(userID), errorInfo);
 		}
 		//iterates through vector of usergroups in UMMSEsion fills up usergroupParentCache
 		try {
@@ -86,7 +82,7 @@ int UMSessionManager::newSession(int userID) {
 		try {
 			permissionParentCacheLoader(it->first);
 		} catch (exceptionEx &errorInfo) {
-			EXTDBErrorIO("newSession: unable to update permissionParentCache", getNameAndType(), errorInfo);
+			EXTDBErrorI("newSession: unable to update permissionParentCache", errorInfo);
 		}
 	}
 
@@ -97,7 +93,8 @@ void UMSessionManager::removeSession(int sessionID) {
 	int a = activeSessions.erase(sessionList.find(sessionID)->second.userID);
 	int b = sessionList.erase(sessionID);
 	if (a != 1 or b != 1) {            // make a log upon an unsuccessful session removal.
-		coreInstance->systemLog.log(getNameAndType(), std::to_string((a == 1) ? b : a), LogLevels::trace);
+		coreInstance->systemLog.log("SessionRemove Failed" + getNameAndType(), std::to_string((a == 1) ? b : a),
+		                            LogLevels::trace);
 	}
 }
 
@@ -109,7 +106,7 @@ void UMSessionManager::updateUsergroupCache(int groupID) {
 		coreInstance->systemLog.log(getNameAndType(),
 		                            "Unable to load usergroup cache for " + std::to_string(groupID) +
 		                            ". MAP-> INSERT PAIR FAILED", LogLevels::trace);
-		EXTDBErrorO("Failed to updateUsergroupCache for " + std::to_string(groupID), getNameAndType());
+		EXTDBError("Failed to updateUsergroupCache for " + std::to_string(groupID));
 	}
 
 }
@@ -119,12 +116,7 @@ void UMSessionManager::userGroupParentCacheLoader(int groupID) {
 	try {
 		result = coreInstance->querySync("select parentid from groups where id=" + std::to_string(groupID));
 	} catch (exceptionEx &errorInfo) {
-		coreInstance->systemLog.log(getNameAndType(),
-		                            "Unable to load userGroupParentCache for groupID:" + std::to_string(groupID) +
-		                            ". " + errorInfo.what(),
-		                            LogLevels::warning);
-		EXTDBErrorIO(" Unable to fetch GroupParent from Database. GroupID: " + std::to_string(groupID),
-		             getNameAndType(), errorInfo);
+		EXTDBErrorI(" Unable to fetch GroupParent from Database. GroupID: " + std::to_string(groupID), errorInfo);
 	}
 	if (result.rowCount() < 1) {
 		return;
@@ -137,8 +129,7 @@ void UMSessionManager::userGroupParentCacheLoader(int groupID) {
 			tempParentID = std::stoi(coreInstance->singleFieldQuerySync("select parentid from groups where id=" +
 			                                                            std::to_string(groupID)));
 		} catch (exceptionEx &errorInfo) {
-			EXTDBErrorIO(" Unable to fetch GroupParent from Database. GroupID: " + std::to_string(groupID),
-			             getNameAndType(), errorInfo);
+			EXTDBErrorI(" Unable to fetch GroupParent from Database. GroupID: " + std::to_string(groupID), errorInfo);
 		}
 
 	}
@@ -152,8 +143,7 @@ void UMSessionManager::permissionParentCacheLoader(int permissionID) {
 	try {
 		result = coreInstance->querySync("select parentid from permission where id=" + std::to_string(permissionID));
 	} catch (exceptionEx &errorInfo) {
-		EXTDBErrorIO("Unable to fetch PermissionParent for permissionID: " + std::to_string(permissionID),
-		             getNameAndType(), errorInfo);
+		EXTDBErrorI("Unable to fetch PermissionParent for permissionID: " + std::to_string(permissionID), errorInfo);
 	}
 
 	int tempParentID = result.fieldIsNull(0, 0) ? -1 : std::stoi(result.fieldValue(0, 0));
@@ -164,8 +154,8 @@ void UMSessionManager::permissionParentCacheLoader(int permissionID) {
 			result = coreInstance->querySync(
 					"select parentid from permission where id=" + std::to_string(permissionID));
 		} catch (exceptionEx &errorInfo) {
-			EXTDBErrorIO("Unable to fetch PermissionParent for permissionID: " + std::to_string(permissionID),
-			             getNameAndType(), errorInfo);
+			EXTDBErrorI("Unable to fetch PermissionParent for permissionID: " + std::to_string(permissionID),
+			            errorInfo);
 		}
 		tempParentID = result.fieldIsNull(0, 0) ? -1 : std::stoi(result.fieldValue(0, 0));
 	}

@@ -72,7 +72,8 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 				uID = userID;
 				umCHI->sm.communication.runEvent(eventInfo::loggedIn(),
 				                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, banned,
-				                                                                     desc).toString(
+				                                                                     desc,
+				                                                                     this->isOnline(userID)).toString(
 						                                 true));                //##Event fired
 			} catch (exceptionEx &errorInfo) {
 				EXTDBErrorI("Login: unable to register the session for " + username, errorInfo);
@@ -134,7 +135,8 @@ void UMCore::logout(int sessionID) {
 	sessionManager.removeSession(sessionID);
 	//this->sessionManager.sessionList.at(sessionID).userID;//:: initialize upon removal of session? by inf
 	umCHI->sm.communication.runEvent(eventInfo::loggedOut(),
-	                                 zeitoon::usermanagement::DSUserInfo(userID, username, "", false, "").toString(
+	                                 zeitoon::usermanagement::DSUserInfo(userID, username, "", false, "",
+	                                                                     this->isOnline(userID)).toString(
 			                                 true));
 	//##Event Fired
 	systemLog.log(getNameAndType(), username + " [" + std::to_string(sessionID) + "] " + "Logged out", LogLevels::note);
@@ -236,7 +238,8 @@ int UMCore::addUser(std::string username, std::string password, std::string name
 		EXTDBErrorI("Unable to add user [" + username + "] to database", errorInfo);
 	}
 	umCHI->sm.communication.runEvent(eventInfo::userAdded(),
-	                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, false, "").toString(
+	                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, false, "",
+	                                                                     this->isOnline(userID)).toString(
 			                                 true));
 	//##Event Fired
 	systemLog.log(getNameAndType(), "User added. [user: " + username + " id:" + std::to_string(userID) + "]",
@@ -264,7 +267,8 @@ void UMCore::removeUser(int userID) {
 
 	umCHI->sm.communication.runEvent(eventInfo::userRemoved(),
 	                                 zeitoon::usermanagement::DSUserInfo(userID, userName, "", false,
-	                                                                     "").toString(true));//##Event Fired
+	                                                                     "", this->isOnline(userID)).toString(
+			                                 true));//##Event Fired
 
 	systemLog.log(getNameAndType(), "User removed. [ID: " + std::to_string(userID) + " Name: " + userName + "]",
 	              LogLevels::note);
@@ -286,7 +290,8 @@ void UMCore::modifyUser(int userID, std::string username, std::string password, 
 				userID).username = username;        //update username in umSession-->(info of active users)
 		umCHI->sm.communication.runEvent(eventInfo::userModified(),
 		                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, false,
-		                                                                     "").toString(true));
+		                                                                     "", this->isOnline(userID)).toString(
+				                                 true));
 		//##Event Fired
 		systemLog.log(getNameAndType(), "User[" + std::to_string(userID) + "] modified.", LogLevels::note);
 	}
@@ -462,11 +467,12 @@ DSUserList UMCore::listUsers() {
 	for (size_t i = 0; i < result.rowCount(); i++) {
 		DTBoolean b("");
 		b.fromString(result.fieldValue(i, 3));
-		allUsers.usersList.add(new DSUserInfo(stoi(result.fieldValue(i, 0)),
+		int userID = stoi(result.fieldValue(i, 0));
+		allUsers.usersList.add(new DSUserInfo(userID,
 		                                      result.fieldValue(i, 1),
 		                                      result.fieldValue(i, 2),
 		                                      b.getValue(),
-		                                      result.fieldValue(i, 4)), true);
+		                                      result.fieldValue(i, 4), this->isOnline(userID)), true);
 	}
 
 	return allUsers;
@@ -489,7 +495,8 @@ DSUserList UMCore::listUsersByGroup(
 		b.fromString(result.fieldValue(i, 3));
 		allUsersOfSpecificGroup.usersList.add(
 				new DSUserInfo(stoi(result.fieldValue(i, 0)), result.fieldValue(i, 1), result.fieldValue(i, 2),
-				               b.getValue(), result.fieldValue(i, 4)), true);
+				               b.getValue(), result.fieldValue(i, 4), this->isOnline(stoi(result.fieldValue(i, 0)))),
+				true);
 	}
 	return allUsersOfSpecificGroup;
 }
@@ -916,6 +923,12 @@ DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
 std::string UMCore::getNameAndType() {
 	return "UMCore";
 }
+
+bool UMCore::isOnline(int userID) {//if sessionID = -1 ==> user is offline
+	return (this->sessionManager.getSessionIDbyUserID(userID) != -1);
+
+}
+
 
 }//usermanagement
 }

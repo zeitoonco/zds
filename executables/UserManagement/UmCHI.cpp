@@ -70,7 +70,7 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			DSInteger userId;
 			userId.fromString(data);
 			UMUserInfo temp = userMngrInterface.getUserInfo(userId.value.getValue());
-			DSUserInfo userInfo(temp.id, temp.username, temp.name, temp.banned, temp.banReason);
+			DSUserInfo userInfo(temp.id, temp.username, temp.name, temp.banned, temp.banReason, temp.isOnline);
 			sm.communication.runCallback(node, userInfo.toString(true), id);
 		} else if (!Strings::compare(node, commandInfo::registerPermission(), false)) {
 			DSRegPermission permissionInfo(data);

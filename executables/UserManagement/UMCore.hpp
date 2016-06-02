@@ -186,6 +186,11 @@ public:
 
 	DSUsergroupPermissionList listUsergroupPermissions(int usergroupID);
 
+	/**
+    * bool isOnline returns user stats
+	 **/
+	bool isOnline(int userID);
+
 private:
 	/*
 	 typedef  void (UMCore::*BPTR) (std::string);
@@ -274,6 +279,7 @@ private:
 	 * getNameAndType baraye moshakhas kardan Owner e exception ast va kaarbord e ann faghat baraye exceptionEx hast
 	 */
 	std::string getNameAndType();
+
 
 };
 

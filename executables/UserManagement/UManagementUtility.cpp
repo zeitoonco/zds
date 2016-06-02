@@ -19,6 +19,7 @@ UMUserInfo::UMUserInfo() {
 	banReason = "";
 	banned = true;
 	coreInstance = NULL;
+	isOnline = false;
 }
 
 UMUserInfo::UMUserInfo(int userID, UMCore* instance) :
@@ -27,7 +28,7 @@ UMUserInfo::UMUserInfo(int userID, UMCore* instance) :
 	zeitoon::datatypes::DTTableString result("");
 	//PGresult * result = nullptr;
 	banned = true;
-
+	isOnline = false;
 	try {
 		result = coreInstance->querySync("select username, name, banned, banreason from users where id =" + std::to_string(userID));
 	} catch (exceptionEx & errorInfo) {
@@ -38,6 +39,7 @@ UMUserInfo::UMUserInfo(int userID, UMCore* instance) :
 			//REimplemented above --if (*(PQgetvalue(result, 0, 2)) == 'f') { //convert *char from "RESULT" to boolean
 			banned = false;
 		}
+		isOnline = this->coreInstance->isOnline(userID);
 		id = userID;
 		username = result.fieldValue(0, 0); //PQgetvalue(result, 0, 0);
 		name = result.fieldValue(0, 1); //PQgetvalue(result, 0, 1);

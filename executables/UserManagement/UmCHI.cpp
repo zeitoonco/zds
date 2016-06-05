@@ -154,6 +154,7 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			sm.communication.runCallback(node, permsList.toString(true), id);
 		}
 	} catch (exceptionEx &errorInfo) {
+		std::cerr << "\nUMCHI ERROR:\n" << errorInfo.what() << "\n";
 		sm.communication.errorReport(node, id, errorInfo.what());
 		userMngrInterface.systemLog.log("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 	} catch (exception &errorInfo) {

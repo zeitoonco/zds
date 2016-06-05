@@ -35,8 +35,7 @@ UMUserInfo::UMUserInfo(int userID, UMCore* instance) :
 		EXTDBErrorI("Unable to fetch info for UserID: " + std::to_string(userID), errorInfo);
 	}
 	if (result.rowCount() == 1) { //if tupple ==1 , means that it has found a match for the particular userID
-		if (result.fieldValue(0, 2) == "f") {
-			//REimplemented above --if (*(PQgetvalue(result, 0, 2)) == 'f') { //convert *char from "RESULT" to boolean
+		if (result.fieldValue(0, 2) == "f") { //convert *char from "RESULT" to boolean
 			banned = false;
 		}
 		isOnline = this->coreInstance->isOnline(userID);

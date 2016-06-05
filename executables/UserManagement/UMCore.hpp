@@ -280,6 +280,7 @@ private:
 	 */
 	std::string getNameAndType();
 
+	std::map<std::string, int> permissionNameCache;
 
 };
 

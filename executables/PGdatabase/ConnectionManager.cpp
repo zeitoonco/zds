@@ -69,7 +69,7 @@ int ConnectionManager::execute(std::string extension, std::string sql) {
 			connectionMaker(extension);
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {
-		EXTDBErrorIO("DB Connection Error for execute ", this->getNameAndType(), err);
+		EXTDBErrorI("DB Connection Error for execute ", err);
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
@@ -90,13 +90,13 @@ DTTablePostgres ConnectionManager::query(std::string extension, std::string sql)
 			connectionMaker(extension);
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {
-		EXTDBErrorIO("DB Connection Error for query ", this->getNameAndType(), err);
+		EXTDBErrorI("DB Connection Error for query ", err);
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
 		return this->connectionList.at(extension).query(sql);
 	} catch (exceptionEx &errorInfo) {
-		EXTDBErrorIO("SQL Query Error: ", this->getNameAndType(), errorInfo);
+		EXTDBErrorI("SQL Query Error: ", errorInfo);
 	}
 
 }
@@ -111,14 +111,15 @@ std::string ConnectionManager::singleFieldQuery(std::string extension, std::stri
 			connectionMaker(extension);
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {
-		EXTDBErrorIO("DB Connection Error for singleFieldQuery ", this->getNameAndType(), err);
+		EXTDBErrorI("DB Connection Error for singleFieldQuery ", err);
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
 		val = connectionList.at(extension).getValue(sql);
 		return val;
 	} catch (exceptionEx &errorInfo) {
-		EXTDBErrorIO("SQL SingleFieldQuery Error: ", this->getNameAndType(), errorInfo);
+		std::cerr << "DB CONMGR SFV:" << errorInfo.what() << "\n";
+		EXTDBErrorI("SQL SingleFieldQuery Error: ", errorInfo);
 	}
 }
 

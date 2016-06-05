@@ -10,6 +10,7 @@
 
 #include"postgresql/libpq-fe.h"
 #include <string>
+#include <iostream>
 
 namespace zeitoon {
 namespace pgdatabase {
@@ -66,6 +67,7 @@ public:
 				break;
 			case (PGRES_SINGLE_TUPLE):
 				description = "PGRES_SINGLE_TUPLE , not implemented";
+				break;
 			case (PGRES_TUPLES_OK):
 				return true;
 			default:

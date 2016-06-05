@@ -37,7 +37,8 @@ namespace zeitoon {
 			bool banned;
 			/**Moteghayere haviye dalil e ban shodan*/
 			std::string banReason;
-
+			/**user's availability state*/
+			bool isOnline;
 			/**Default Constructor*/
 			UMUserInfo();
 

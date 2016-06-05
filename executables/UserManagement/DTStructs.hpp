@@ -227,6 +227,7 @@ public:
 	DTString name = {"name"};
 	DTBoolean banned = {"banned"};
 	DTString banReason = {"banReason"};
+	DTBoolean isOnline = {"isOnline"};
 
 	static std::string getStructName() {
 		return "DSUserInfo";
@@ -243,6 +244,7 @@ public:
 		list.push_back(&banReason);
 		list.push_back(&banned);
 		list.push_back(&name);
+		list.push_back(&isOnline);
 	}
 
 	DSUserInfo(std::string data) :
@@ -250,13 +252,15 @@ public:
 		this->fromString(data);
 	}
 
-	DSUserInfo(int iuserID, std::string iusername, std::string iname, bool ibanned, std::string ibanReason) :
+	DSUserInfo(int iuserID, std::string iusername, std::string iname, bool ibanned, std::string ibanReason,
+	           bool iOnline) :
 			DSUserInfo() {
 		userID = iuserID;
 		username = iusername;
 		banReason = ibanReason;
 		banned = ibanned;
 		name = iname;
+		isOnline = iOnline;
 
 	}
 };

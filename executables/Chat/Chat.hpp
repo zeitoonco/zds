@@ -40,7 +40,7 @@ public:
 
 	void changeReachState(int userID, EnumStatus::status status);
 
-	int newSession();
+	int newSession(DSListUserID list);
 
 	void addUserToSession(int userID, int sessionID);
 
@@ -53,6 +53,8 @@ public:
 	DSSession getSession(int ID);
 
 	zeitoon::usermanagement::DSUserList SessionUserList(int sessionID);
+
+	string getNameAndType(){ return "ChatCore";	}
 
 };
 }

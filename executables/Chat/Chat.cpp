@@ -52,15 +52,16 @@ DSCheckMessages chaT::checkNewMessages(int userID) {
 
 DSMessageList chaT::getMessages(int userID, int sessionID, EnumGetMsgType::getMsgType type, string from,
                                 string to) {
+	//userid = " + to_string(userID) + " AND
 	string FindMagUser = "";
 	if (type == EnumGetMsgType::date) {
 		if ((utility::Strings::trim(from).length() > 0) && ((utility::Strings::trim(to).length() <= 0) ||
 		                                                    (utility::Strings::trim(to) == "null"))) {
-			FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+			FindMagUser = "((sessionid = " + to_string(sessionID) +
 			              ") AND (msgdate >= '" + from + "'))";
 		}
 		else if ((from.length() > 0) && (to.length() > 0)) {
-			FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+			FindMagUser = "((sessionid = " + to_string(sessionID) +
 			              ") AND (msgdate >= '" + from + "' AND msgdate<= '" + to + "))";
 		}
 	}
@@ -68,27 +69,25 @@ DSMessageList chaT::getMessages(int userID, int sessionID, EnumGetMsgType::getMs
 	else if (type == EnumGetMsgType::id) {
 		if ((utility::Strings::trim(from).length() > 0) && ((utility::Strings::trim(to).length() <= 0) ||
 		                                                    (utility::Strings::trim(to) == "null"))) {
-			FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+			FindMagUser = "((sessionid = " + to_string(sessionID) +
 			              ") AND (id >= " + from + "))";
 		}
 		else if ((from.length() > 0) && (to.length() > 0)) {
-			FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+			FindMagUser = "((usessionid = " + to_string(sessionID) +
 			              ") AND (id >= " + from + " AND id<= " + to + "))";
 		}
 	}
 
 	else if (type == EnumGetMsgType::notified) {
 		std::string result = chatCHI->sm.database.singleFieldQuerySync(
-				"SELECT notifiedid FROM sessionuser WHERE userid = '" + to_string(userID) +
-				"' AND sessionid = '" + to_string(sessionID) + "'");
+				"SELECT notifiedid FROM sessionuser WHERE sessionid = '" + to_string(sessionID) + "'");
 
-		FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
+		FindMagUser = "((sessionid = " + to_string(sessionID) +
 		              ") AND (id > " + result + "))";
 
 	} else if (type == EnumGetMsgType::seen) {
 		std::string result = chatCHI->sm.database.singleFieldQuerySync(
-				"SELECT seenid FROM sessionuser WHERE userid = '" + to_string(userID) +
-				"' AND sessionid = '" + to_string(sessionID) + "'");
+				"SELECT seenid FROM sessionuser WHERE sessionid = '" + to_string(sessionID) + "'");
 		FindMagUser = "((userid = " + to_string(userID) + " AND sessionid = " + to_string(sessionID) +
 		              ") AND (id > " + result + "))";
 	}
@@ -121,28 +120,37 @@ void chaT::messagesNotified(int userID, int sessionID, int notifiedid) {
 }
 
 DSChatUserData chaT::getUserData(int userID) {
-
+	chatCHI->sm.database.execute("INSERT INTO userdata (userid) SELECT " + to_string(userID) +
+	                             " WHERE NOT EXISTS ("
+			                             "SELECT (userid) FROM userdata WHERE userid = " + to_string(userID)+");");
 	size_t i = 0;
 	zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
-			"SELECT (reachstate, status, customstatusicon, customstatustex)FROM userdata WHERE userid = " +
+			"SELECT reachstate, status, customstatusicon, customstatustext FROM userdata WHERE userid = " +
 			to_string(userID));
-	int reachState = stoi(result.fieldValue(0, 0));
-	int status = stoi(result.fieldValue(0, 1));
-	int customStatusIcon = stoi(result.fieldValue(0, 2));
-	std::string customStatus = (result.fieldValue(0, 3));
+	if (result.rowCount() > 0) {
+		int reachState = stoi(result.fieldValue(0, 0));
+		int status = stoi(result.fieldValue(0, 1));
+		int customStatusIcon = stoi(result.fieldValue(0, 2));
+		std::string customStatus = (result.fieldValue(0, 3));
 
-	DSChatUserData temp((EnumReachState::reachState) reachState, (EnumStatus::status) status,
-	                    (EnumCustomStatusIcon::customStatusIcon) customStatusIcon, customStatus);
-	return temp;
+		DSChatUserData temp((EnumReachState::reachState) reachState, (EnumStatus::status) status,
+		                    (EnumCustomStatusIcon::customStatusIcon) customStatusIcon, customStatus);
+		return temp;
+	}
+	/*else{
+
+		int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
+				"INSERT INTO userdata ( userid, status, customstatustext) VALUES ("+ to_string(userID) +" , Normal, Normal"));
+	}*/
 }
 
-void chaT::changeUserState(int userID, EnumStatus::status status,//todo Ask MR.Ali
+void chaT::changeUserState(int userID, EnumStatus::status status,
                            EnumCustomStatusIcon::customStatusIcon customStatusIcon,
                            std::string customstatusText) {
 	chatCHI->sm.database.executeSync(
-			"UPDATE userdata SET status = " + to_string(status) + "customstatusicon =" +
-			to_string(customStatusIcon) + "customstatusText =" +
-			customstatusText + " WHERE userid =" + to_string(userID));
+			"UPDATE userdata SET status = " + to_string(status) + ", customstatusicon =" +
+			to_string(customStatusIcon) + ", customstatusText ='" +
+		    customstatusText + "' WHERE userid =" + to_string(userID));
 
 	chatCHI->sm.communication.runEvent(EventInfo::userStateChanged(),
 	                                   zeitoon::chat::DSChangeUserState(userID, status, customStatusIcon,
@@ -155,16 +163,29 @@ void chaT::changeReachState(int userID, EnumStatus::status status) {
 			"UPDATE userdata SET reachstate = " + to_string(status) + " WHERE userid =" + to_string(userID));
 }
 
-//todo creationdate Data Rooz Default DataBase (MR.Ali_Navidi)
-int chaT::newSession() {
+int chaT::newSession(DSListUserID userIDList) {
 
-	int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
-			"INSERT INTO session ( id,creationdate) VALUES (default,default) returning id"));
-	if (result > 0) { return result; }
+	int sessionID = stoi(chatCHI->sm.database.singleFieldQuerySync(
+			"INSERT INTO session ( id,creationdate,leader) VALUES (default,default," +
+			std::to_string(userIDList.userIDlist[0]->value()) + ") returning id"));
+	if (sessionID <= 0)
+		EXTDBError("Creating session failed");
+//=======<< Added UserToSession >>=======
+	for (int i = 0; userIDList.userIDlist.length() >= i; i++) {
+		int result = chatCHI->sm.database.executeSync(
+				"INSERT INTO sessionuser ( userid, sessionid, joined, seenid, notifiedid) VALUES (" +
+				to_string(userIDList.userIDlist[i]->value()) + " ," +
+				to_string(sessionID) + ",Default,null,null)");
+
+		chatCHI->sm.communication.runEvent(EventInfo::sessionUserAdded(),
+		                                   zeitoon::chat::DSAddUserSession(userIDList.userIDlist[i]->value(),
+		                                                                   sessionID).toString(
+				                                   true));
+	}
+	return sessionID;
 }
 
-//todo MR.Ali
-void chaT::addUserToSession(int userID, int sessionID) {
+/*void chaT::addUserToSession(int userID, int sessionID) {
 	int result = chatCHI->sm.database.executeSync(
 			"INSERT INTO sessionuser ( userid, sessionid, joined, seenid, notifiedid) VALUES (" +
 			to_string(userID) + " ," +
@@ -174,7 +195,7 @@ void chaT::addUserToSession(int userID, int sessionID) {
 	                                   zeitoon::chat::DSAddUserSession(userID, sessionID).toString(
 			                                   true));
 }
-
+*/
 void chaT::removeUserFromSession(int userID, int sessionID) {
 
 //If the user in the 'Session' was another of the 'Session' is deleted if the 'Leader' is not

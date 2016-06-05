@@ -75,13 +75,14 @@ namespace zeitoon {
         }
         else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
             DSInteger result;
-            result.value = chatCore.newSession();
+            DSListUserID list(data);
+            result.value = chatCore.newSession(list);
             sm.communication.runCallback(node, result.toString(true), id);
         }
-        else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
+        /*else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
             DSAddUserSession temp(data);
             chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
-        }
+        }*/
         else if (!Strings::compare(node, CommandInfo::removeUserFromSession(), false)) {
             DSAddUserSession temp(data);
             chatCore.removeUserFromSession(temp.userID.getValue(), temp.sessionID.getValue());

@@ -38,7 +38,20 @@ int main() {
 					switch (op) {
 						case (1): {
 							std::cout << "==========<< NewSession >>==========" << endl;
-							int d = dummy->chatCore.newSession();
+							int userID1, userID2;
+							int sessionID;
+							cout << "Enter userID(1) massage: " << endl;
+							cin >> userID1;
+							cout << "Enter userID(2) massage: " << endl;
+							cin >> userID2;
+
+							cout << "Enter sessionID massage: " << endl;
+							cin >> sessionID;
+							DSListUserID UeserslistID;
+							UeserslistID.userIDlist[0]->setDefualtValue(userID1);
+							UeserslistID.userIDlist[1]->setDefualtValue(userID2);
+
+							int d = dummy->chatCore.newSession(UeserslistID);
 							break;
 						}
 						case (2): {
@@ -81,7 +94,7 @@ int main() {
 							cin >> userID;
 							cout << "Enter sessionID massage: " << endl;
 							cin >> sessionID;
-							dummy->chatCore.addUserToSession(userID, sessionID);
+						//	dummy->chatCore.addUserToSession(userID, sessionID);
 
 							break;
 						}

@@ -122,21 +122,23 @@ void chaT::messagesNotified(int userID, int sessionID, int notifiedid) {
 DSChatUserData chaT::getUserData(int userID) {
 	chatCHI->sm.database.execute("INSERT INTO userdata (userid) SELECT " + to_string(userID) +
 	                             " WHERE NOT EXISTS ("
-			                             "SELECT (userid) FROM userdata WHERE userid = " + to_string(userID)+");");
-	size_t i = 0;
+			                             "SELECT (userid) FROM userdata WHERE userid = " + to_string(userID) + ");");
+
 	zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
 			"SELECT reachstate, status, customstatusicon, customstatustext FROM userdata WHERE userid = " +
 			to_string(userID));
+	int reachState = 0, status = 0, customStatusIcon = 0;
+	std::string customStatus = "";
 	if (result.rowCount() > 0) {
-		int reachState = stoi(result.fieldValue(0, 0));
-		int status = stoi(result.fieldValue(0, 1));
-		int customStatusIcon = stoi(result.fieldValue(0, 2));
-		std::string customStatus = (result.fieldValue(0, 3));
-
-		DSChatUserData temp((EnumReachState::reachState) reachState, (EnumStatus::status) status,
-		                    (EnumCustomStatusIcon::customStatusIcon) customStatusIcon, customStatus);
-		return temp;
+		reachState = stoi(result.fieldValue(0, 0));
+		status = stoi(result.fieldValue(0, 1));
+		customStatusIcon = stoi(result.fieldValue(0, 2));
+		customStatus = (result.fieldValue(0, 3));
 	}
+	DSChatUserData temp((EnumReachState::reachState) reachState, (EnumStatus::status) status,
+	                    (EnumCustomStatusIcon::customStatusIcon) customStatusIcon, customStatus);
+	return temp;
+
 	/*else{
 
 		int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
@@ -150,7 +152,7 @@ void chaT::changeUserState(int userID, EnumStatus::status status,
 	chatCHI->sm.database.executeSync(
 			"UPDATE userdata SET status = " + to_string(status) + ", customstatusicon =" +
 			to_string(customStatusIcon) + ", customstatusText ='" +
-		    customstatusText + "' WHERE userid =" + to_string(userID));
+			customstatusText + "' WHERE userid =" + to_string(userID));
 
 	chatCHI->sm.communication.runEvent(EventInfo::userStateChanged(),
 	                                   zeitoon::chat::DSChangeUserState(userID, status, customStatusIcon,
@@ -200,12 +202,17 @@ void chaT::removeUserFromSession(int userID, int sessionID) {
 
 //If the user in the 'Session' was another of the 'Session' is deleted if the 'Leader' is not
 	std::string result = chatCHI->sm.database.singleFieldQuerySync(
-			"SELECT count(sessionid) FROM sessionuser WHERE userid =" + to_string(userID) + " AND sessionid = " +
-			to_string(sessionID) + " AND Leader = " + to_string(userID) + "");
+			"SELECT count(id) FROM session WHERE sessionid = " + to_string(sessionID) + " AND Leader = " +
+			to_string(userID) + "");
 
-	chatCHI->sm.database.execute(
-			"DELETE FROM sessionuser WHERE userid=" + to_string(userID) + " AND sessionid=" +
-			to_string(sessionID));
+
+		/*	result = chatCHI->sm.database.singleFieldQuerySync(
+					"SELECT count(sessionid) FROM sessionuser WHERE userid =" + to_string(userID) + " AND sessionid = " +
+					to_string(sessionID) + " AND Leader = " + to_string(userID) + "");
+	*/
+		chatCHI->sm.database.execute(
+				"DELETE FROM sessionuser WHERE userid=" + to_string(userID) + " AND sessionid=" +
+				to_string(sessionID));
 
 	if (stoi(result) == 0) {
 		chatCHI->sm.database.execute(

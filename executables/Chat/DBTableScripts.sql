@@ -3,10 +3,10 @@ BEGIN;
 CREATE TABLE if not exists userdata
 (
   userid integer NOT NULL,
-  status integer NOT NULL,
-  customstatusicon integer,
-  customstatustext character varying(255),
-  reachstate integer,
+  status integer NOT NULL DEFAULT 0,
+  customstatusicon integer DEFAULT 0,
+    customstatustext character varying(255) DEFAULT ''::character varying,
+  reachstate integer DEFAULT 0,
   CONSTRAINT userdata_pkey PRIMARY KEY (userid)
 )
 WITH (

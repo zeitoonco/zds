@@ -75,13 +75,14 @@ namespace zeitoon {
         }
         else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
             DSInteger result;
-            result.value = chatCore.newSession();
+            DSListUserID list(data);
+            result.value = chatCore.newSession(list);
             sm.communication.runCallback(node, result.toString(true), id);
         }
-        else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
+        /*else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
             DSAddUserSession temp(data);
             chatCore.addUserToSession(temp.userID.getValue(), temp.sessionID.getValue());
-        }
+        }*/
         else if (!Strings::compare(node, CommandInfo::removeUserFromSession(), false)) {
             DSAddUserSession temp(data);
             chatCore.removeUserFromSession(temp.userID.getValue(), temp.sessionID.getValue());
@@ -110,13 +111,13 @@ namespace zeitoon {
             zeitoon::usermanagement::DSUserList result = chatCore.SessionUserList(temp.value.getValue());
             sm.communication.runCallback(node, result.toString(true), id);
         }
-        else if (!Strings::compare(node, CommandInfo::removeSession(), false)) {
-            DSInteger temp;
+        /*else if (!Strings::compare(node, CommandInfo::removeSession(), false)) {
+            DSInteger temp;//todo: remove if not needed anymore
             temp.fromString(data);
             DSSession result;
-            //   result = chatCore.removeSession(temp.value.getValue());
+               result = chatCore.removeSession(temp.value.getValue());
             sm.communication.runCallback(node, result.toString(true), id);
-        }
+        }*/
     }catch(zeitoon::utility::exceptionEx *err){
             sm.communication.errorReport(node, id, err->what());
     }
@@ -187,7 +188,6 @@ namespace zeitoon {
         }
 
         void ChatCHI::onUninstall() {
-            //TODO Chatconfig.serviceID = "";
             Chatconfig.serviceID = "";
             Chatconfig.save();
         }

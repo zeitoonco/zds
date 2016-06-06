@@ -439,6 +439,14 @@ void UmCHI::setInstallInfo() {
 	insInfo.events.add(
 			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionAdded(), DSUserPermission::getStructName(),
 			                                 DSUserPermission::getStructVersion()), true);
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usergroupPermissionAdded(), DSUserPermission::getStructName(),
+			                                 DSUserPermission::getStructVersion()), true);
+
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usergroupPermissionRemoved(), DSUserPermission::getStructName(),
+			                                 DSUserPermission::getStructVersion()), true);
+
 
 //-------set calls
 

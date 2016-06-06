@@ -919,9 +919,11 @@ void UMCore::addUsergroupPermission(int usergroupID, int permissionID, int state
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to add the permission for the user", errorInfo);
 	}
-	/*umCHI->sm.communication.runEvent(eventInfo::usersPermissionAdded(),//todo: no node has been defined for addUsergroupPermission
-	                                 zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(
-			                                 true));*/
+	umCHI->sm.communication.runEvent(eventInfo::usergroupPermissionAdded(),
+	                                 zeitoon::usermanagement::DSUserPermission(usergroupID, permissionID,
+	                                                                           state).toString(
+			                                 true));
+	//todo:In DSUserPermission, first field is called UserID- ask if the actual field name is important
 }
 
 void UMCore::removeUsergroupPermission(int usergroupID, int permissionID, int state) {
@@ -934,9 +936,11 @@ void UMCore::removeUsergroupPermission(int usergroupID, int permissionID, int st
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to remove user's permission", errorInfo);
 	}
-	/*umCHI->sm.communication.runEvent(eventInfo::usersPermissionRemoved(),//todo: no node has been defined for removeUsergroupPermission
-	                                 zeitoon::usermanagement::DSUserPermission(userID, permissionID, state).toString(
-			                                 true));*/
+	umCHI->sm.communication.runEvent(eventInfo::usergroupPermissionRemoved(),
+	                                 zeitoon::usermanagement::DSUserPermission(usergroupID, permissionID,
+	                                                                           state).toString(
+			                                 true));
+	//todo:In DSUserPermission, first field is called UserID- ask if the actual field name is important
 }
 
 DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {

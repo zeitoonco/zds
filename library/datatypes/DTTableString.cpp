@@ -55,12 +55,24 @@ size_t DTTableString::columnDataSize(int columnNumber) const {
 	return std::stoul((*jsonData)["columns"][columnNumber]["size"].getValue());
 }
 
-std::string DTTableString::fieldValue(int rowNumber, int columnNumber) const {
-	return (*jsonData)["rows"][rowNumber][columnNumber].getValue();
+std::string DTTableString::fieldValue(int rowNumber, int colNumber) const {
+	return (*jsonData)["rows"][rowNumber][colNumber].getValue();
+}
+
+std::string DTTableString::fieldValue(int rowNumber, int colNumber, std::string ifNull) const {
+	return this->fieldIsNull(rowNumber, colNumber) ? ifNull : this->fieldValue(rowNumber, colNumber);
+}
+
+int DTTableString::fieldValueInt(int rowNumber, int colNumber) const {
+	return std::stoi(this->fieldValue(rowNumber, colNumber));
+}
+
+int DTTableString::fieldValueInt(int rowNumber, int colNumber, int ifNull) const {
+	return this->fieldIsNull(rowNumber, colNumber) ? ifNull : this->fieldValueInt(rowNumber, colNumber);
 }
 
 bool DTTableString::fieldIsNull(int rowNumber, int columnNumber) const {
-	return ((JVariable&) ((*jsonData)["rows"][rowNumber][columnNumber])).isNull();
+	return ((JVariable &) ((*jsonData)["rows"][rowNumber][columnNumber])).isNull();
 }
 
 size_t DTTableString::fieldSize(int rowNumber, int columnNumber) const {
@@ -167,8 +179,8 @@ void DTTableString::columnAdd(string name, ColumnDataType::columnDataType dtype,
 	JArray &cols = (JArray &) (*jsonData)["columns"];
 	JArray &tupples = (JArray &) (*jsonData)["rows"];
 	JStruct colStruct;
-	colStruct.add("name", "\""+name+"\"");
-	colStruct.add("datatype", "\""+ColumnDataType::toString(dtype)+"\"");
+	colStruct.add("name", "\"" + name + "\"");
+	colStruct.add("datatype", "\"" + ColumnDataType::toString(dtype) + "\"");
 	colStruct.add("size", std::to_string(size));
 	cols.add(colStruct.toString());
 	for (unsigned int iter = 0; iter < tupples.size(); iter++) {

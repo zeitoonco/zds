@@ -67,7 +67,6 @@ public:
 	/**removeUser(), id e user ra daryaaft karde va aan user raa az database hazv mikonadd
 	 * @param userID int*/
 	void removeUser(int userID);
-
 	/**modifyUser(), moshakhasaat e user raa daryaafte karde va kolle moskhasaat e darj shode dar database ra ba tavajoh
 	 * be id e user taghyir midahat
 	 * @param userID int
@@ -280,7 +279,6 @@ private:
 	 */
 	std::string getNameAndType();
 
-	std::map<std::string, int> permissionNameCache;
 
 };
 

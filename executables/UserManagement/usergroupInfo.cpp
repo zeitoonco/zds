@@ -28,8 +28,7 @@ usergroupInfo::usergroupInfo(int groupIDn, UMCore* instance) :
 	 */
 	groupID = groupIDn;
 	zeitoon::datatypes::DTTableString result("");
-	//PGresult * result = nullptr;
-	try {
+	try {///todo:: select all from grouppermission, then for , tehn populate each group
 		result = coreInstance->querySync("select permissionid, state from grouppermission where groupid=" + std::to_string(groupIDn));
 	} catch (exceptionEx & errorInfo) {
 		EXTDBErrorI("Unable to fetch usergroupInfo from database " + std::to_string(groupID), errorInfo);
@@ -38,7 +37,25 @@ usergroupInfo::usergroupInfo(int groupIDn, UMCore* instance) :
 	for (size_t i = 0; i < result.rowCount(); i++) {
 		permissions[std::stoi(result.fieldValue(i, 0))] = std::stoi(result.fieldValue(i, 1)); //atoi(PQgetvalue(result, i, 1));
 	}
+	try {
+		std::string temp = coreInstance->singleFieldQuerySync(
+				"SELECT parentid  FROM groups where id=" + std::to_string(groupIDn));
+
+		this->parentID = std::stoi(temp);
+	} catch (zeitoon::utility::exceptionEx err) {
+		EXTDBErrorI("Unable to fetch usergroupParentID for group: " + std::to_string(groupIDn), err);
+	} catch (exception) {
+		this->parentID = -1;
+	}
 }
+
+usergroupInfo::usergroupInfo(int groupID, int iparentID) {
+	this->parentID = iparentID;
+	this->groupID = groupID;
+
+}
+
+
 std::string usergroupInfo::getNameAndType() {
 	return "usergroupInfo[" + std::to_string(groupID) + "]";
 

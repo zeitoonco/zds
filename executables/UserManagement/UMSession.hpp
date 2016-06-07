@@ -28,7 +28,7 @@ public:
 	/**map permissionsCache haaviye Id e permission va State e permission-haayi hast ke mostaghiman aan user darad*/
 	std::map<int, int> permissionsCache;//Permission---State
 	/**vector usergroups haaviye ID usergroup-haayi ast ke user ozvi az aanha ast*/
-	std::vector<int> usergruops;
+	std::vector<int> usergroups;
 	/**Default Constructor*/
 	UMSession();
 	/**Overloaded constructor.

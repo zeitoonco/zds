@@ -25,7 +25,7 @@ public:
 	/**map sessionList, haaviye int e sessionID e makhsoos e har user va login information(UMSession)*/
 	std::map<int, UMSession> sessionList;
 	/**map usergroupCache haaviye int e ID e usergroup, va permissionhaa+state e har permission e motealegh be aan ast*/
-	std::map<int, usergroupInfo> usergroupCache;
+	std::map<int, usergroupInfo> usergroupCache;//todo: remove userGroupParent Cache and add field to above map
 	/**map usergroupParentCache haaviye int e ID e group va int ID e parent aan group ast*/
 	std::map<int, int> userGroupParentCache;
 	/**map permissionParentCache haaviye Int e ID e permission va int e Id e parent e aan permission ast*/

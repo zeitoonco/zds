@@ -154,6 +154,7 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			sm.communication.runCallback(node, permsList.toString(true), id);
 		}
 	} catch (exceptionEx &errorInfo) {
+		std::cerr << "\nUMCHI ERROR:\n" << errorInfo.what() << "\n";
 		sm.communication.errorReport(node, id, errorInfo.what());
 		userMngrInterface.systemLog.log("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 	} catch (exception &errorInfo) {
@@ -438,6 +439,14 @@ void UmCHI::setInstallInfo() {
 	insInfo.events.add(
 			new DSInstallInfo::DSEventDetail(eventInfo::usersPermissionAdded(), DSUserPermission::getStructName(),
 			                                 DSUserPermission::getStructVersion()), true);
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usergroupPermissionAdded(), DSUserPermission::getStructName(),
+			                                 DSUserPermission::getStructVersion()), true);
+
+	insInfo.events.add(
+			new DSInstallInfo::DSEventDetail(eventInfo::usergroupPermissionRemoved(), DSUserPermission::getStructName(),
+			                                 DSUserPermission::getStructVersion()), true);
+
 
 //-------set calls
 

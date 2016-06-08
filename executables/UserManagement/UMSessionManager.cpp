@@ -169,7 +169,7 @@ int UMSessionManager::getSessionIDbyUserID(int userID) {
 	if (userSession != activeSessions.end()) {
 		return userSession->second;
 	}
-	return -1;
+	EXToutOfRange("No session was found for user " + std::to_string(userID));
 }
 
 int UMSessionManager::uniqueIdGenerator() {

@@ -32,6 +32,10 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 		EXTunknownExceptionI("unable to add to id-list");
 	}
 	while (!x.set) {
+		/*	if ((startTime - std::chrono::system_clock::now() > 5 ){
+				todo:put a timeout for commands
+			}*/
+
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	}
 	string dt = x.data;
@@ -154,8 +158,8 @@ bool CommunicationMediator::errorReceive(string data) {
 	try {
 		id = js["id"].getValue();
 		dt = js["data"]["description"].getValue();
-		std::cerr << dt;
-	} catch (exceptionEx *ex) {
+		//std::cerr<< "CommunicationMediator on errorReceive: \n" << dt;
+	} catch (exceptionEx &ex) {
 		return false;
 	}
 	if (idList.find(id) == idList.end())

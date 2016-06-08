@@ -40,6 +40,7 @@ void PGmediator::onCommand(string node, string data, string id, string from) {
 			this->sm.communication.runCallback(node, result.toString(), id);
 		}
 	} catch (exceptionEx &errorInfo) {
+		std::cerr << "PG MEDIATOR:\n" << errorInfo.what() << "\n";
 		sm.communication.errorReport(node, id, errorInfo.what());
 	} catch (exception &errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo.what());

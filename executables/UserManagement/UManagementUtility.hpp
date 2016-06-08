@@ -144,6 +144,10 @@ namespace zeitoon {
 			static std::string usergroupModified() { return "userman.usergroupModified"; }
 
 			static std::string usergroupRemoved() { return "userman.usergroupRemoved"; }
+
+			static std::string usergroupPermissionAdded() { return "userman.usergroupPermissionAdded"; }
+
+			static std::string usergroupPermissionRemoved() { return "userman.usergroupPermissionRemoved"; }
 		};
 
 	}//usermanagenment

@@ -24,9 +24,11 @@ namespace zeitoon {
         }
 
         else if (!Strings::compare(node, CommandInfo::removeMessage(), false)) {
-            DSInteger temp;
-            temp.fromString(data);
-            chatCore.removeMessage(temp.value.getValue());
+            //DSInteger temp;
+            DSMessageItem temp(data);
+            JStruct jj(data);
+            auto m = jj["value"].getValue();
+            chatCore.removeMessage(std::stoi(m), temp.userID.getValue());
         }
 
         else if (!Strings::compare(node, CommandInfo::checkNewMessages(), false)) {
@@ -75,7 +77,8 @@ namespace zeitoon {
         }
         else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
             DSInteger result;
-            DSListUserID list(data);
+            DSListUserID list;
+            list.fromString(data);
             result.value = chatCore.newSession(list);
             sm.communication.runCallback(node, result.toString(true), id);
         }

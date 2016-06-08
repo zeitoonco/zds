@@ -155,7 +155,6 @@ namespace zeitoon {
             DTInteger<int> userID = {"userID"};
             DTInteger<int> sessionID = {"sessionID"};
             DTEnum<EnumGetMsgType> type = {"type"};
-            //change from EnumMsgType
             DTString from = {"from"};
             DTString to = {"to"};
 
@@ -262,6 +261,7 @@ namespace zeitoon {
             DTEnum<EnumStatus> status = {"status"};
             DTEnum<EnumCustomStatusIcon> customStatusIcon = {"customStatusIcon"};
             DTString customStatusText = {"customStatusText"};
+            DTInteger<int> userID = {"userID"};
 
             static std::string getStructName() {
                 return "DSChatUserData";
@@ -277,6 +277,7 @@ namespace zeitoon {
                 this->list.push_back(&status);
                 this->list.push_back(&customStatusIcon);
                 this->list.push_back(&customStatusText);
+                this->list.push_back(&userID);
             }
 
             DSChatUserData(std::string data) : DSChatUserData() {
@@ -285,12 +286,13 @@ namespace zeitoon {
 
             DSChatUserData(EnumReachState::reachState ireachState, EnumStatus::status istatus,
                            EnumCustomStatusIcon::customStatusIcon icustomStatusIcon,
-                           std::string icustomStatusText)
+                           std::string icustomStatusText,int iuserID)
                     : DSChatUserData() {
                 reachState = ireachState;
                 status = istatus;
                 customStatusIcon = icustomStatusIcon;
                 customStatusText = icustomStatusText;
+                userID = iuserID;
             }
 
         };

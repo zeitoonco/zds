@@ -22,7 +22,7 @@ public:
 
 	int newMessage(int userID, int sessionID, std::string msg, EnumMsgType::msgType type);
 
-	void removeMessage(int id);
+	void removeMessage(int id,int userID);
 
 	DSCheckMessages checkNewMessages(int userID);
 

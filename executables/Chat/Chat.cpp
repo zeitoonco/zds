@@ -151,16 +151,15 @@ DSChatUserData chaT::getUserData(int userID) {
 
 void chaT::changeUserState(int userID, EnumStatus::status status,
                            EnumCustomStatusIcon::customStatusIcon customStatusIcon,
-                           std::string customstatusText) {
+                           std::string customStatus) {
 	chatCHI->sm.database.executeSync(
 			"UPDATE userdata SET status = " + to_string(status) + ", customstatusicon =" +
 			to_string(customStatusIcon) + ", customstatusText ='" +
-			customstatusText + "' WHERE userid =" + to_string(userID));
+					customStatus + "' WHERE userid =" + to_string(userID));
 
 	chatCHI->sm.communication.runEvent(EventInfo::userStateChanged(),
 	                                   zeitoon::chat::DSChangeUserState(userID, status, customStatusIcon,
-	                                                                    customstatusText).toString(
-			                                   true));
+	                                                                    customStatus).toString(true));
 }
 
 void chaT::changeReachState(int userID, EnumStatus::status status) {
@@ -168,22 +167,22 @@ void chaT::changeReachState(int userID, EnumStatus::status status) {
 			"UPDATE userdata SET reachstate = " + to_string(status) + " WHERE userid =" + to_string(userID));
 }
 
-int chaT::newSession(DSListUserID userIDList) {
+int chaT::newSession(DSListUserID *userIDList) {
 
 	int sessionID = stoi(chatCHI->sm.database.singleFieldQuerySync(
 			"INSERT INTO session ( id,creationdate,leader) VALUES (default,default," +
-			std::to_string(userIDList.userIDlist[0]->value()) + ") returning id"));
+			std::to_string(userIDList->userIDlist[0]->value()) + ") returning id"));
 	/*if (sessionID <= 0)
 		EXTDBError("Creating session failed");*/
 //=======<< Added UserToSession >>=======
-	for (int i = 0; userIDList.userIDlist.length() > i; i++) {
+	for (int i = 0; userIDList->userIDlist.length() > i; i++) {
 		int result = chatCHI->sm.database.executeSync(
 				"INSERT INTO sessionuser ( userid, sessionid, joined, seenid, notifiedid) VALUES (" +
-				to_string(userIDList.userIDlist[i]->value()) + " ," +
+				to_string(userIDList->userIDlist[i]->value()) + " ," +
 				to_string(sessionID) + ",Default,null,null)");
 
 		chatCHI->sm.communication.runEvent(EventInfo::sessionUserAdded(),
-		                                   zeitoon::chat::DSAddUserSession(userIDList.userIDlist[i]->value(),
+		                                   zeitoon::chat::DSAddUserSession(userIDList->userIDlist[i]->value(),
 		                                                                   sessionID).toString(
 				                                   true));
 	}
@@ -207,26 +206,33 @@ void chaT::removeUserFromSession(int userID, int sessionID) {
 	int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
 			"SELECT leader FROM session WHERE id = " + to_string(sessionID)  + "")); //Search UserID Leader
 
-	if (result > 0) {
-		int result2 = stoi(chatCHI->sm.database.singleFieldQuerySync(
+	int result2=0;
+
+	int temp = stoi(chatCHI->sm.database.singleFieldQuerySync("SELECT count(userid) FROM sessionuser WHERE sessionid = " + to_string(sessionID)));
+	//if (result > 0) {
+
+	if ((temp >1) && (result == userID)) {
+		result2 = stoi(chatCHI->sm.database.singleFieldQuerySync(
 				"SELECT userid FROM sessionuser WHERE sessionid = " + to_string(sessionID) + " AND NOT(userid = " +
 				to_string(result) + ")"));
 		chatCHI->sm.database.executeSync(
 				"UPDATE session SET Leader = " + to_string(result2) + " WHERE id =" + to_string(sessionID));
-		//EXTDBError("user is leader. cannot remove leader from a session");
 	}
+	//EXTDBError("user is leader. cannot remove leader from a session");
+	//}
 
 	chatCHI->sm.database.execute(
 			"DELETE FROM sessionuser WHERE userid=" + to_string(userID) + " AND sessionid=" +
 			to_string(sessionID));
 
-
 	chatCHI->sm.database.execute(
 			"DELETE FROM message WHERE userid=" + to_string(userID) + " AND sessionid = " +
 			to_string(sessionID));
-	chatCHI->sm.database.execute(
-			"DELETE FROM session WHERE id=" + to_string(sessionID));
-
+	if (temp == 1)
+	{
+		chatCHI->sm.database.execute(
+				"DELETE FROM session WHERE id=" + to_string(sessionID));
+	}
 	chatCHI->sm.communication.runEvent(EventInfo::sessionUserRemoved(),
 	                                   zeitoon::chat::DSAddUserSession(userID, sessionID).toString(
 			                                   true));

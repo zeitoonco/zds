@@ -77,10 +77,11 @@ namespace zeitoon {
         }
         else if (!Strings::compare(node, CommandInfo::newSession(), false)) {
             DSInteger result;
-            DSListUserID list;
-            list.fromString(data);
+            DSListUserID *list= new DSListUserID(data);
+            //list.fromString(data);
             result.value = chatCore.newSession(list);
             sm.communication.runCallback(node, result.toString(true), id);
+            delete list;
         }
         /*else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
             DSAddUserSession temp(data);

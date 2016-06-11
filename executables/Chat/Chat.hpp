@@ -36,11 +36,11 @@ public:
 	DSChatUserData getUserData(int userID);
 
 	void changeUserState(int userID, EnumStatus::status status,
-	                     EnumCustomStatusIcon::customStatusIcon customStatusIcon, std::string customstatusText);
+	                     EnumCustomStatusIcon::customStatusIcon customStatusIcon, std::string customStatus);
 
 	void changeReachState(int userID, EnumStatus::status status);
 
-	int newSession(DSListUserID list);
+	int newSession(DSListUserID *list);
 
 	void addUserToSession(int userID, int sessionID);
 

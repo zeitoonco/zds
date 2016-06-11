@@ -7,12 +7,12 @@
 
 using namespace zeitoon::chat;
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
 
 	zeitoon::chat::ChatCHI ChatMediator;
 	Chatconfig.load();
 	std::string serverIP = "", serverPort = "";
-	if (argc != 3){
+	if (argc != 3) {
 		std::cout << "Invalid number of arguments provided" << std::endl;
 		std::cout << "Required arguments: ServerIP ServerPort" << std::endl;
 		std::cout << "Trying to load from configuration" << std::endl;
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 		} catch (exceptionEx &err) {
 			std::cerr << "Error:\n" << err.what() << std::endl;
 		}
-	}else {
+	} else {
 		serverIP = argv[1];
 		serverPort = argv[2];
 	}

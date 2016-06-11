@@ -190,6 +190,7 @@ public:
 	 **/
 	bool isOnline(int userID);
 
+	void loadCaches();
 private:
 	/*
 	 typedef  void (UMCore::*BPTR) (std::string);
@@ -233,7 +234,7 @@ private:
 	 * @param permissionID int
 	 * @return int permission State
 	 */
-	int checkUserPermissionState(int sessionID, int permissionID);
+	int checkUserPermissionState(int &sessionID, int &permissionID);
 
 	/**checkUserPermissionParentState(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
 	 * agar permission parent  e permission e  mored e nazar dar map e permissionCache e user mojood bashad,
@@ -242,7 +243,7 @@ private:
 	 * @param permissionID int
 	 * @return int permission State
 	 */
-	int checkUserPermissionParentState(int sessionID, int permissionID);
+	int checkUserPermissionParentState(int &sessionID, int &permissionID);
 
 	/**checkUsergroupPermission(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
 	 * agar permission e mored e nazar dar map e yeki az usergroup haaye user mojood bashad,
@@ -251,7 +252,7 @@ private:
 	 * @param permissionID int
 	 * @return int permission State
 	 */
-	int checkUsergroupPermission(int sessionID, int PermissionID);
+	int checkUsergroupPermission(int &sessionID, int &PermissionID);
 
 	/**checkUsergroupParentPermission(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
 	 * agar permission e mored e nazar dar map e yeki az usergroupParent haaye user mojood bashad,
@@ -260,13 +261,13 @@ private:
 	 * @param permissionID int
 	 * @return int permission State
 	 */
-	int checkUsergroupParentPermission(int sessionID, int permissionID);
+	int checkUsergroupParentPermission(int &userGroupID, int &sessionID, int &permissionID);
 
 	/**getPermissionParent() baraye daryaft e parent e permission dar mavagheye khaas(maanand vaghty ke parent dar Cache vojood nadarad)
 	 * @param permissionID int
 	 * @return int Permission Parent ID
 	 */
-	int getPermissionParent(int permissionID);
+	int getPermissionParent(int &permissionID);
 
 	/**getUsergroupParent() baraye daryaft e parent e usergroup dar mavagheye khaas(maanand vaghty ke parent dar Cache vojood nadarad)
 	 * @param permissionID int

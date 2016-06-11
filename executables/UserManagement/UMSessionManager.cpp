@@ -53,37 +53,30 @@ void UMSessionManager::removeSession(int sessionID) {
 	}
 }
 
-void UMSessionManager::updateUsergroupCache(int groupID) {//todo:: needs a lock
+void UMSessionManager::updateUsergroupCache(int groupID) {//todo:: needs a lock+
 	try {
-		auto tempIter = usergroupCache.find(groupID);
-		if (tempIter != usergroupCache.end()) {
-			auto tempUsrgrpINFO = coreInstance->querySync(
-					"SELECT parentid FROM groups WHERE id" + std::to_string(groupID));
-			auto tempUsrGrpPermissions = coreInstance->querySync(
-					"SELECT permissionid, state FROM grouppermission WHERE groupid =" + std::to_string(groupID));
-			if (tempUsrgrpINFO.rowCount() > 0) {
-				tempIter->second.parentID = tempUsrgrpINFO.fieldValueInt(0, 0);
-				size_t counter = tempUsrGrpPermissions.rowCount();
-				auto permissionMAp = tempIter->second.permissions;//
-				permissionMAp.clear();
-				for (size_t i = 0; i < counter; i++) {
-					permissionMAp[tempUsrGrpPermissions.fieldValueInt(i, 0)] = tempUsrGrpPermissions.fieldValueInt(i, 1,
-					                                                                                               -1);
+		auto tempUsrgrpINFO = coreInstance->querySync(
+				"SELECT parentid FROM groups WHERE id" + std::to_string(groupID));
+		if (tempUsrgrpINFO.rowCount() < 1) {
+			for (auto iter = sessionList.begin(); iter != sessionList.end(); iter++) {
+				for (std::vector<int>::iterator usergroupIter = iter->second.usergroups.begin();
+				     usergroupIter != iter->second.usergroups.end(); usergroupIter++) {
+					if (*usergroupIter == groupID) {
+						iter->second.usergroups.erase(usergroupIter);
+					}
 				}
-			} else {
-				usergroupCache.erase(groupID);
 			}
-
-		} else {
-			auto res = usergroupCache.insert(
-					std::pair<int, usergroupInfo>(groupID, usergroupInfo(groupID, this->coreInstance)));
-			if (!res.second) { }
-			EXTunknownException(
-					"Unable to update cache for Usergroup:" + std::to_string(groupID) + " MAP INSERT FAILED.");
 		}
 	} catch (zeitoon::utility::exceptionEx err) {
-		EXTunknownException(err.what());
+		EXTDBError("updateUsergroupCache failed. maybe a wrong groupID");
 	}
+	auto tempIter = usergroupCache.find(groupID);
+	if (tempIter != usergroupCache.end()) {
+		tempIter->second = usergroupInfo(groupID, this->coreInstance);
+	} else {
+		usergroupCache[groupID] = usergroupInfo(groupID, this->coreInstance);
+	}
+
 }
 
 void UMSessionManager::userGroupCacheLoader() {//TODO: Should be called on enable
@@ -128,22 +121,43 @@ void UMSessionManager::permissionCacheLoader() {
 
 void UMSessionManager::permissionCacheUpdate(int permissionID) {
 	try {
-		auto temRes = coreInstance->querySync("SELECT  parentid, name FROM permission WHERE id= " + permissionID);
+		auto temRes = coreInstance->querySync(
+				"SELECT parentid, name FROM permission WHERE id= " + std::to_string(permissionID));
 		if (temRes.rowCount() == 1) {
 			permissionParentCache[permissionID] = temRes.fieldValueInt(0, 0, -1);
 			permissionNamesCache[temRes.fieldValue(0, 1)] = permissionID;
-		} else {
+		} else if (temRes.rowCount() != 1) {
 			permissionParentCache.erase(permissionID);
 			for (std::map<std::string, int>::iterator iter = permissionNamesCache.begin();
 			     iter != permissionNamesCache.end(); iter++) {
 				if (iter->second == permissionID)
 					permissionNamesCache.erase(iter);
 			}
+			for (std::map<int, UMSession>::iterator iter = sessionList.begin();
+			     iter != sessionList.end(); iter++) {
+				iter->second.permissionsCache.erase(permissionID);
+			}
+			for (std::map<int, usergroupInfo>::iterator iter = usergroupCache.begin();
+			     iter != usergroupCache.end(); iter++) {
+				iter->second.permissions.erase(permissionID);
+			}
+		} else {
+			EXTDBError("PermissionCache update. " + std::to_string(temRes.rowCount()) + " rows returned from DB.");
+			/*	*/
 		}
 	} catch (zeitoon::utility::exceptionEx err) {
 		EXTunknownException(err.what());
 	}
 }
+
+int UMSessionManager::getUserIDBySession(int sessionID) {
+	auto temp = this->sessionList.find(sessionID);
+	if (temp != this->sessionList.end()) {
+		return temp->second.userID;
+	}
+	return -1;
+}
+
 
 int UMSessionManager::getSessionIDbyUserID(int userID) {
 	auto userSession = activeSessions.find(userID);

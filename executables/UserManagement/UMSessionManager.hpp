@@ -45,6 +45,12 @@ public:
 
 	void permissionCacheLoader();
 
+/**userGroupParentCacheLoader(int groupID), id e group ra daryaaft mikonad va
+	 * bad az peyda kardan e parent aan group,, Id group va parent e aan raa dar map e userGroupParentCache
+	 * zakhireh mikonad
+	 * @param groupID int */
+	void userGroupCacheLoader();
+
 	/**updateUsergroupCache(int id), id e usergroup raa migirad, sepas permission-haaye marboot be aan group ra
 	 * az database migirad va dar map usergroupCache zakhire mikonad
 	 * @param id int usergroupId*/
@@ -55,14 +61,10 @@ public:
 		 * @param permissionID int*/
 	void permissionCacheUpdate(int permissionID);
 
+	int getUserIDBySession(int sessionID);
 
 private:
 UMCore* coreInstance;
-	/**userGroupParentCacheLoader(int groupID), id e group ra daryaaft mikonad va
-	 * bad az peyda kardan e parent aan group,, Id group va parent e aan raa dar map e userGroupParentCache
-	 * zakhireh mikonad
-	 * @param groupID int */
-	void userGroupCacheLoader();
 
 	/**uniqueIdGenerator(), yek ID e Unique generate mikonad ke baraye sessionID estefaade mishavad*/
 	int uniqueIdGenerator();

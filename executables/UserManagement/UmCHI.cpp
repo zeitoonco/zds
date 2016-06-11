@@ -221,6 +221,8 @@ void UmCHI::onEnable() {
 	sm.communication.registerHook(temp);
 	std::cout << temp << endl;
 
+	this->userMngrInterface.loadCaches();///todo: to be checked and trace-checked
+
 }
 
 void UmCHI::onDisable() {

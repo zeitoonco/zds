@@ -42,11 +42,17 @@ public:
 
 	size_t columnDataSize(int columnNumber) const;
 
-	std::string fieldValue(int rowNumber, int columnNumber) const;
+	std::string fieldValue(int rowNumber, int colNumber) const;
+
+	std::string fieldValue(int rowNumber, int colNumber, std::string ifNull) const;
 
 	bool fieldIsNull(int rowNumber, int columnNumber) const;
 
 	size_t fieldSize(int rowNumber, int columnNumber) const;
+
+	int fieldValueInt(int rowNumber, int colNumber) const;
+
+	int fieldValueInt(int rowNumber, int colNumber, int ifNull) const;
 
 	std::string toString(int indent = -1, std::string indentContent = defaultIndentContent) const;
 

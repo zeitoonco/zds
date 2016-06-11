@@ -107,7 +107,6 @@ std::string Connection::getValue(std::string command) {
 DTTablePostgres Connection::query(std::string command) {
 	if (not isConnected()) {
 		EXTconnectionErrorO("No Connection.  " + std::string(PQerrorMessage(conn)), this->getNameAndType());
-
 	}
 	try {
 		lock_guard<mutex> lck(*mtxLock);

@@ -77,7 +77,7 @@ void UMSession::clearPermissionsCache() {
 }
 
 void UMSession::clearUsergroups() {
-	usergruops.clear();
+	usergroups.clear();
 }
 
 void UMSession::updateUsergroups() {
@@ -93,7 +93,7 @@ void UMSession::updateUsergroups() {
 	}
 
 	for (size_t i = 0; i < result.rowCount(); i++) {
-		usergruops.push_back(std::stoi(result.fieldValue(i, 0)));
+		usergroups.push_back(std::stoi(result.fieldValue(i, 0)));
 	}
 
 

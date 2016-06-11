@@ -27,9 +27,11 @@ public:
 	/**map usergroupCache haaviye int e ID e usergroup, va permissionhaa+state e har permission e motealegh be aan ast*/
 	std::map<int, usergroupInfo> usergroupCache;//todo: remove userGroupParent Cache and add field to above map
 	/**map usergroupParentCache haaviye int e ID e group va int ID e parent aan group ast*/
-	std::map<int, int> userGroupParentCache;
+	//std::map<int, int> userGroupParentCache;
 	/**map permissionParentCache haaviye Int e ID e permission va int e Id e parent e aan permission ast*/
 	std::map<int, int> permissionParentCache;
+
+	std::map<std::string, int> permissionNamesCache;
 	/**UMSessionManager() Default Constructor*/
 	UMSessionManager(UMCore* instance);
 	/**newSession(int userID), Id e user ra daryaaft mikonad va yek sessionID e UNIQUE be aan ekhtesaas midahad,
@@ -41,7 +43,14 @@ public:
 	 * @param sessionID*/
 	void removeSession(int id);
 
-	void updateUsergroupCache();
+	void permissionCacheLoader();
+
+/**userGroupParentCacheLoader(int groupID), id e group ra daryaaft mikonad va
+	 * bad az peyda kardan e parent aan group,, Id group va parent e aan raa dar map e userGroupParentCache
+	 * zakhireh mikonad
+	 * @param groupID int */
+	void userGroupCacheLoader();
+
 	/**updateUsergroupCache(int id), id e usergroup raa migirad, sepas permission-haaye marboot be aan group ra
 	 * az database migirad va dar map usergroupCache zakhire mikonad
 	 * @param id int usergroupId*/
@@ -50,16 +59,12 @@ public:
 	/**permissionParentCacheLoader, id e permission ra daryaaf mikonad va az database parent aan ra peydaa karde
 		 * va dar map e permissionParentCache Zakhireh mikonad.
 		 * @param permissionID int*/
-		void permissionParentCacheLoader(int permissionID);
+	void permissionCacheUpdate(int permissionID);
 
+	int getUserIDBySession(int sessionID);
 
 private:
 UMCore* coreInstance;
-	/**userGroupParentCacheLoader(int groupID), id e group ra daryaaft mikonad va
-	 * bad az peyda kardan e parent aan group,, Id group va parent e aan raa dar map e userGroupParentCache
-	 * zakhireh mikonad
-	 * @param groupID int */
-	void userGroupParentCacheLoader(int groupID);
 
 	/**uniqueIdGenerator(), yek ID e Unique generate mikonad ke baraye sessionID estefaade mishavad*/
 	int uniqueIdGenerator();

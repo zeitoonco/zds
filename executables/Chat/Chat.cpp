@@ -225,13 +225,15 @@ void chaT::removeUserFromSession(int userID, int sessionID) {
 			"DELETE FROM sessionuser WHERE userid=" + to_string(userID) + " AND sessionid=" +
 			to_string(sessionID));
 
-	chatCHI->sm.database.execute(
-			"DELETE FROM message WHERE userid=" + to_string(userID) + " AND sessionid = " +
-			to_string(sessionID));
 	if (temp == 1)
 	{
 		chatCHI->sm.database.execute(
 				"DELETE FROM session WHERE id=" + to_string(sessionID));
+
+		chatCHI->sm.database.execute(
+				"DELETE FROM message WHERE userid=" + to_string(userID) + " AND sessionid = " +
+				to_string(sessionID));
+
 	}
 	chatCHI->sm.communication.runEvent(EventInfo::sessionUserRemoved(),
 	                                   zeitoon::chat::DSAddUserSession(userID, sessionID).toString(

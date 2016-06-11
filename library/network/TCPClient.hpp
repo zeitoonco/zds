@@ -125,6 +125,7 @@ private:
 	void freeThreadPool();
 
 //todo: create  a struct for thread variables.
+	bool Uv_send_is_busy = false; // remove in case of multithreading
 	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
 	bool stopDataProcess = false;
 	std::mutex mtx;

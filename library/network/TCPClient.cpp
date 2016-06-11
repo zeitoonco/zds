@@ -255,7 +255,7 @@ void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 	}
 }
 
-void TCPClient::send(std::string data) {
+void TCPClient::send(std::string data) {//todo:to be tested with valgrind for probable mem leaks
 
 	if (!this->_connected)
 		return;
@@ -272,21 +272,31 @@ void TCPClient::send(std::string data) {
 	buff[0] = 12;
 	buff[1] = 26;
 	memcpy(buff + 2, (void *) (&size), 4);
-
-	write_req->data = (void *) bufw;
+	write_req->data = (void *) this;
+	while (Uv_send_is_busy)
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	uv_write(write_req, (uv_stream_t *) &this->client, bufw, 1, TCPClient::on_client_write);
+	Uv_send_is_busy = true;
+	free(bufw->base);
+	free(bufw);
+
 
 
 }
 
 void TCPClient::on_client_write(uv_write_t *req, int status) {
-	uv_buf_t *buffer = (uv_buf_t *) req->data;
+	//uv_buf_t *buffer = (uv_buf_t *) req->data;
+	TCPClient *tempCL = (TCPClient *) req->data;
+	std::cerr << "SEND STATUS:" << tempCL->Uv_send_is_busy << "\n";
 	if (status == -1) {
 		fprintf(stderr, "error on_client_write");
 		return;
 	}
-	free(buffer->base);
-	free(req->data);
+/*	free(buffer->base);
+	free(req->data);*/
+	tempCL->Uv_send_is_busy = false;
+	std::cerr << "SEND STATUS:" << tempCL->Uv_send_is_busy << "\n";
+
 	free(req);
 }
 

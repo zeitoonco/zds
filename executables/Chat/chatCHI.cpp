@@ -66,7 +66,8 @@ namespace zeitoon {
         }
         else if (!Strings::compare(node, CommandInfo::changeUserState(), false)) {
             DSChangeUserState temp(data);
-            chatCore.changeUserState(temp.userID.getValue(), (EnumStatus::status) temp.status.getValue(),
+            chatCore.changeUserState(temp.userID.getValue(),(EnumReachState::reachState) temp.reachState.getValue(),
+                                     (EnumStatus::status) temp.status.getValue(),
                                      (EnumCustomStatusIcon::customStatusIcon) temp.customStatusIcon.getValue(),
                                      temp.customStatus.getValue());
 

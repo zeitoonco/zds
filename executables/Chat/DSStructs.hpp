@@ -300,6 +300,7 @@ namespace zeitoon {
         class DSChangeUserState : public DTStruct {
         public:
             DTInteger<int> userID = {"userID"};
+            DTEnum<EnumReachState> reachState = {"reachState"};
             DTEnum<EnumStatus> status = {"status"};
             DTEnum<EnumCustomStatusIcon> customStatusIcon = {"customStatusIcon"};
             DTString customStatus = {"customStatus"};
@@ -315,6 +316,7 @@ namespace zeitoon {
             DSChangeUserState() :
                     DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
                 this->list.push_back(&userID);
+                this-> list.push_back(&reachState);
                 this->list.push_back(&status);
                 this->list.push_back(&customStatusIcon);
                 this->list.push_back(&customStatus);
@@ -324,11 +326,13 @@ namespace zeitoon {
                 this->fromString(data);
             }
 
-            DSChangeUserState(int iuserID,EnumStatus::status istatus,
+            DSChangeUserState(int iuserID,EnumReachState::reachState ireachState,
+                              EnumStatus::status istatus,
                               EnumCustomStatusIcon::customStatusIcon icustomStatusIcon,
                               std::string icustomStatus)
                     : DSChangeUserState() {
                 userID = iuserID;
+                reachState = ireachState;
                 status = istatus;
                 customStatusIcon = icustomStatusIcon;
                 customStatus = icustomStatus;

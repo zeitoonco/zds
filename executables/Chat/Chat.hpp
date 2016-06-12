@@ -35,7 +35,7 @@ public:
 
 	DSChatUserData getUserData(int userID);
 
-	void changeUserState(int userID, EnumStatus::status status,
+	void changeUserState(int userID,EnumReachState::reachState reachState, EnumStatus::status status,
 	                     EnumCustomStatusIcon::customStatusIcon customStatusIcon, std::string customStatus);
 
 	void changeReachState(int userID, EnumStatus::status status);

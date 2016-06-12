@@ -149,16 +149,17 @@ DSChatUserData chaT::getUserData(int userID) {
 	}*/
 }
 
-void chaT::changeUserState(int userID, EnumStatus::status status,
+void chaT::changeUserState(int userID, EnumReachState::reachState reachState,
+                           EnumStatus::status status,
                            EnumCustomStatusIcon::customStatusIcon customStatusIcon,
                            std::string customStatus) {
 	chatCHI->sm.database.executeSync(
-			"UPDATE userdata SET status = " + to_string(status) + ", customstatusicon =" +
-			to_string(customStatusIcon) + ", customstatusText ='" +
-					customStatus + "' WHERE userid =" + to_string(userID));
+			"UPDATE userdata SET reachState = " + to_string(reachState) + ", status = " + to_string(status) +
+			", customstatusicon =" + to_string(customStatusIcon) + ", customstatusText ='" +
+			customStatus + "' WHERE userid =" + to_string(userID));
 
 	chatCHI->sm.communication.runEvent(EventInfo::userStateChanged(),
-	                                   zeitoon::chat::DSChangeUserState(userID, status, customStatusIcon,
+	                                   zeitoon::chat::DSChangeUserState(userID, reachState, status, customStatusIcon,
 	                                                                    customStatus).toString(true));
 }
 
@@ -204,14 +205,15 @@ void chaT::removeUserFromSession(int userID, int sessionID) {
 
 //If the user in the 'Session' was another of the 'Session' is deleted if the 'Leader' is not
 	int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
-			"SELECT leader FROM session WHERE id = " + to_string(sessionID)  + "")); //Search UserID Leader
+			"SELECT leader FROM session WHERE id = " + to_string(sessionID) + "")); //Search UserID Leader
 
-	int result2=0;
+	int result2 = 0;
 
-	int temp = stoi(chatCHI->sm.database.singleFieldQuerySync("SELECT count(userid) FROM sessionuser WHERE sessionid = " + to_string(sessionID)));
+	int temp = stoi(chatCHI->sm.database.singleFieldQuerySync(
+			"SELECT count(userid) FROM sessionuser WHERE sessionid = " + to_string(sessionID)));
 	//if (result > 0) {
 
-	if ((temp >1) && (result == userID)) {
+	if ((temp > 1) && (result == userID)) {
 		result2 = stoi(chatCHI->sm.database.singleFieldQuerySync(
 				"SELECT userid FROM sessionuser WHERE sessionid = " + to_string(sessionID) + " AND NOT(userid = " +
 				to_string(result) + ")"));
@@ -225,8 +227,7 @@ void chaT::removeUserFromSession(int userID, int sessionID) {
 			"DELETE FROM sessionuser WHERE userid=" + to_string(userID) + " AND sessionid=" +
 			to_string(sessionID));
 
-	if (temp == 1)
-	{
+	if (temp == 1) {
 		chatCHI->sm.database.execute(
 				"DELETE FROM session WHERE id=" + to_string(sessionID));
 
@@ -267,7 +268,7 @@ DSSessionList chaT::listSessions(int ID) {
 		DTInteger<> *tempInt = new DTInteger<>("", stoi(result.fieldValue(i, 0)));
 		res.mnlist.add(tempInt, true);
 	}
-	std::cerr << "SESSION LIST: " << res.toString(true);
+	std::cerr << "SESSION LIST: " << res.toString(true) << "\n";
 	return (res);
 }
 

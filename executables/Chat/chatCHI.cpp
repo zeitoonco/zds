@@ -346,6 +346,7 @@ namespace zeitoon {
                     new DSInstallInfo::DSEventDetail(EventInfo::userStateChanged(), DSChangeUserState::getStructName(),
                                                      DSChangeUserState::getStructVersion()), true);
 
+            insInfo.hooks.add(new DSInstallInfo::DSHookDetail(EventInfo::newMessageReceived(), "", 0), true);
         }
 
 

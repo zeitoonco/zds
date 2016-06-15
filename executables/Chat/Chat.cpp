@@ -140,13 +140,15 @@ DSChatUserData chaT::getUserData(int userID) {
 	DSChatUserData temp((EnumReachState::reachState) reachState, (EnumStatus::status) status,
 	                    (EnumCustomStatusIcon::customStatusIcon) customStatusIcon, customStatus, userID);
 
+	//------------
+	/*DSUserStatList res;
+	for (int i = 0; i < result.rowCount(); i++) {
+		DTInteger<> *tempInt = new DTInteger<>("", stoi(result.fieldValue(i, 0)));
+		res.userListSate.add(tempInt, true);
+	}
+	std::cerr << "User Sate LIST: " << res.toString(true) << "\n";
+	//return (res);*/
 	return temp;
-
-	/*else{
-
-		int result = stoi(chatCHI->sm.database.singleFieldQuerySync(
-				"INSERT INTO userdata ( userid, status, customstatustext) VALUES ("+ to_string(userID) +" , Normal, Normal"));
-	}*/
 }
 
 void chaT::changeUserState(int userID, EnumReachState::reachState reachState,
@@ -213,21 +215,25 @@ void chaT::removeUserFromSession(int userID, int sessionID) {
 			"SELECT count(userid) FROM sessionuser WHERE sessionid = " + to_string(sessionID)));
 	//if (result > 0) {
 
-	if ((temp > 1) && (result == userID)) {
+	if ((temp > 2) && (result == userID)) {
 		result2 = stoi(chatCHI->sm.database.singleFieldQuerySync(
 				"SELECT userid FROM sessionuser WHERE sessionid = " + to_string(sessionID) + " AND NOT(userid = " +
 				to_string(result) + ")"));
 		chatCHI->sm.database.executeSync(
 				"UPDATE session SET Leader = " + to_string(result2) + " WHERE id =" + to_string(sessionID));
-	}
+
 	//EXTDBError("user is leader. cannot remove leader from a session");
 	//}
 
 	chatCHI->sm.database.execute(
 			"DELETE FROM sessionuser WHERE userid=" + to_string(userID) + " AND sessionid=" +
 			to_string(sessionID));
+	}
 
-	if (temp == 1) {
+	if (temp <= 2) {
+		chatCHI->sm.database.execute(
+				"DELETE FROM sessionuser WHERE id=" + to_string(sessionID));
+
 		chatCHI->sm.database.execute(
 				"DELETE FROM session WHERE id=" + to_string(sessionID));
 
@@ -284,9 +290,11 @@ zeitoon::usermanagement::DSUserList chaT::SessionUserList(int sessionID) {
 	DSUserList temp;
 	zeitoon::datatypes::DTTableString result = chatCHI->sm.database.querySync(
 			"SELECT userid FROM sessionuser WHERE sessionid = " + to_string(sessionID));
+
 	for (auto i = 0; i < result.rowCount(); i++) {
 		DSInteger userID;
 		userID.value = std::stoi(result.fieldValue(i, 0));
+
 		std::string a = chatCHI->sm.communication.runCommandSync(zeitoon::usermanagement::commandInfo::getUserInfo(),
 		                                                         userID);
 		temp.usersList.addJson(a);

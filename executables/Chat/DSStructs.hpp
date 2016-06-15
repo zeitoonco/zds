@@ -508,7 +508,28 @@ namespace zeitoon {
         }
 
     };
+    class DSUserStatList : public DTStruct {
+    public:
+        DTSet<DTInteger<int>> userListSate = {"list"};
 
+        static std::string getStructName() {
+            return "DSUserStatList";
+        }
+
+        static int getStructVersion() {
+            return 1;
+        }
+
+        DSUserStatList() :
+                DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+            this->list.push_back(&userListSate);
+        }
+
+        DSUserStatList(std::string data) : DSUserStatList() {
+            this->fromString(data);
+        }
+
+    };
 
     }
 }

@@ -11,14 +11,23 @@
 
 int main(int argc, char *argv[]) {//todo : load configurations
 	GUIConfiguration.load();
-	if (argc != 4) {
+	if (argc < 4) {
 		std::cerr << "Invalid number of arguments provided\n";
 		std::cerr << "Required arguments: ServerIP ServerPort WebSocketPortNo\n";
-		return -1;
+	} else {
+		GUIConfiguration.serverIP = argv[1];
+		GUIConfiguration.serverPort = argv[2];
+		GUIConfiguration.WSserverPort = argv[3];
 	}
 	try {
-		zeitoon::GUI::GuiCHI GUI(std::atoi(argv[3]));
-		GUI.connect(argv[1], std::atoi(argv[2]));
+		zeitoon::GUI::GuiCHI GUI(std::stoi(GUIConfiguration.WSserverPort));
+		GUI.connect(GUIConfiguration.serverIP, std::stoi(GUIConfiguration.serverPort.getValue()));
+		if (argc == 5) {
+			if (std::string(argv[4]) == "-save") {
+				GUIConfiguration.save();
+				std::cerr << "Configuration saved\n";
+			}
+		}
 		GUI.sm.joinNet();
 	} catch (zeitoon::utility::cantParseString *err) {
 		std::cout << err->what();

@@ -21,8 +21,11 @@ GUICore::GUICore(int WSListenPort, GuiCHI *ptr) : WS(
                                                   guiCHI(ptr) {
 	WS.listen(WSListenPort);
 }
-
 void GUICore::WSDataReceived(int ID, std::string data) {
+	auto d = clients.find(ID);
+	if (d == clients.end()) {
+		std::cerr << "\nNO CLIENT FOUND\n";
+	}
 	std::cout << "\n**GUI:WS received.\tID:" << ID << "\tData: " << data << std::endl;
 	clientData *cd;
 	if (clients.count(ID) == 0) {//new //todo: use a onNewClient event instead!
@@ -61,7 +64,7 @@ void GUICore::WSDataReceived(int ID, std::string data) {
 			     i != iter->second->clientHooks.end(); i++) {
 				if (*i == jdata["node"].getValue()) {
 					counter++;
-				}
+				}//todo:: wat if there is a err while unhooking from _core?
 			}
 		}
 		if (counter == 0)
@@ -72,6 +75,11 @@ void GUICore::WSDataReceived(int ID, std::string data) {
 
 void GUICore::hookFromClient(std::string EvntName, int clientID, string session) { //incomplete
 	clientData *cd = clients.at(clientID);
+	auto d = clients.find(clientID);
+	if (d == clients.end()) {
+		std::cerr << "\nNO CLIENT FOUND\n";
+	}
+
 	guiCHI->sm.communication.registerHook(EvntName, session);
 	cd->clientHooks.push_back(EvntName);
 }

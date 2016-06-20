@@ -127,6 +127,7 @@ void TCPClient::runLoop() {
 		std::cerr <<
 		"\nTCPClien EVENTS LOOP Start\n";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
 		int r = uv_run(&this->loop, UV_RUN_DEFAULT);
+		std::cerr << "MAIN ABORTED: " << uv_err_name(r) << "  MSG:\n" << uv_strerror(r) << "\n";
 		uvEXT(r, "libuv events loop error: ");
 		std::cerr << "\nTCPClient EVENTS LOOP Finished with " << r << std::endl;
 	} catch (exceptionEx &ex) {
@@ -163,7 +164,7 @@ void TCPClient::dataProcessor() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 	}
-	std::cerr << "Thread No " << this_thread::get_id() << " terminated" << std::endl;
+	//std::cerr << "Thread No " << this_thread::get_id() << " terminated" << std::endl;
 }
 
 void TCPClient::freeThreadPool() {
@@ -205,7 +206,8 @@ void TCPClient::alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_
 }
 
 void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
-	//std::cerr << "Client read reached" << std::endl;
+	if (nread < 0)
+		std::cerr << "Client read ERR: " << uv_err_name(nread) << "  MSG:\n" << uv_strerror(nread);
 	//std::cerr << "NREAD: " << nread << std::endl;
 
 	TCPClient *c = (TCPClient *) _client->data;
@@ -257,47 +259,59 @@ void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 
 void TCPClient::send(std::string data) {//todo:to be tested with valgrind for probable mem leaks
 
-	if (!this->_connected)
-		return;
-	uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
 
+	uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
 	uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));
 	uint8_t *buff = (uint8_t *) malloc(data.size() + 6);
 
 	uint32_t size = (uint32_t) data.size();
-
 	bufw->base = (char *) buff;
 	bufw->len = data.size() + 6;
 	memcpy(buff + 6, data.c_str(), data.size());
 	buff[0] = 12;
 	buff[1] = 26;
 	memcpy(buff + 2, (void *) (&size), 4);
-	write_req->data = (void *) this;
-	while (Uv_send_is_busy)
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
-	uv_write(write_req, (uv_stream_t *) &this->client, bufw, 1, TCPClient::on_client_write);
-	Uv_send_is_busy = true;
-	free(bufw->base);
-	free(bufw);
+	write_req->data = (void *) bufw;
+	/*while (Uv_send_is_busy){
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}Uv_send_is_busy = true;*/
+	if (!this->_connected)
+		return;
+	//todo: place a lock n see wat happens
+	//	std::this_thread::sleep_for(std::chrono::milliseconds (50));
+
+	int r = uv_write(write_req, (uv_stream_t *) &this->client, bufw, 1, TCPClient::on_client_write);
+	try {
+		//std::cerr << "SEND COMPLETED AFTER "<< i<<" TRYS"<<"\t" <<data<<"\n";
+
+		uvEXT(r, "Network uv_write failed");
+	} catch (zeitoon::utility::exceptionEx err) {
+		std::cerr << "SND ERR: " << err.what() << "\n";
+	}
+	//std::cerr << "\nCLIENT_SEND() FINNISHED\n";
+
+/*	free(bufw->base);
+	free(bufw);*/
 
 
 
 }
 
 void TCPClient::on_client_write(uv_write_t *req, int status) {
-	//uv_buf_t *buffer = (uv_buf_t *) req->data;
-	TCPClient *tempCL = (TCPClient *) req->data;
-	std::cerr << "SEND STATUS:" << tempCL->Uv_send_is_busy << "\n";
-	if (status == -1) {
+	uv_buf_t *buffer = (uv_buf_t *) req->data;
+	//TCPClient *tempCL = (TCPClient *) req->data;
+	if (status != 0) {
+		std::cerr << "\nClientWrite\tEOF\n";
 		fprintf(stderr, "error on_client_write");
 		return;
 	}
-/*	free(buffer->base);
-	free(req->data);*/
-	tempCL->Uv_send_is_busy = false;
-	std::cerr << "SEND STATUS:" << tempCL->Uv_send_is_busy << "\n";
+	free(buffer->base);
+	free(req->data);
+	//tempCL->Uv_send_is_busy = false;
 
 	free(req);
+//	std::cerr << "\n on_client_write FINNISHED\n";
+
 }
 
 void TCPClient::dataProcThreadMgrTimer(uv_timer_t *handle) {

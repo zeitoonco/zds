@@ -79,6 +79,7 @@ void WebSocketPort::sendo() {//fixme:@navidi:WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 void WebSocketPort::on_close(websocketpp::connection_hdl hdl) {
+	std::cerr << "\nWS Connection Removed\n";
 	this->connectionList.erase(hdl);
 }
 
@@ -118,7 +119,7 @@ void WebSocketPort::received(websocketpp::connection_hdl client, std::string dat
 	std::thread *receivedThread = new std::thread(&WebSocketPort::receivedThreads, this, client, data);//fixme:free mem?
 	//lock//scopelock
 	this->threadsList.push_back(receivedThread);
-	std::cout << "\nID:" << receivedThread->get_id();
+	std::cout << "\nreceivedThread ID:" << receivedThread->get_id();
 
 }
 
@@ -132,6 +133,7 @@ void WebSocketPort::receivedThreads(websocketpp::connection_hdl client, std::str
 		std::cout << "\nRemoving Threat from the list" << std::endl;
 		for (unsigned int i = 0; i < this->threadsList.size(); i++) {
 			if (this_thread::get_id() == this->threadsList[i]->get_id()) {//fixme:free memory of thread?
+				std::cout << "\t\tID: " << this_thread::get_id() << std::endl;
 				this->threadsList.erase(this->threadsList.begin() + i);
 			}
 		}

@@ -66,6 +66,7 @@ void Router::_onClientDisconnect(size_t id) {
 		} else
 			t->netClientId = -1;
 	}
+	std::cerr << "\n_onClientDisconnect Unhandled situation\n";
 }
 
 void Router::_onDataReceive(size_t id, std::string data) {
@@ -219,6 +220,8 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 void Router::sendPacket(string &data, ExtensionProfile *extension) {
 	if (extension->netClientId >= 0)
 		net.send((size_t) extension->netClientId, data);
+	else
+		std::cerr << "sendPacket Unhandled situation\n \t [DATA]\n\t\t" << data << "\n\n";
 }
 
 void Router::sendMessage(string extension, string source, string node, string &data, MessageTypes::MessageTypes_ msgT,

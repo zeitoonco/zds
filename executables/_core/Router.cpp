@@ -96,15 +96,15 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 	string type, node, idata, id, sessionid;
 	type = packet["type"].getValue();
 	node = packet["node"].getValue();
-	if (ext == NULL && (!seq(type, "internal") || !seq(node, "hello")))
+	if (ext == NULL && (!streq(type, "internal") || !streq(node, "hello")))
 		return;
-	if (seq(type, "internal")) {
-		if (seq(node, "ping")) {
+	if (streq(type, "internal")) {
+		if (streq(node, "ping")) {
 			id = packet["node"].getValue();
 			net.send(netid, "{\"type\":\"internal\",\"node\":\"pong\",\"id\":\"" + id + "\"}");
-		} else if (seq(node, "pong")) {
+		} else if (streq(node, "pong")) {
 			//um..what?! we even dont have a function to send ping yet!!!
-		} else if (seq(node, "hello")) {
+		} else if (streq(node, "hello")) {
 			string name = packet["name"].getValue();
 			if (name.length() == 0 || !Strings::isValidName(name)) {//check valid name
 				net.send(netid,
@@ -167,12 +167,12 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 			id = packet["id"].getValue();
 		if (packet.contains("session"))
 			sessionid = packet["session"].getValue();
-		if (type == "callback" && seq(node, "getInstallInfo")) { //response from getInstallinfo
+		if (type == "callback" && streq(node, "getInstallInfo")) { //response from getInstallinfo
 			cerr << "\nGot Install Info from '" << netid << ">" << ext->serviceInfo.name.getValue() << ": " << data;
 
 			ext->serviceInfo.fromString(idata);
 			extManager.save();
-		} else if (type == "callback" && seq(node, "onInstall")) { //response from onInstall(success confirm)
+		} else if (type == "callback" && streq(node, "onInstall")) { //response from onInstall(success confirm)
 			//todo:check success field! is it really a success?
 			ext->state = ExtensionProfile::extensionState::installed;
 			vector<ExtensionProfile *> elist = extManager.getByServiceType(datatypes::EnmServiceType::UserManager);
@@ -186,7 +186,7 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 			extManager.save();
 			string dt = "{\"name\":\"" + ext->serviceInfo.name.value() + "\"}";
 			comm.fireEvent(eventInfo::onServiceInstall(), dt, "_core");
-		} else if (type == "callback" && seq(node, "onEnable")) {
+		} else if (type == "callback" && streq(node, "onEnable")) {
 			//if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager);
 			ext->state = ExtensionProfile::extensionState::enabled;
 			if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager)
@@ -240,7 +240,7 @@ void Router::sendMessage(string extension, string source, string node, string &d
 			}
 		}
 	}
-	if (seq(extension, "_core")) {
+	if (streq(extension, "_core")) {
 		switch (msgT) {
 			case MessageTypes::MTCall://todo:check access here.? name->ac level id?
 				callCommandLocal(node, data, source, id, session);
@@ -484,14 +484,14 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 	JStruct jdata;
 	if (data != "")
 		jdata.fromString(data);
-	if (seq(node, "_core.registerCommand")) {
+	if (streq(node, "_core.registerCommand")) {
 		utility::JStruct j(data);
 		utility::JArray &ja = (JArray &) j["names"];
 		for (int i = 0; i < ja.size(); i++) {
 			CommandProfile c(from, ja[i].getValue());
 			comm.registerCommand(c);
 		}
-	} else if (seq(node, "_core.registerEvent")) {
+	} else if (streq(node, "_core.registerEvent")) {
 		utility::JStruct j(data);
 		utility::JArray &ja = (JArray &) j["names"];
 		for (int i = 0; i < ja.size(); i++) {
@@ -500,7 +500,7 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 			c.extension = from;
 			comm.registerEvent(c);
 		}
-	} else if (seq(node, "_core.registerHook")) {
+	} else if (streq(node, "_core.registerHook")) {
 		utility::JStruct j(data);
 		utility::JArray &ja = (JArray &) j["names"];
 		for (int i = 0; i < ja.size(); i++) {
@@ -509,17 +509,17 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 			c.extension = from;
 			comm.registerHook(c);
 		}
-	} else if (seq(node, "_core.removeCommand")) {
+	} else if (streq(node, "_core.removeCommand")) {
 		string inode = ((JVariable &) jdata["node"]).getValue();
 		comm.removeCommand(inode);
-	} else if (seq(node, "_core.removeEvent")) {
+	} else if (streq(node, "_core.removeEvent")) {
 		string inode = ((JVariable &) jdata["node"]).getValue();
 		comm.removeEvent(inode);
-	} else if (seq(node, "_core.removeHook")) {
+	} else if (streq(node, "_core.removeHook")) {
 		string inode = ((JVariable &) jdata["node"]).getValue();
 		HookProfile h{((JVariable &) jdata["event"]).getValue(), from, node, 0};
 		comm.removeHook(h);
-	} else if (seq(node, "_core.getListOfServices")) {
+	} else if (streq(node, "_core.getListOfServices")) {
 		string dt = "{\"extensions\":[";
 		for (int i = 0; i < extManager.size(); i++) {
 			ExtensionProfile *e = extManager[i];
@@ -529,7 +529,7 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 		}
 		dt += "]}";
 		comm.callCallback(id, dt, "_core");
-	} else if (seq(node, "_core.getServiceInfo")) {
+	} else if (streq(node, "_core.getServiceInfo")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL) {
@@ -537,44 +537,44 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 			comm.callCallback(id, dt, "_core");
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
-	} else if (seq(node, "_core.installService")) {
+	} else if (streq(node, "_core.installService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
 			installService(sname);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
-	} else if (seq(node, "_core.uninstallService")) {
+	} else if (streq(node, "_core.uninstallService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
 			uninstallService(sname);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
-	} else if (seq(node, "_core.enableService")) {
+	} else if (streq(node, "_core.enableService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
 			enableService(sname);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
-	} else if (seq(node, "_core.disableService")) {
+	} else if (streq(node, "_core.disableService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
 			disableService(sname);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
-	} else if (seq(node, "_core.kickService")) {
+	} else if (streq(node, "_core.kickService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
 			net.clients[ext->netClientId]->stop();
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
-	} else if (seq(node, "_core.pingService")) {
+	} else if (streq(node, "_core.pingService")) {
 		//todo: later
-	} else if (seq(node, "error")) {
+	} else if (streq(node, "error")) {
 		cerr << "\nERR RCV " << from << " : " << data;
 		if (jdata.contains("id"))
 			comm.callCallbackError(data,from);

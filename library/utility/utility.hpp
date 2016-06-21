@@ -14,7 +14,6 @@
 #include <sstream>
 #include <unistd.h>
 
-#define seq(a, b) (zeitoon::utility::Strings::compare(a,b,false)==0)
 
 using namespace std;
 
@@ -22,6 +21,8 @@ typedef unsigned int uint;
 
 namespace zeitoon {
 namespace utility {
+
+#define streq(a, b) (zeitoon::utility::Strings::compare(a,b,false)==0)
 
 class JSONUtility {
 protected:

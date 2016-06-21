@@ -54,7 +54,7 @@ void ServerMediator::dataReceived(string data) {
 	} else {
 		if (!Strings::compare(type, "callback")) if (communication.dataReceive(data))
 			return;
-		if (!Strings::compare(type, "call") && seq(node, "error")) if (communication.errorReceive(data))
+		if (!Strings::compare(type, "call") && streq(node, "error")) if (communication.errorReceive(data))
 			return;
 		owner->datareceive(data);
 	}

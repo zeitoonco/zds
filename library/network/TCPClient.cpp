@@ -15,7 +15,7 @@ TCPClient::~TCPClient() {
 	}
 	freeThreadPool();
 	uv_loop_close(&loop);
-	delete listenTrd;
+	//delete listenTrd;
 }
 
 TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLen(0) {

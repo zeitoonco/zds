@@ -255,7 +255,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (commandList.size() > 0) {
 		lockg(MTXCommandList);
 		for (auto &i:commandList)
-			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
+			if (streq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		for (string n:names)
 			commandList.erase(n);
@@ -263,7 +263,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (callbackList.size() > 0) {
 		lockg(MTXCallback);
 		for (auto &i:callbackList)
-			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
+			if (streq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		for (string n:names)
 			callbackList.erase(n);
@@ -271,7 +271,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (eventList.size() > 0) {
 		lockg(MTXEventList);
 		for (auto &i:eventList)
-			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
+			if (streq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		lockgc(lock2, MTXHookEvent);
 		for (string n:names) {
@@ -282,7 +282,7 @@ void CommunicationManager::cleanup(ExtensionProfile *ext) {
 	if (hookList.size() > 0) {
 		lockg(MTXHookList);
 		for (auto &i:hookList)
-			if (seq(i.second.extension, ext->serviceInfo.name.getValue()))
+			if (streq(i.second.extension, ext->serviceInfo.name.getValue()))
 				names.push_back(i.first);
 		lockgc(lock2, MTXHookEvent);
 		for (string n:names) {

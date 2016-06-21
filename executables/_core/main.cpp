@@ -37,22 +37,22 @@ int main() {
 			if (cmd == "ping") {
 				cin >> p1;
 				//todo:??
-			} else if (seq(cmd, "installinfo") || seq(cmd, "if")) {
+			} else if (streq(cmd, "installinfo") || streq(cmd, "if")) {
 				cin >> p1;
 				r.getInstallInfo(r.extManager[p1]->serviceInfo.name);
-			} else if (seq(cmd, "install") || seq(cmd, "ins")) {
+			} else if (streq(cmd, "install") || streq(cmd, "ins")) {
 				cin >> p1;
 				if (!r.installService(r.extManager[p1]->serviceInfo.name))
 					cerr << "\n##Install '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";
-			} else if (seq(cmd, "enable") || seq(cmd, "enb")) {
+			} else if (streq(cmd, "enable") || streq(cmd, "enb")) {
 				cin >> p1;
 				if (!r.enableService(r.extManager[p1]->serviceInfo.name))
 					cerr << "\n##enable '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";
-			} else if (seq(cmd, "disable") || seq(cmd, "dsb")) {
+			} else if (streq(cmd, "disable") || streq(cmd, "dsb")) {
 				cin >> p1;
 				if (!r.disableService(r.extManager[p1]->serviceInfo.name))
 					cerr << "\n##disable '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";
-			} else if (seq(cmd, "uninstall") || seq(cmd, "uni")) {
+			} else if (streq(cmd, "uninstall") || streq(cmd, "uni")) {
 				cin >> p1;
 				if (!r.uninstallService(r.extManager[p1]->serviceInfo.name))
 					cerr << "\n##uninstall '" + r.extManager[p1]->serviceInfo.name.getValue() + "' failed.";

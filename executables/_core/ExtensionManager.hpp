@@ -54,7 +54,7 @@ public:
 
 	ExtensionProfile *operator[](string name) {
 		for (int i = 0; i < extensionList.size(); i++)
-			if (seq(extensionList[i]->serviceInfo.name.getValue(), name))
+			if (streq(extensionList[i]->serviceInfo.name.getValue(), name))
 				return extensionList[i];
 		return NULL;
 	}
@@ -91,7 +91,7 @@ public:
 
 	void remove(std::string exName) {
 		for (extList::iterator i = extensionList.begin(); i < extensionList.end(); i++)
-			if (seq((*i)->serviceInfo.name.getValue(), exName)) {
+			if (streq((*i)->serviceInfo.name.getValue(), exName)) {
 				extensionList.erase(i);
 				return;
 			}

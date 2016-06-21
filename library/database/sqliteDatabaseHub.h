@@ -20,29 +20,29 @@ protected:
 		using datatypes::ColumnDataType;
 		if (sdt == NULL)
 			return ColumnDataType::UNKNOWN;
-		else if (seq(sdt, "NULL"))
+		else if (streq(sdt, "NULL"))
 			return ColumnDataType::UNKNOWN;
-		else if (seq(sdt, "INTEGER"))
+		else if (streq(sdt, "INTEGER"))
 			return ColumnDataType::INTEGER;
-		else if (seq(sdt, "REAL"))
+		else if (streq(sdt, "REAL"))
 			return ColumnDataType::FLOAT;
-		else if (seq(sdt, "TEXT"))
+		else if (streq(sdt, "TEXT"))
 			return ColumnDataType::TEXT;
-		else if (seq(sdt, "BLOB"))
+		else if (streq(sdt, "BLOB"))
 			return ColumnDataType::BINARY;
-		else if (seq(sdt, "BOOLEAN"))
+		else if (streq(sdt, "BOOLEAN"))
 			return ColumnDataType::BOOLEAN;
-		else if (seq(sdt, "DOUBLE"))
+		else if (streq(sdt, "DOUBLE"))
 			return ColumnDataType::FLOAT;
-		else if (seq(sdt, "NUMERIC"))
+		else if (streq(sdt, "NUMERIC"))
 			return ColumnDataType::INTEGER;
-		else if (seq(sdt, "DATE"))
+		else if (streq(sdt, "DATE"))
 			return ColumnDataType::TEXT;
-		else if (seq(sdt, "DATETIME"))
+		else if (streq(sdt, "DATETIME"))
 			return ColumnDataType::TEXT;
-		else if (seq(sdt, "INT"))
+		else if (streq(sdt, "INT"))
 			return ColumnDataType::INTEGER;
-		else if (seq(sdt, "VARCHAR"))
+		else if (streq(sdt, "VARCHAR"))
 			return ColumnDataType::TEXT;
 		else
 			return ColumnDataType::UNKNOWN;

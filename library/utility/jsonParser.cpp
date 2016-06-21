@@ -144,7 +144,7 @@ JValue &JValue::operator[](string name) const {
 
 //-------------------------------jVariable
 bool JVariable::isNull() const {
-	return (!isString && seq("NULL", value));
+	return (!isString && streq("NULL", value));
 }
 
 bool JVariable::isInt() const {
@@ -181,9 +181,9 @@ bool JVariable::toBoolian() const {
 	if (!isBoolian())
 		EXTcantParseString("can't convert value to boolean");
 	string tval = Strings::toLower(Strings::trim(value));
-	if (seq(tval, "true"))
+	if (streq(tval, "true"))
 		return true;
-	else if (seq(tval, "false"))
+	else if (streq(tval, "false"))
 		return false;
 	else
 		EXTcantParseString("can't parse value to boolean");

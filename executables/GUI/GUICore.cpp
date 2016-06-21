@@ -43,7 +43,7 @@ void GUICore::WSDataReceived(int ID, std::string data) {
 		                     ID,
 		                     (jdata.contains("data") ? jdata["data"].getValue() : ""),
 		                     cd->sessionID);
-		if (seq(jdata["node"].getValue(), usermanagement::commandInfo::logout())) {
+		if (streq(jdata["node"].getValue(), usermanagement::commandInfo::logout())) {
 			cd->sessionID = "";
 		}
 	} else if (jdata["type"] == "hook")
@@ -102,10 +102,10 @@ void GUICore::callBackReceived(std::string node, std::string cmdID, std::string 
 	Jtemp.add("data", data);//todo: clear all cb's after connection closed.
 	for (std::map<int, clientData *>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
 		for (int i = 0; i < iter->second->clientCmds.size(); i++) {
-			if (seq(cmdID, iter->second->clientCmds[i])) {
-				if (seq(node, usermanagement::commandInfo::login())) {
+			if (streq(cmdID, iter->second->clientCmds[i])) {
+				if (streq(node, usermanagement::commandInfo::login())) {
 					JStruct dt(data);
-					if (seq(dt["UMLoginResult"].getValue(), "ok"))
+					if (streq(dt["UMLoginResult"].getValue(), "ok"))
 						iter->second->sessionID = dt["sessionID"].getValue();
 				}
 				cerr << "\nCB s. " << cmdID;
@@ -124,7 +124,7 @@ void GUICore::eventReceived(std::string name, std::string data) {
 	Jtemp.add("data", data);
 	for (std::map<int, clientData *>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
 		for (int i = 0; i < iter->second->clientHooks.size(); i++) {
-			if (seq(name, iter->second->clientHooks[i])) {
+			if (streq(name, iter->second->clientHooks[i])) {
 				cerr << "\nEV s. " << name;
 				WS.send(WS.ConHdlFinder(iter->first), Jtemp.toString());
 				return;
@@ -141,7 +141,7 @@ void GUICore::errorReceived(std::string node, std::string cmdID, std::string des
 	Jtemp.add("data", desc);//todo:remove cb after its called. clear all cb's after connection closed.
 	for (std::map<int, clientData *>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
 		for (int i = 0; i < iter->second->clientCmds.size(); i++) {
-			if (seq(cmdID, iter->second->clientCmds[i])) {
+			if (streq(cmdID, iter->second->clientCmds[i])) {
 				cerr << "\nERR s. " << cmdID;
 				WS.send(WS.ConHdlFinder(iter->first), Jtemp.toString());
 				iter->second->clientCmds.erase(iter->second->clientCmds.begin() + i);

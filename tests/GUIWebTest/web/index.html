@@ -144,6 +144,7 @@
 <script type="text/javascript">
     var Socket;
     var sessionid = -1;
+    var skiplogin = 0;
 
     var CBProcs = {
         "userman.login": cbLogin,
@@ -170,7 +171,7 @@
     $(document).ready(function () {
         $('.tabs').hide();
         $("#wscc").click(function () {
-            Socket = new WebSocket("ws://127.0.0.1:5455");
+            Socket = new WebSocket("ws://138.201.152.83:5455");
             Socket.onmessage = dataReceived;
             Socket.onclose = function () {
                 $('#cstate').html("Disconnected !");
@@ -186,11 +187,23 @@
             Socket.close();
         });
         $("#login").click(function () {
-            var msg = {
-                type: "call",
-                node: "userman.login",
-                id: "1234568",
-                data: {username: $("#iUser").val(), password: $("#iPass").val()}
+            if (sessionid==-1) {
+                var msg = {
+                    type: "call",
+                    node: "userman.login",
+                    id: "1234568",
+                    data: {username: $("#iUser").val(), password: $("#iPass").val()}
+                }
+            }else{
+                var msg = {
+                    type: "call",
+                    node: "userman.logout",
+                    id: "1234568",
+                    data: {value: sessionid}
+                }
+                $("#login").attr('value','Login');
+                $("#sessionid").html("");
+                sessionid = -1;
             }
             Socket.send(JSON.stringify(msg));
         })
@@ -253,9 +266,11 @@
         if (data.UMLoginResult == "ok") {
             sessionid = data.sessionID;
             $("#sessionid").html("ok:" + sessionid);
+            $("#login").attr('value','Logout');
         } else {
             $("#sessionid").html("Failed:" + data.description);
             sessionid = -1;
+            $("#login").attr('value','Login');
         }
     }
 
@@ -320,6 +335,10 @@
     }
 
     function sendCMD(inode, idata) {
+        if (skiplogin!=110 && sessionid==-1){
+            alert('Login First!');
+            return;
+        }
         var ss="";
         if (!idata)
             ss=(JSON.stringify({

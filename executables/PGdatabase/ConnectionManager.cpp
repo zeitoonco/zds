@@ -131,7 +131,7 @@ void ConnectionManager::registerNewExtension(std::string extensionName) {
 	 *4- Registers extension in "__local.extension" table for(list of registered extensions).
 	 */
 	try {
-		adminConnection.execute(
+		adminConnection.execute(//todo: check-> create role if not exist
 				"BEGIN;CREATE ROLE \"" + extensionName + "\" nosuperuser  login password '" + extensionName +
 				"' valid until 'infinity';" +
 				"CREATE SCHEMA \"" + extensionName + "\";" +

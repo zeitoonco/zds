@@ -33,7 +33,6 @@ public:
 	}
 
 	~PGConfig() {
-		this->save();
 	}
 
 };

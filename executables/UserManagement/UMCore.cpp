@@ -127,7 +127,7 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 }
 
 void UMCore::logout(int sessionID) {
-	if (sessionID == -1)
+	if (sessionID == -1 or sessionManager.getUserIDBySession(sessionID) == -1 )
 		return;
 	auto iter = sessionManager.sessionList.find(sessionID);
 	std::string username = iter->second.username;//sessionManager.sessionList.find(sessionID)->second.username;

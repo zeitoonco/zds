@@ -35,6 +35,14 @@ Router::Router(int port) :
 	net.registerOnClientConnectCB(bind(&Router::_onClientConnect, this, std::placeholders::_1));
 	net.registerOnClientDisconnectCB(bind(&Router::_onClientDisconnect, this, std::placeholders::_1));
 	db.connect(FileSystemUtility::getAppPath() + "data.db3");
+	db.execute("CREATE TABLE IF NOT EXISTS \"services\"(\n"
+			           "\t\"name\"      Text NOT NULL PRIMARY KEY,\n"
+			           "\t\"version\"   Integer NOT NULL,\n"
+			           "\t\"installid\" Text,\n"
+			           "\t\"state\"     Integer NOT NULL DEFAULT 0,\n"
+			           "\t\"data\"      Text,\n"
+			           "\t\"CEPReg\"    Integer NOT NULL DEFAULT 0,\n"
+			           "CONSTRAINT \"unique_name\" UNIQUE ( \"name\" ) );");
 	try {
 		net.listen();
 	} catch (exceptionEx &err) {

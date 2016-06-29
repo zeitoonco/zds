@@ -122,7 +122,7 @@ int main() {
 
                             cout << "Enter type (Date,ID,Notified or Seen) massage: " << endl;
                             cin >> t;
-                            if ((seq(t, "date")) || (seq(t, "id"))) {
+                            if ((streq(t, "date")) || (streq(t, "id"))) {
                                 cout << "Enter form " + t + " massage: " << endl;
                                 cin >> form;
 

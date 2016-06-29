@@ -21,6 +21,7 @@ TCPServer::TCPServer(int port) : clients(this) {
 	r = uv_tcp_init(&loop, &server);
 	uvEXT(r, "uv_tcp_init failed")
 	this->dataProcThreadMaker(4);
+	std::cerr << "\nTCPServer() FINNISHED\n";
 
 }
 
@@ -47,10 +48,11 @@ void TCPServer::listen(int port) {
 	uv_timer_init(&loop, &mainTimer);
 	//this_thread::sleep_for(std::chrono::milliseconds(5000));
 	uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 300);
+	std::cerr << "\nlisten() FINNISHED\n";
 }
 
 void TCPServer::_listen() {
-	try {
+	//try {
 		std::cerr << "\nTCPServer::listen Start";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
 		if (this->_onConnect != NULL)
 			this->_onConnect();
@@ -58,17 +60,19 @@ void TCPServer::_listen() {
 		if (this->_onDisconnect != NULL)
 			this->_onDisconnect();
 		std::cerr << "\nTCPServer::listen Finished with " << r;
-	} catch (exceptionEx &ex) {
+	/*} catch (exceptionEx &ex) {
 		cerr << "Uncought ERROR: " << ex.what();
-	} /*catch (exception &ex){
+	}*/ /*catch (exception &ex){
 		cerr << "Uncought ERROR: " << ex.what();
 	}*/
+	std::cerr << "\n_listen() FINNISHED\n";
 }
 
 void TCPServer::stop() {
 	uv_close((uv_handle_t *) &(this->server), NULL);
 	if (this->_onDisconnect != NULL)
 		this->_onDisconnect();
+	std::cerr << "\nSTOP() FINNISHED\n";
 }
 
 void TCPServer::on_new_connection(uv_stream_t *server, int status) {
@@ -94,10 +98,14 @@ void TCPServer::on_new_connection(uv_stream_t *server, int status) {
 		fprintf(stderr, "New connection failed: %s\n", uv_strerror(r));
 		uv_close((uv_handle_t *) client, NULL);
 	}
+	//std::cerr << "\nON_NEW_CONNECTION() FINNISHED\n";
+
 }
 
 void TCPServer::alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
 	*buf = uv_buf_init((char *) malloc(suggested_size), suggested_size);
+//	std::cerr << "\nALOCATE_BUFFER() FINNISHED\n";
+
 }
 
 void TCPServer::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
@@ -146,11 +154,14 @@ void TCPServer::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf
 
 	}
 	free(buf->base);
+	//std::cerr << "\nON_CLIENT_READ() FINNISHED\n";
 
 }
 
 void TCPServer::send(size_t clientId, std::string msg) {
 	clients[clientId]->send(msg);
+//	std::cerr << "\nSEND() FINNISHED\n";
+
 }
 
 void TCPServer::clientCollection::client::send(std::string data) {
@@ -171,11 +182,19 @@ void TCPServer::clientCollection::client::send(std::string data) {
 
 
 	write_req->data = (void *) bufw->base;
-	uv_write(write_req, (uv_stream_t *) this->_client, bufw, 1, TCPServer::on_client_write);
-}
 
+	int r = uv_write(write_req, (uv_stream_t *) this->_client, bufw, 1, TCPServer::on_client_write);
+	try {
+		std::cerr << "FILE SEND\n";
+		uvEXT(r, "Network uv_write failed");
+	} catch (zeitoon::utility::exceptionEx err) {
+		std::cerr << "SND ERR: " << err.what() << "\n";
+	}
+	std::cerr << "\nCLIENT_SEND() FINNISHED\n";
+//
+}
 void TCPServer::on_client_write(uv_write_t *req, int status) {
-	if (status == -1) {
+	if (status != 0) {
 		fprintf(stderr, "error on_client_write");
 		//todo:uv_close((uv_handle_t *) &tcps, NULL);
 		return;
@@ -183,6 +202,7 @@ void TCPServer::on_client_write(uv_write_t *req, int status) {
 	char *buffer = (char *) req->data;
 	free(buffer);
 	free(req);
+	//std::cerr << "\nON_CLIENT_WRITE() FINNISHED\n";
 }
 
 void TCPServer::clientCollection::client::stop() {
@@ -193,6 +213,8 @@ void TCPServer::clientCollection::client::stop() {
 
 	if (this->_parent->_onClientDisconnect != NULL)
 		this->_parent->_onClientDisconnect(this->_id);
+//	std::cerr << "\nCLIENT_COLLECTION::STOP() FINNISHED\n";
+
 }
 
 void TCPServer::joinOnListenThread() {
@@ -223,13 +245,15 @@ void TCPServer::dataProcThreadMgrTimer(uv_timer_t *handle) {
 	c->lastDataQSize = c->receivedDataQ.size();
 	c->dataQ_Pushes = 0;
 	c->dataQ_Pops = 0;
+
 }
 
 void TCPServer::dataProcThreadMaker(int numberOfThreads) {
 	for (int i = 0; i < numberOfThreads; i++) {
 		std::thread *temp = new std::thread(&TCPServer::dataProcessor, this);
 		dataThreadPool.push_back(temp);
-	}
+	}//	std::cerr << "\ndataProcThreadMaker() FINNISHED\n";
+
 }
 
 void TCPServer::freeThreadPool() {
@@ -246,11 +270,15 @@ void TCPServer::dataProcessor() {
 	lck.unlock();
 	while (not stopDataProcess) {
 		lck.lock();
+
 		if (receivedDataQ.size() > 0) {
+			//	std::cerr << "DATA STACK SIZE: "<<this->receivedDataQ.size()<<"\n";
 			receivedData temp = this->receivedDataQ.front();
 			//std::cerr << "data Proc: " << temp.data << endl;
 			this->receivedDataQ.pop();
 			this->dataQ_Pops++;
+			//	std::cerr << "DATA STACK END SIZE: "<<this->receivedDataQ.size()<<"\n";
+
 			lck.unlock();
 			_safeCaller(temp.clientID, temp.data);
 			//std::cerr << "data Proc done: " << temp.data << endl;
@@ -260,6 +288,9 @@ void TCPServer::dataProcessor() {
 		}
 
 	}
+	//std::cerr << "\ndataProcessor() FINNISHED\n";
+
+
 }
 
 }//zeitoon

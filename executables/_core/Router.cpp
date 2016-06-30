@@ -35,6 +35,14 @@ Router::Router(int port) :
 	net.registerOnClientConnectCB(bind(&Router::_onClientConnect, this, std::placeholders::_1));
 	net.registerOnClientDisconnectCB(bind(&Router::_onClientDisconnect, this, std::placeholders::_1));
 	db.connect(FileSystemUtility::getAppPath() + "data.db3");
+	db.execute("CREATE TABLE IF NOT EXISTS \"services\"(\n"
+			           "\t\"name\"      Text NOT NULL PRIMARY KEY,\n"
+			           "\t\"version\"   Integer NOT NULL,\n"
+			           "\t\"installid\" Text,\n"
+			           "\t\"state\"     Integer NOT NULL DEFAULT 0,\n"
+			           "\t\"data\"      Text,\n"
+			           "\t\"CEPReg\"    Integer NOT NULL DEFAULT 0,\n"
+			           "CONSTRAINT \"unique_name\" UNIQUE ( \"name\" ) );");
 	try {
 		net.listen();
 	} catch (exceptionEx &err) {
@@ -127,7 +135,7 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 						comm.fireEvent(eventInfo::onServiceConnect(), dt, "_core");
 						if (ext->state == ExtensionProfile::extensionState::enabled)
 							try {
-								enableService(name);
+								enableService(t1);
 							} catch (resourceNotAvailable *ex) {
 								ext->requirementsSatisfied = false;
 								extManager.save();
@@ -414,21 +422,19 @@ bool Router::checkCoreRequirements() { //we need UM if we r gonna check permissi
 		return elist[0]->isConnected() && elist[0]->state >= ExtensionProfile::extensionState::installed;
 }
 
-bool Router::enableService(string name) {
-	ExtensionProfile *ext = extManager[name];
+bool Router::enableService(ExtensionProfile *ext) {
 	if (!ext || ext->state < ExtensionProfile::extensionState::installed)
 		return false;
 	ext->requirementsSatisfied = extManager.isReqSatisfied(ext->serviceInfo.enableRequirements);
 	if (!ext->requirementsSatisfied)
 		EXTresourceNotAvailable("Enable failed: Requirements not satisfied");
 	string t;
-	sendMessage(name, "_core", "onenable", t, MessageTypes::MTCall, "");
+	sendMessage(ext->serviceInfo.name, "_core", "onenable", t, MessageTypes::MTCall, "");
 	extManager.save();
 	return true;
 }
 
-bool Router::installService(string name) {
-	ExtensionProfile *ext = extManager[name];
+bool Router::installService(ExtensionProfile *ext) {
 	if (!ext || ext->state >= ExtensionProfile::extensionState::installed)
 		return false;
 	if (!extManager.isReqSatisfied(ext->serviceInfo.installRequirements))
@@ -444,41 +450,40 @@ bool Router::installService(string name) {
 	return true;
 }
 
-bool Router::getInstallInfo(string name) {
+bool Router::getInstallInfo(ExtensionProfile *ext) {
 	string t;
-	sendMessage(name, "_core", "getinstallInfo", t, MessageTypes::MTCall, "INSTALLID");
+	sendMessage(ext->serviceInfo.name, "_core", "getinstallInfo", t, MessageTypes::MTCall, "INSTALLID");
+	return true;
 }
 
-bool Router::uninstallService(string name) {
-	ExtensionProfile *ext = extManager[name];
+bool Router::uninstallService(ExtensionProfile *ext) {
 	if (!ext || ext->state < ExtensionProfile::extensionState::installed)
 		return false;
 	if (ext->state == ExtensionProfile::extensionState::enabled)
-		disableService(name);
+		disableService(ext);
 	if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager) {
 		for (int i = 0; i < extManager.size(); i++)
 			extManager[i]->CEPermissionsRegistered = false;
 		extManager.save();
 	}
 	string t;
-	sendMessage(name, "_core", "onuninstall", t, MessageTypes::MTCall, "");
-	extManager[name]->state = ExtensionProfile::extensionState::notInstalled;
-	extManager[name]->installID = "";
+	sendMessage(ext->serviceInfo.name, "_core", "onuninstall", t, MessageTypes::MTCall, "");
+	ext->state = ExtensionProfile::extensionState::notInstalled;
+	ext->installID = "";
 	extManager.save();
-	string dt = "{\"name\":\"" + extManager[name]->serviceInfo.name.getValue() + "\"}";
+	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
 	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
 	//todo:cleanup UM,PGDB
 	return true;
 }
 
-bool Router::disableService(string name) {
-	ExtensionProfile *ext = extManager[name];
+bool Router::disableService(ExtensionProfile *ext) {
 	if (!ext || ext->state != ExtensionProfile::extensionState::enabled)
 		return false;
 	string t;
-	sendMessage(name, "_core", "ondisable", t, MessageTypes::MTCall, "");
-	extManager[name]->state = ExtensionProfile::extensionState::installed;
-	string dt = "{\"name\":\"" + name + "\"}";
+	sendMessage(ext->serviceInfo.name, "_core", "ondisable", t, MessageTypes::MTCall, "");
+	ext->state = ExtensionProfile::extensionState::installed;
+	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
 	comm.fireEvent(eventInfo::onServiceDisable(), dt, "_core");
 	return true;
 }
@@ -544,28 +549,28 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
-			installService(sname);
+			installService(ext);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (streq(node, "_core.uninstallService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
-			uninstallService(sname);
+			uninstallService(ext);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (streq(node, "_core.enableService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
-			enableService(sname);
+			enableService(ext);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (streq(node, "_core.disableService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL && ext->isConnected()) {
-			disableService(sname);
+			disableService(ext);
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (streq(node, "_core.kickService")) {
@@ -580,7 +585,7 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 	} else if (streq(node, "error")) {
 		cerr << "\nERR RCV " << from << " : " << data;
 		if (jdata.contains("id"))
-			comm.callCallbackError(data,from);
+			comm.callCallbackError(data, from);
 	}
 }
 

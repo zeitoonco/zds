@@ -133,30 +133,27 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 }
 
 void UMCore::logout(int sessionID) {
-	if (sessionID == -1 or sessionManager.getUserIDBySession(sessionID) == -1 )
+	if (sessionID == -1 or sessionManager.getUserIDBySession(sessionID) == -1)
 		EXTloginFail("LOGOUT FAILED");
 	auto iter = sessionManager.sessionList.find(sessionID);
 	std::string username = iter->second.username;//sessionManager.sessionList.find(sessionID)->second.username;
 	int userID = iter->second.userID;
 	sessionManager.removeSession(sessionID);
 	//this->sessionManager.sessionList.at(sessionID).userID;//:: initialize upon removal of session? by inf
-	umCHI->sm.communication.runEvent(eventInfo::loggedOut(),
-	                                 zeitoon::usermanagement::DSUserInfo(userID, username, "", false, "",
-	                                                                     this->isOnline(userID)).toString(
-			                                 true));
+	umCHI->sm.communication.runEvent(
+			eventInfo::loggedOut(), zeitoon::usermanagement::DSUserInfo(userID, username, "", false, "",
+			                                                            this->isOnline(userID)).toString(true));
 	//##Event Fired
 	systemLog.log(getNameAndType(), username + " [" + std::to_string(sessionID) + "] " + "Logged out", LogLevels::note);
 }
 
-bool UMCore::checkPermission(int sessionID,
-                             int permissionID) {//todo:breaks on invalid ids!//todo: place try catch..by inf
-
+bool UMCore::checkPermission(int sessionID, int permissionID) {
 	try {
 		switch (this->checkUserPermissionState(sessionID, permissionID)) {
 			case (-1):
 				return false;
 			case (0):
-				return this->checkUsergroupPermission(sessionID, permissionID);
+				return this->checkUsergroupPermission(sessionID, permissionID) == 1;
 			case (1):
 				return true;
 			default:
@@ -601,7 +598,8 @@ int UMCore::checkUsergroupPermission(int &sessionID, int &permissionID) {
 			}
 		}
 	}
-	EXTunknownException("checkUserPermissionState Failed. unkown condition. needs debug");
+	//EXTunknownException("checkUserPermissionState Failed. unkown condition. needs debug");//todo:@navidi review
+	return 0;
 }
 
 int UMCore::checkUsergroupParentPermission(int &userGroupID, int &sessionID, int &permissionID) {

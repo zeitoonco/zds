@@ -16,11 +16,13 @@ using namespace std;
 namespace zeitoon {
 namespace GUI {
 
-GUICore::GUICore(int WSListenPort, GuiCHI *ptr) : WS(
-		std::bind(&GUICore::WSDataReceived, this, std::placeholders::_1, std::placeholders::_2)),
-                                                  guiCHI(ptr) {
+GUICore::GUICore(int WSListenPort, GuiCHI *ptr) : guiCHI(ptr) {
+	WS.registerOnMessageCB(std::bind(&GUICore::WSDataReceived, this, std::placeholders::_1, std::placeholders::_2));
+	WS.registerOnClientConnectCB(std::bind(&GUICore::WSNewClient, this, std::placeholders::_1));
+	WS.registerOnClientDisconnectCB(std::bind(&GUICore::WSClientDisconnect, this, std::placeholders::_1));
 	WS.listen(WSListenPort);
 }
+
 void GUICore::WSDataReceived(int ID, std::string data) {
 	auto d = clients.find(ID);
 	if (d == clients.end()) {
@@ -73,6 +75,25 @@ void GUICore::WSDataReceived(int ID, std::string data) {
 	}
 }
 
+void GUICore::WSNewClient(int ID) {
+	//--
+}
+
+void GUICore::WSClientDisconnect(int ID) {
+	vector<string> rem;
+	for (std::map<string, int>::iterator it = cmdClients.begin(); it != cmdClients.end(); it++) {
+		if (it->second == ID)
+			rem.push_back(it->first);
+	}
+	for (string cid:rem)
+		cmdClients.erase(cid);
+	if (clients[ID]->sessionID.length() > 0) {
+		guiCHI->sm.communication.runCommand(usermanagement::commandInfo::logout(),
+		                                    "{\"value\":" + clients[ID]->sessionID + "}", "", clients[ID]->sessionID);
+	}
+	clients.erase(ID);
+}
+
 void GUICore::hookFromClient(std::string EvntName, int clientID, string session) { //incomplete
 	clientData *cd = clients.at(clientID);
 	auto d = clients.find(clientID);
@@ -90,34 +111,33 @@ void GUICore::callFromClient(std::string CmdName, std::string cmdID, int clientI
 		cmdID = CommunicationUtility::getRandomID();
 	clientData *cd = clients.at(clientID);
 	guiCHI->sm.communication.runCommand(CmdName, data, cmdID, session);
-	cd->clientCmds.push_back(cmdID);
+	cmdClients[cmdID] = clientID;
 }
 
 void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data) {
 	cerr << "\nCB: " << data;
+	if (cmdClients.count(cmdID) == 0) {
+		cerr << "\nERROR. Invalid Callback CommandID.";
+		return;
+	}
+	int clientID = cmdClients[cmdID];
 	JStruct Jtemp;
 	Jtemp.add("type", "callback");
 	Jtemp.add("node", node);
 	Jtemp.add("id", cmdID);
 	Jtemp.add("data", data);//todo: clear all cb's after connection closed.
-	for (std::map<int, clientData *>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
-		for (int i = 0; i < iter->second->clientCmds.size(); i++) {
-			if (streq(cmdID, iter->second->clientCmds[i])) {
-				if (streq(node, usermanagement::commandInfo::login())) {
-					JStruct dt(data);
-					if (streq(dt["UMLoginResult"].getValue(), "ok"))
-						iter->second->sessionID = dt["sessionID"].getValue();
-				}
-				cerr << "\nCB s. " << cmdID;
-				WS.send(WS.ConHdlFinder(iter->first), Jtemp.toString());
-				iter->second->clientCmds.erase(iter->second->clientCmds.begin() + i);
-				return;
-			}
-		}
+
+	if (streq(node, usermanagement::commandInfo::login())) {
+		JStruct dt(data);
+		if (streq(dt["UMLoginResult"].getValue(), "ok"))
+			clients[clientID]->sessionID = dt["sessionID"].getValue();
 	}
+	WS.send(WS.ConHdlFinder(clientID), Jtemp.toString());
+	cmdClients.erase(cmdID);
 }
 
 void GUICore::eventReceived(std::string name, std::string data) {
+	cerr << "\nEV: " << data;
 	JStruct Jtemp;
 	Jtemp.add("type", "event");
 	Jtemp.add("node", name);
@@ -134,21 +154,19 @@ void GUICore::eventReceived(std::string name, std::string data) {
 }
 
 void GUICore::errorReceived(std::string node, std::string cmdID, std::string desc) {
+	cerr << "\nER: " << cmdID << ":" << desc;
+	if (cmdClients.count(cmdID) == 0) {
+		cerr << "\nERROR. Invalid Callback CommandID.";
+		return;
+	}
+	int clientID = cmdClients[cmdID];
 	JStruct Jtemp;
 	Jtemp.add("type", "error");
 	Jtemp.add("node", node);
 	Jtemp.add("id", cmdID);
 	Jtemp.add("data", desc);//todo:remove cb after its called. clear all cb's after connection closed.
-	for (std::map<int, clientData *>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
-		for (int i = 0; i < iter->second->clientCmds.size(); i++) {
-			if (streq(cmdID, iter->second->clientCmds[i])) {
-				cerr << "\nERR s. " << cmdID;
-				WS.send(WS.ConHdlFinder(iter->first), Jtemp.toString());
-				iter->second->clientCmds.erase(iter->second->clientCmds.begin() + i);
-				return;
-			}
-		}
-	}
+	WS.send(WS.ConHdlFinder(clientID), Jtemp.toString());
+	cmdClients.erase(cmdID);
 }
 
 }

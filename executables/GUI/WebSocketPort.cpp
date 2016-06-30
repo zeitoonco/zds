@@ -18,18 +18,24 @@ typedef std::map<websocketpp::connection_hdl, int, std::owner_less<websocketpp::
 namespace zeitoon {
 namespace GUI {
 
-WebSocketPort::WebSocketPort(funcDLG onMsgPtr) {
-	onMessageCB = onMsgPtr;
-	GUI_WebSocketServer.clear_access_channels(websocketpp::log::alevel::all); //
-	GUI_WebSocketServer.init_asio();
+WebSocketPort::WebSocketPort() {
+	GUI_WebSocketServer.
+			clear_access_channels(websocketpp::log::alevel::all); //
+	GUI_WebSocketServer.
+
+			init_asio();
+
 	GUI_WebSocketServer.set_reuse_addr(true);
-	GUI_WebSocketServer.set_open_handler(std::bind(&WebSocketPort::on_open, this, websocketpp::lib::placeholders::_1));
-	GUI_WebSocketServer.set_close_handler(
+	GUI_WebSocketServer.
+			set_open_handler(std::bind(&WebSocketPort::on_open, this, websocketpp::lib::placeholders::_1));
+	GUI_WebSocketServer.
+			set_close_handler(
 			std::bind(&WebSocketPort::on_close, this, websocketpp::lib::placeholders::_1));
-	GUI_WebSocketServer.set_message_handler(
+	GUI_WebSocketServer.
+			set_message_handler(
 			std::bind(&WebSocketPort::on_message, this, websocketpp::lib::placeholders::_1,
 			          websocketpp::lib::placeholders::_2));
-	listenThread = new std::thread(&WebSocketPort::sendo, this);
+	//listenThread = new std::thread(&WebSocketPort::sendo, this);
 }
 
 WebSocketPort::~WebSocketPort() {
@@ -62,41 +68,23 @@ void WebSocketPort::listen(int portIn) {
 
 }
 
-void WebSocketPort::sendo() {//fixme:@navidi:WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	std::string MSg = "";
-	int IDNum = 0;
-	while (MSg != "\\NO") {
-		std::cout << "ID#> " << std::endl;
-		std::cin >> IDNum;
-		std::cout << "Enter ur MSG#>" << std::endl;
-		std::cin >> MSg;
-		for (ConnetionListIterator it = this->connectionList.begin(); it != this->connectionList.end(); it++) {
-			if (it->second == IDNum) {
-				this->send(it->first, MSg);
-			}
-		}
-	}
-}
-
 void WebSocketPort::on_close(websocketpp::connection_hdl hdl) {
 	std::cerr << "\nWS Connection Removed\n";
+	int ID = this->connectionList.at(hdl);
 	this->connectionList.erase(hdl);
+	if (_onClientDisconnect != NULL)
+		_onClientDisconnect(ID);
 }
 
 void WebSocketPort::on_open(websocketpp::connection_hdl hdl) {
-	std::cout << "It has been Opened" << std::endl;
+	std::cout << "New Client " << conIDCounter + 1 << std::endl;
 	this->connectionList[hdl] = ++conIDCounter;
-	for (ConnetionListIterator it = this->connectionList.begin(); it != this->connectionList.end(); it++) {
-		std::cout << "ID: " << it->second << "\t HDL: " << &it->first << std::endl;
-		this->send(it->first, std::to_string(conIDCounter) + " Has joined the room.");
-	}
+	this->send(hdl, "hello " + std::to_string(conIDCounter));
 }
 
 void WebSocketPort::on_message(websocketpp::connection_hdl HDL, websocketServer::message_ptr MSG) {
 	std::cout << "MSG: " << MSG->get_payload() << std::endl;
 	this->received(HDL, MSG->get_payload());
-
-
 }
 
 void WebSocketPort::stop() {
@@ -114,22 +102,23 @@ void WebSocketPort::send(websocketpp::connection_hdl client, std::string data) {
 }
 
 void WebSocketPort::received(websocketpp::connection_hdl client, std::string data) { //client
+	if (_onMessage == NULL) {
+		return;
+	}
 	//if (sendStruct == NULL)//jaaaye in che konim baraye check??
 	//return;
 	std::thread *receivedThread = new std::thread(&WebSocketPort::receivedThreads, this, client, data);//fixme:free mem?
 	//lock//scopelock
 	this->threadsList.push_back(receivedThread);
-	std::cout << "\nreceivedThread ID:" << receivedThread->get_id();
-
 }
 
 void WebSocketPort::receivedThreads(websocketpp::connection_hdl client, std::string data) {
 	try {
 		int ID = this->connectionList.at(client);
-		if (onMessageCB == NULL) {
+		if (_onMessage == NULL) {
 			return;
 		}
-		onMessageCB(ID, data);
+		_onMessage(ID, data);
 		std::cout << "\nRemoving Threat from the list" << std::endl;
 		for (unsigned int i = 0; i < this->threadsList.size(); i++) {
 			if (this_thread::get_id() == this->threadsList[i]->get_id()) {//fixme:free memory of thread?

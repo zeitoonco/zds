@@ -26,6 +26,7 @@ UMCore::~UMCore() {
 
 UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string password, int &sessionID, int &uID,
                                                std::string &desc) {
+
 	auto currentUser = userLogInfo.find(username);
 	if (currentUser != userLogInfo.end()) {    //If user found on userLoginfo list.
 		if (currentUser->second.banned) {
@@ -70,6 +71,11 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 			try {
 				sessionID = sessionManager.newSession(userID);
 				uID = userID;
+				if (!this->checkPermissionByName(sessionID, "userman.login")) {
+					sessionManager.removeSession(sessionID);
+					EXTloginFail("No login privilege for this user");
+
+				}
 				umCHI->sm.communication.runEvent(eventInfo::loggedIn(),
 				                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, banned,
 				                                                                     desc,

@@ -22,7 +22,6 @@ namespace GUI {
 
 struct clientData {
 	int id;
-	std::vector<string> clientCmds;
 	std::vector<string> clientHooks;
 	string sessionID;
 };
@@ -34,6 +33,8 @@ class GUICore {
 	WebSocketPort WS;
 	int listenPort;
 	std::map<int, clientData *> clients;    //clientID, string event name
+	std::map<string, int> cmdClients; //cmdID->clientID
+
 public:
 	GUICore(int WSListenPort, GuiCHI *PTR);
 
@@ -42,6 +43,10 @@ public:
 	}
 
 	void WSDataReceived(int ID, std::string data);
+
+	void WSNewClient(int ID);
+
+	void WSClientDisconnect(int ID);
 
 	void hookFromClient(std::string EvntName, int client, string session);
 

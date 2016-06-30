@@ -66,11 +66,11 @@ public:
 	void registerCEP();
 	void registerServiceCEPermissions(ExtensionProfile *ext);
 
-	bool enableService(string name);
-	bool installService(string name);
-	bool getInstallInfo(string name);
-	bool uninstallService(string name);
-	bool disableService(string name);
+	bool enableService(ExtensionProfile *exte);
+	bool installService(ExtensionProfile *exte);
+	bool getInstallInfo(ExtensionProfile *exte);
+	bool uninstallService(ExtensionProfile *exte);
+	bool disableService(ExtensionProfile *exte);
 
 	inline string getNameAndType() {
 		return "ExtensionManager";

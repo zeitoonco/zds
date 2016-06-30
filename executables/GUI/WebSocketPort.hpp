@@ -26,9 +26,11 @@ class WebSocketPort {
 	websocketServer GUI_WebSocketServer;
 	boost::asio::io_service ios;
 	int port = 0;
-	typedef std::function<void(int clientID, std::string data)> funcDLG;
-	funcDLG onMessageCB;
-
+	typedef std::function<void(int, std::string)> onMessageDLG;
+	typedef std::function<void(int)> onClientConnectDLG;
+	onMessageDLG _onMessage;
+	onClientConnectDLG _onClientConnect;
+	onClientConnectDLG _onClientDisconnect;
 	std::thread *listenThread;
 
 	void listenThreads(int iport = 0);
@@ -65,7 +67,7 @@ public:
 	/*todo:hichi
 	 *
 	 */
-	WebSocketPort(funcDLG);
+	WebSocketPort();
 
 	~WebSocketPort();
 
@@ -87,6 +89,30 @@ public:
 	websocketpp::connection_hdl ConHdlFinder(int ID);
 
 	std::string getNameAndType();
+
+	void registerOnMessageCB(onMessageDLG cb) {
+		_onMessage = cb;
+	}
+
+	void clearInMessageCB() {
+		_onMessage = NULL;
+	}
+
+	void registerOnClientConnectCB(onClientConnectDLG cb) {
+		_onClientConnect = cb;
+	}
+
+	void clearOnClientConnectCB() {
+		_onClientConnect = NULL;
+	}
+
+	void registerOnClientDisconnectCB(onClientConnectDLG cb) {
+		_onClientDisconnect = cb;
+	}
+
+	void clearOnClientDisconnectCB() {
+		_onClientDisconnect = NULL;
+	}
 
 };
 }

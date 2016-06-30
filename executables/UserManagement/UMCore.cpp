@@ -58,8 +58,8 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 	}
 	if (loginResult.rowCount() == 1) {
 		userID = std::stoi(loginResult.fieldValue(0, 0));
-		banned = (loginResult.fieldValue(0, 1) == "t" || loginResult.fieldValue(0, 1) == "1" ||
-		          loginResult.fieldValue(0, 1) == "y") ? true : false;
+		banned = loginResult.fieldValue(0, 1) == "t" || loginResult.fieldValue(0, 1) == "1" ||
+		         loginResult.fieldValue(0, 1) == "y";
 		name = loginResult.fieldValue(0, 3);
 		if (banned) {            //IF USER IS BANNED
 			sessionID = -1;
@@ -71,22 +71,19 @@ UMLoginResult::UMLoginResultEnum UMCore::login(std::string username, std::string
 			try {
 				sessionID = sessionManager.newSession(userID);
 				uID = userID;
-				if (!this->checkPermissionByName(sessionID, "userman.login")) {
+				if (!this->checkPermissionByName(sessionID, commandInfo::login())) {
 					sessionManager.removeSession(sessionID);
 					EXTloginFail("No login privilege for this user");
-
 				}
-				umCHI->sm.communication.runEvent(eventInfo::loggedIn(),
-				                                 zeitoon::usermanagement::DSUserInfo(userID, username, name, banned,
-				                                                                     desc,
-				                                                                     this->isOnline(userID)).toString(
-						                                 true));                //##Event fired
+				umCHI->sm.communication.runEvent(
+						eventInfo::loggedIn(), zeitoon::usermanagement::DSUserInfo(
+								userID, username, name, banned, desc, this->isOnline(userID)).toString(true));
+				//##Event fired
 			} catch (exceptionEx &errorInfo) {
 				EXTDBErrorI("Login: unable to register the session for " + username, errorInfo);
 			}
 			systemLog.log(getNameAndType(), username + " [" + std::to_string(sessionID) + "] " + "Loged in",
 			              LogLevels::note);
-
 			return UMLoginResult::ok;
 		}
 	} else if (loginResult.rowCount() == 0) {    //IF THERE IS NO MATCH FOR USER/PW/NAME

@@ -158,7 +158,6 @@ bool CommunicationMediator::errorReceive(string data) {
 	try {
 		id = js["id"].getValue();
 		dt = js["data"]["description"].getValue();
-		//std::cerr<< "CommunicationMediator on errorReceive: \n" << dt;
 	} catch (exceptionEx &ex) {
 		return false;
 	}

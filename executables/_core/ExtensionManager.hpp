@@ -20,6 +20,7 @@
 #include <database/sqliteDatabaseHub.h>
 #include <map>
 
+
 namespace zeitoon {
 namespace _core {
 

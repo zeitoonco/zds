@@ -15,7 +15,7 @@ int chaT::newMessage(int userID, int sessionID, std::string msg, EnumMsgType::ms
 			"INSERT INTO Message ( userID, sessionID, msg, msgDate, type) VALUES (" + to_string(userID) + " ," +
 			to_string(sessionID) + ", '" + msg + "', default," + to_string(type) + ") returning id");
 	if (result > 0) {
-		std::cerr << "MSG Sent!" << std::endl;
+		lNote("MSG Sent");
 		chatCHI->sm.communication.runEvent(EventInfo::newMessageReceived(),
 		                                   zeitoon::chat::DSNewMessage(userID, sessionID, msg, type).toString(
 				                                   true));
@@ -274,7 +274,7 @@ DSSessionList chaT::listSessions(int ID) {
 		DTInteger<> *tempInt = new DTInteger<>("", stoi(result.fieldValue(i, 0)));
 		res.mnlist.add(tempInt, true);
 	}
-	std::cerr << "SESSION LIST: " << res.toString(true) << "\n";
+	lNote("SESSION LIST: " + res.toString(true));
 	return (res);
 }
 

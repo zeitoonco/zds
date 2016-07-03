@@ -14,7 +14,7 @@
 #include<set>
 #include<vector>
 #include <functional>
-
+#include "utility/logger.hpp"
 
 typedef websocketpp::server<websocketpp::config::asio> websocketServer;
 

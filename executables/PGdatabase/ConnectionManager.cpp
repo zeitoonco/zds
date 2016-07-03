@@ -8,7 +8,7 @@
 #include <executables/PGdatabase/PGmediator.hpp>
 #include"ConnectionManager.hpp"
 #include <utility/exceptions.hpp>
-
+#include "utility/logger.hpp"
 using namespace zeitoon::utility;
 
 #define CREATE_DATABASE "CREATE DATABASE "
@@ -46,10 +46,10 @@ ConnectionManager::ConnectionManager(std::string adminUserName, std::string admi
 		EXTconnectionError("Admin Connection Failed");
 	}
 	if (adminConnection.isConnected())
-		std::cerr << "CONNECTED TO DATABASE" << endl;
+		lNote("CONNECTED TO DATABASE");
 }
 
-ConnectionManager::~ConnectionManager() {//fixme: lock guards have not been properly used
+ConnectionManager::~ConnectionManager() {
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	std::map<std::string, Connection>::iterator iter;
 	for (iter = connectionList.begin(); iter != connectionList.end(); iter++) {
@@ -118,7 +118,6 @@ std::string ConnectionManager::singleFieldQuery(std::string extension, std::stri
 		val = connectionList.at(extension).getValue(sql);
 		return val;
 	} catch (exceptionEx &errorInfo) {
-		std::cerr << "DB CONMGR SFV:" << errorInfo.what() << "\n";
 		EXTDBErrorI("SQL SingleFieldQuery Error: ", errorInfo);
 	}
 }
@@ -145,6 +144,7 @@ void ConnectionManager::registerNewExtension(std::string extensionName) {
 		EXTDBErrorI("Register new extension FAILED", errorInfo);
 	}
 	pgMediator->sm.communication.runEvent("database.newUser", "{\"value\":\"" + extensionName + "\"}");
+	lNote("New extension added. Name: "+extensionName);
 	//##Event Fired
 }
 
@@ -156,6 +156,7 @@ void ConnectionManager::connectionMaker(std::string extensionName) {
 		EXTDBError("Create Connection for \'" + extensionName + "\' FAILED");
 
 	pgMediator->sm.communication.runEvent("database.userLogin", "{\"value\":\"" + extensionName + "\"}");
+	lNote("Extension logged in. Name: "+extensionName);
 	//##Event Fired
 }
 
@@ -177,17 +178,19 @@ void ConnectionManager::createDatabase(std::string userName, std::string passWor
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Admin createDatabase Failed", errorInfo);
 	}
+	lNote("Admin Role,Schema,Tables created. Name: "+userName);
 
 }
 
 void pgdatabase::ConnectionManager::removeExtension(std::string serviceName) {
 	try {
 		int a = adminConnection.execute("DROP SCHEMA \"" + serviceName + "\" CASCADE");
+		lWarnig("Removing DB schema for user: " + serviceName + " .... " + std::to_string(a));
 		int b = adminConnection.execute("DELETE FROM __local.extension WHERE name = '" + serviceName + "'");
+		lWarnig("Removing service name from DB for user: " + serviceName + " .... " + std::to_string(b));
 		int c = adminConnection.execute("DROP ROLE \"" + serviceName + "\"");
-		std::cerr << "Removing " + serviceName << "\n\tRemoving schema .... " << a << "\n\t";
-		std::cerr << "Removing service name from DB .... " << b << "\n\t";
-		std::cerr << "Removing role .... " << c << "\n";
+		lWarnig("Removing role "+ serviceName + " ....  "+std::to_string(c));
+
 	} catch (zeitoon::utility::exceptionEx &err) {
 		EXTDBErrorI("Removing Extention FAILED", err);
 	}

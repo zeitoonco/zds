@@ -51,11 +51,11 @@ void WebSocketPort::listenThreads(int iport) {
 		GUI_WebSocketServer.start_accept();
 		GUI_WebSocketServer.run();
 	} catch (exceptionEx &ex) {
-		cerr << "WS.Error.OnReceive: " << ex.what() << endl;
+		lError("WS.Error.OnReceive: " + std::string(ex.what()));
 	} catch (exception &ex) {
-		cerr << "WS.sysError.OnReceive: " << ex.what() << endl;
+		lError("WS.sysError.OnReceive: " + std::string(ex.what()));
 	} catch (...) {
-		cerr << "WS.uncaughtError.OnReceive: " << endl;//todo:use logger
+		lError("WS.uncaughtError.OnReceive: UNKNOWN");
 	}
 }
 
@@ -69,7 +69,7 @@ void WebSocketPort::listen(int portIn) {
 }
 
 void WebSocketPort::on_close(websocketpp::connection_hdl hdl) {
-	std::cerr << "\nWS Connection Removed\n";
+	lNote("WS Connection Removed");
 	int ID = this->connectionList.at(hdl);
 	this->connectionList.erase(hdl);
 	if (_onClientDisconnect != NULL)
@@ -77,28 +77,30 @@ void WebSocketPort::on_close(websocketpp::connection_hdl hdl) {
 }
 
 void WebSocketPort::on_open(websocketpp::connection_hdl hdl) {
-	std::cout << "New Client " << conIDCounter + 1 << std::endl;
+	lNote("New Client " + std::to_string(conIDCounter + 1));
 	this->connectionList[hdl] = ++conIDCounter;
 	this->send(hdl, "hello " + std::to_string(conIDCounter));
 }
 
 void WebSocketPort::on_message(websocketpp::connection_hdl HDL, websocketServer::message_ptr MSG) {
-	std::cout << "MSG: " << MSG->get_payload() << std::endl;
+	lDebug("WS-R: "+MSG->get_payload());
 	this->received(HDL, MSG->get_payload());
 }
 
 void WebSocketPort::stop() {
 	GUI_WebSocketServer.stop();
+	lWarnig("Websocket stopped");
 }
 
 void WebSocketPort::stopListening() {
 	GUI_WebSocketServer.stop_listening();
+	lWarnig("Websocket stopped listening");
 }
 
 void WebSocketPort::send(websocketpp::connection_hdl client, std::string data) {
 
 	GUI_WebSocketServer.send(client, data, websocketpp::frame::opcode::text);
-
+	lDebug("WS-S: "+data);
 }
 
 void WebSocketPort::received(websocketpp::connection_hdl client, std::string data) { //client
@@ -119,19 +121,17 @@ void WebSocketPort::receivedThreads(websocketpp::connection_hdl client, std::str
 			return;
 		}
 		_onMessage(ID, data);
-		std::cout << "\nRemoving Threat from the list" << std::endl;
 		for (unsigned int i = 0; i < this->threadsList.size(); i++) {
 			if (this_thread::get_id() == this->threadsList[i]->get_id()) {//fixme:free memory of thread?
-				std::cout << "\t\tID: " << this_thread::get_id() << std::endl;
 				this->threadsList.erase(this->threadsList.begin() + i);
 			}
 		}
 	} catch (exceptionEx &ex) {
-		cerr << "WSR.Error.OnReceive: " << ex.what() << endl;
+		lNote("WSR.Error.OnReceive: " + std::string(ex.what()));
 	} catch (exception &ex) {
-		cerr << "WSR.sysError.OnReceive: " << ex.what() << endl;
+		lNote("WSR.Error.OnReceive: " + std::string(ex.what()));
 	} catch (...) {
-		cerr << "WSR.uncaughtError.OnReceive: " << endl;
+		lNote("WSR.Error.OnReceive: UNKNOWN");
 	}
 }
 

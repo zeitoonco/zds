@@ -5,4 +5,4 @@
 #	PARENT_SCOPE
 #)
 
-AddSourceFiles(CommunicationManager.cpp Router.cpp main.cpp)
+AddSourceFiles(CommunicationManager.cpp Router.cpp main.cpp CoreConfig.cpp)

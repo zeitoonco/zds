@@ -215,17 +215,7 @@ private:
 
 	void _listen();
 
-	void _safeCaller(size_t id, std::string data) {
-		try {
-			this->_onMessage(id, data);
-		} catch (exceptionEx &ex) {
-			cerr << "TCPS.Error.OnReceive: " << ex.what() << endl;
-		} catch (exception &ex) {
-			cerr << "TCPS.sysError.OnReceive: " << ex.what() << endl;
-		} catch (...) {
-			cerr << "TCPS.uncaughtError.OnReceive: " << endl;
-		}
-	}
+	void _safeCaller(size_t id, std::string data) ;
 
 	static void on_new_connection(uv_stream_t *server, int status);
 

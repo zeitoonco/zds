@@ -24,7 +24,7 @@ class UMCore {
 	UmCHI *umCHI;
 
 public:
-	logger systemLog;
+	//logger systemLog;
 
 	UMCore(UmCHI *instancePtr);
 

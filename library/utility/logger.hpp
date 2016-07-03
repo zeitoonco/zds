@@ -11,89 +11,122 @@
 #include <database/sqliteDatabaseHub.h>
 #include "sstream"
 #include <algorithm>
+#include <fstream>
+#include <queue>
+#include <thread>
 
 namespace zeitoon {
-namespace utility {
+    namespace utility {
 
 /**
  * sotoohe mokhtalefe log
  */
-enum class LogLevels {
-	note = 0,        ///<baraye mavaredi ke ahamiyati nadarand, va dar amalkard system tasiri nadaran
-	debug = 1,        ///<mavaredi ke debugger va programmer be an niyaz darad
-	trace = 2,        ///<mavaredi ke ehtemal darad moshkel ijad konad
-	warning = 3,    ///<mavarede khatarnaki ke be khata nemirasad vali momken ast badan dar system ijade khata konad
-	error = 4,        ///<khatahayi ke dar system rokh midahad, vali system an ra handle mikonad
-	fatal = 5        ///<khatahayi ke dar system rokh midahad, vali system nemitavanad an ra handl konad
-};
+        class LogLevel {
+        public:
+            enum levels {
+                note = 0,         ///<baraye mavaredi ke ahamiyati nadarand, va dar amalkard system tasiri nadaran
+                debug = 1,        ///<mavaredi ke debugger va programmer be an niyaz darad
+                trace = 2,        ///<mavaredi ke ehtemal darad moshkel ijad konad
+                warning = 3,      ///<mavarede khatarnaki ke be khata nemirasad vali momken ast badan dar system ijade khata konad
+                error = 4,        ///<khatahayi ke dar system rokh midahad, vali system an ra handle mikonad
+                fatal = 5,         ///<khatahayi ke dar system rokh midahad, vali system nemitavanad an ra handl konad
+                __Max = 6
+            };
+            const static string typeString[];
+        };
+
 
 /**
  * class makhsoose log gereftan dar system. in class ye database mahali ijad mikonad va tamami peygham haye daryafti ra dar an zakhira mikonad.
  */
-class logger {
-private:
-	sqliteDatabaseHub dbh; //<database log ha
 
-public:
-	/**
-	 * sazandaye class. in tabe addrese file database ra migirad va an ra baz mikonad. agar file vojood nadasht, database va table haye an ra misazad.
-	 * @param logfile addrese file database
-	 */
-	logger(string logfile) {
-		dbh.connect(logfile);
-		//if database is created, create tables
-		vector<vector<string> > results;
-		datatypes::DTTableString res = dbh.query("SELECT name FROM sqlite_master WHERE type='table' AND name='log';");
-		if (res.rowCount() == 0) {
-			dbh.execute(
-					"CREATE TABLE log ( ID INTEGER  PRIMARY KEY AUTOINCREMENT, timestamp DATETIME NOT NULL DEFAULT (  datetime('now', 'localtime') ), loglevel  INTEGER  NOT NULL DEFAULT ( 0 ), owner     TEXT NOT NULL DEFAULT(''),  message   TEXT  NOT NULL DEFAULT(''));");
-			dbh.execute("CREATE TABLE loglevel ( ID   INTEGER PRIMARY KEY, name TEXT    NOT NULL );");
-			dbh.execute(
-					"INSERT INTO [loglevel] ([ID], [name]) VALUES (0, 'note');INSERT INTO [loglevel] ([ID], [name]) VALUES (1, 'debug');INSERT INTO [loglevel] ([ID], [name]) VALUES (2, 'trace');INSERT INTO [loglevel] ([ID], [name]) VALUES (3, 'warning');INSERT INTO [loglevel] ([ID], [name]) VALUES (4, 'error');INSERT INTO [loglevel] ([ID], [name]) VALUES (5, 'fatal');");
-		}
-	}
 
-	/**
-	 * mokhareb class. etesal be database ra mibandad.
-	 */
-	~logger() {
-		dbh.disconnect();
-	}
+        class Logger {
+            struct LogStruct {
+                LogLevel::levels level;
+                string logTime;
+                string owner;
+                string message;
 
-	/**
-	 * yek peygham ra be onvane log daryaft karda va an ra dar database zakhira mikonad.
-	 * @param owner   objecti ke in log ra ferestade. mitavan az tabe ::getNameAndType() ke dar aksare class ha tarif shode estefade kard.
-	 * @param message peyghami ke dar morede log ast
-	 * @param level   sathe log ba tavajeh be ahamiyate an baraye system va mored estefada an. @see LogLevels
-	 */
-	void log(string owner, string message, LogLevels level) {
-		message=utility::Strings::replace(message,"'","''");
-		stringstream ss;
-		ss << "insert into log(owner,message,loglevel) values('" << owner << "','" << message << "'," << (int) level
-		<< ");";
-		dbh.execute(ss.str());
-	}
+                LogStruct(LogLevel::levels ilevel, string ilogTime, string iowner, string imessage) {
+                    level = ilevel;
+                    logTime = ilogTime;
+                    owner = iowner;
+                    message = imessage;
+                }
+            };
 
-	void log(string owner, string message) {
-		log(owner, message, LogLevels::note);
-	}
+            sqliteDatabaseHub _dbh;            // Logs database instance
+            std::queue<zeitoon::utility::Logger::LogStruct> dbWriteQueue;
+            std::ofstream _logFile;            // Logs file handler
+            bool logTofile = false;
+            bool logDB = false;
+            bool terminalOut = false;
+            bool forceCerr = false;
+            bool dbThread = false;
+            int terminalLoglvl = 0;
+            std::thread *dbLogThread = NULL;
 
-	void log(string message) {
-		log("", message, LogLevels::note);
-	}
 
-	void log(string message, LogLevels level) {
-		log("", message, level);
-	}
+            void dbLogLoop();
 
-	/**
-	 * tamami ye log haye zakhira shoda ra az database pak mikonad.
-	 */
-	void clearLogs() {
-		dbh.execute("DELETE FROM log; VACUUM;");
-	}
-};
+            void startDBLoop();
 
+            void stopDBLoop();
+
+            void dbLogger(string &owner, string &message, LogLevel::levels &level, std::string &_Time);
+
+            void fileLogger(string owner, string &message, LogLevel::levels &level, std::string _Time);
+
+        public:
+            ~Logger();
+
+            void log(string owner, string message, LogLevel::levels level);
+
+            void enableDB(std::string dbName);
+
+            void disableDB();
+
+            void clearDB();
+
+            void enableFile(std::string filename);
+
+            void disableFile();
+
+            void clearFile();//remove
+
+            void enableTerminalOut();
+
+            void setTerminalLoglvl(int input);
+
+            void forceCerrOut();
+
+            void forceCout();
+
+            void disableTerminalOut();
+
+            std::string getNameAndType() {
+                return "Logger";
+            }
+
+            std::string currentTime();
+            bool isTerminalLog(){
+                return terminalOut;
+            }
+
+        };
+
+
+    }
 }
-}
+extern zeitoon::utility::Logger logger;
+
+#define l(msg, lvl) logger.log(this->getNameAndType(),msg,lvl)
+#define lNote(msg) logger.log(this->getNameAndType(),msg, zeitoon::utility::LogLevel::note)
+#define lDebug(msg) logger.log(this->getNameAndType(),msg, zeitoon::utility::LogLevel::debug)
+#define lTrace(msg) logger.log(this->getNameAndType(),msg, zeitoon::utility::LogLevel::trace)
+#define lWarnig(msg) logger.log(this->getNameAndType(),msg, zeitoon::utility::LogLevel::warning)
+#define lError(msg) logger.log(this->getNameAndType(),msg, zeitoon::utility::LogLevel::error)
+#define lFatal(msg) logger.log(this->getNameAndType(),msg, zeitoon::utility::LogLevel::fatal)
+
 #endif /* LOGGER_HPP_ */

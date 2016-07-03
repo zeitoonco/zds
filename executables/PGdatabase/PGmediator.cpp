@@ -10,6 +10,8 @@
 #include "PGConfig.hpp"
 #include <fstream>
 #include "executables/_core/coreutility.hpp"
+#include "utility/logger.hpp"
+
 #include <deque>
 
 namespace zeitoon {
@@ -40,9 +42,10 @@ void PGmediator::onCommand(string node, string data, string id, string from) {
 			this->sm.communication.runCallback(node, result.toString(), id);
 		}
 	} catch (exceptionEx &errorInfo) {
-		std::cerr << "PG MEDIATOR:\n" << errorInfo.what() << "\n";
+		lError("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 		sm.communication.errorReport(node, id, errorInfo.what());
 	} catch (exception &errorInfo) {
+		lError("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 		sm.communication.errorReport(node, id, errorInfo.what());
 	}
 }
@@ -57,14 +60,15 @@ void PGmediator::onEvent(string node, string data, string from) {
 			auto d = temp["name"].getValue();
 			conMgr.removeExtension(d);
 		}
-	} catch (zeitoon::utility::exceptionEx *err) {
-		std::cerr << "PGDB OnEvent Error: " << err->what() << "\n";
+	} catch (zeitoon::utility::exceptionEx &err) {
+		lError("onEvent err:  node: " + node + " from: " + from + " errMsg:" + err.what());
 	}
 }
 
 void PGmediator::onInstall(string id) {
 	PGconfiguration.serviceID = id;
 	PGconfiguration.save();
+	lNote("Service installed");
 }
 
 void PGmediator::onEnable() {
@@ -75,7 +79,7 @@ void PGmediator::onEnable() {
 		temp += (i == 0 ? "" : ",") + insInfo.commands[i]->name.toString();
 	}
 	sm.communication.registerCommand(temp);
-	std::cout << temp << endl;
+	lNote("Commands list: "+temp);
 
 	//--------register events
 	length = insInfo.events.length();
@@ -84,6 +88,7 @@ void PGmediator::onEnable() {
 		temp += (i == 0 ? "" : ",") + insInfo.events[i]->name.toString();
 	}
 	sm.communication.registerEvent(temp);
+	lNote("Events list: "+temp);
 
 	//--------register hooks
 	length = insInfo.hooks.length();
@@ -92,24 +97,27 @@ void PGmediator::onEnable() {
 		temp += (i == 0 ? "" : ",") + insInfo.hooks[i]->name.toString();
 	}
 	sm.communication.registerHook(temp);
+	lNote("Hooks list: "+temp);
+	lNote("Service enabled");
 }
 
 void PGmediator::onDisable() {
-	cerr << "\nDisable!";
+	lWarnig("Service disabled");
 }
 
 void PGmediator::onUninstall() { //fixme: remove db things
 	PGconfiguration.serviceID = "";
 	PGconfiguration.save();
+	lWarnig("Service Uninstalled");
 
 }
 
 void PGmediator::onConnect() {
-	std::cerr << "\n+PG Connected to server\n";
+	lNote("+UM Connected to server");
 }
 
 void PGmediator::onDisconnect() {
-	std::cerr << "\n-PG Disconnected from server\n";
+	lNote("-UM Disconnected from server");
 }
 
 string PGmediator::getInstallInfo() {
@@ -134,11 +142,11 @@ string PGmediator::changeDatatypeVersion(string value, string datatype, int from
 }
 
 void PGmediator::onError(string node, string id, string description) {
-	std::cerr << "Error:\t" << description << std::endl;
+	lError("Error from: "+node+"OperationID: "+id+" desc: "+description);
 }
 
 void PGmediator::onWarning(string level, string node, string id, string description) {
-	std::cerr << "Warning:\t" << description << std::endl;
+	lWarnig("Warning from: "+node+"OperationID: "+id+" desc: "+description);
 }
 
 void PGmediator::pong(string id, int miliseconds) {

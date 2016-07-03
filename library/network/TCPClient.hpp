@@ -149,11 +149,11 @@ namespace zeitoon {
             TCPClient();
 
             static void keepAliveTimerCB(uv_timer_t *handle) {
-              /*  TCPClient *c = (TCPClient *) handle->data;
-                std::cerr << "KEEP ALIVE EVENT\nConnected: " << c->isConnected() << "\nReceiver:  " <<
-                (not c->dataTransmiter.__stopDataProcess) << "\nReceiveQ size: " <<
-                c->dataTransmiter.receivedDataQ.size() << "\n";
-*/
+                /*  TCPClient *c = (TCPClient *) handle->data;
+                  std::cerr << "KEEP ALIVE EVENT\nConnected: " << c->isConnected() << "\nReceiver:  " <<
+                  (not c->dataTransmiter.__stopDataProcess) << "\nReceiveQ size: " <<
+                  c->dataTransmiter.receivedDataQ.size() << "\n";
+  */
 
             }
 
@@ -246,29 +246,9 @@ namespace zeitoon {
 
             static void on_client_write(uv_write_t *req, int status);
 
-            void _safeCaller(std::string data) {
-                try {
-                    this->_onMessage(data);
-                } catch (exceptionEx &ex) {
-                    cerr << "TCPS.Error.OnReceive: " << ex.what() << endl;
-                } catch (exception &ex) {
-                    cerr << "TCPS.sysError.OnReceive: " << ex.what() << endl;
-                } catch (...) {
-                    cerr << "TCPS.uncaughtError.OnReceive: " << endl;
-                }
-            }
+            void _safeCaller(std::string data);
 
-            void _packetReceived() {
-                /* fixme:: this way, in case of NULL _onmsg-> this function would just empty the string, witch would
-                 * just clear the buffer and received data would be lost eventually.
-                 **/
-                if (this->_onMessage != NULL) {
-                    dataTransmiter.receivedDataQ.push(this->_buff);
-                    this->dataTransmiter.dataQ_Pushes++;
-                }
-                this->_buff = "";
-                this->_lastPacketLen = 0;
-            }
+            void _packetReceived();
 //	static void close_cb()
         };
 

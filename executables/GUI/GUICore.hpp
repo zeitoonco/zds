@@ -58,6 +58,10 @@ public:
 
 	void errorReceived(std::string node, std::string cmdID, std::string desc);
 
+	std::string getNameAndType(){
+		return "GUICore";
+	}
+
 };
 
 

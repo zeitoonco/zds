@@ -14,9 +14,10 @@
 #include "datatypes/dtsingletypes.hpp"
 #include "UManagementUtility.hpp"
 #include "DTStructs.hpp"
-
+#include "utility/logger.hpp"
 namespace zeitoon {
 namespace usermanagement {
+
 
 UmCHI::UmCHI() :
 		CommunicationHandlerInterface(this), userMngrInterface(this),
@@ -154,12 +155,11 @@ void UmCHI::onCommand(string node, string data, string id, string from) {
 			sm.communication.runCallback(node, permsList.toString(true), id);
 		}
 	} catch (exceptionEx &errorInfo) {
-		std::cerr << "\nUMCHI ERROR:\n" << errorInfo.what() << "\n";
 		sm.communication.errorReport(node, id, errorInfo.what());
-		userMngrInterface.systemLog.log("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
+		lError("node: " + node + " id: " + id + " errMsg:" + errorInfo.what());
 	} catch (exception &errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo.what());
-		userMngrInterface.systemLog.log("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
+		lError("node: " + node + " id: " + id + " errMsg:" + errorInfo.what());
 	}
 }
 
@@ -191,6 +191,7 @@ void UmCHI::onInstall(string id) {
 	//set serviceID in confMgr
 	UMconfig.serviceID = id;
 	UMconfig.save();
+	lNote("Service installed");
 }
 
 void UmCHI::onEnable() {
@@ -201,7 +202,7 @@ void UmCHI::onEnable() {
 		temp += (i == 0 ? "" : ",") + insInfo.commands[i]->name.toString();
 	}
 	sm.communication.registerCommand(temp);
-	std::cout << temp << endl;
+	lNote("Commands list: "+temp);
 
 	//--------register events
 	length = insInfo.events.length();
@@ -210,7 +211,7 @@ void UmCHI::onEnable() {
 		temp += (i == 0 ? "" : ",") + insInfo.events[i]->name.toString();
 	}
 	sm.communication.registerEvent(temp);
-	std::cout << temp << endl;
+	lNote("Events list: "+temp);
 
 	//--------register hooks
 	length = insInfo.hooks.length();
@@ -219,26 +220,29 @@ void UmCHI::onEnable() {
 		temp += (i == 0 ? "" : ",") + insInfo.hooks[i]->name.toString();
 	}
 	sm.communication.registerHook(temp);
-	std::cout << temp << endl;
+	lNote("Hooks list: "+temp);
+//	std::cout << temp << endl;
 
 	this->userMngrInterface.loadCaches();///todo: to be checked and trace-checked
-
+	lNote("Service enabled");
 }
 
 void UmCHI::onDisable() {
+	lWarnig("Service Disabled");
 }
 
 void UmCHI::onUninstall() {//fixme: remove db things
 	UMconfig.serviceID = "";
 	UMconfig.save();
+	lWarnig("Service Uninstalled");
 }
 
 void UmCHI::onConnect() {
-	std::cerr << "\n+UM Connected to server\n";
+	lNote("+UM Connected to server");
 }
 
 void UmCHI::onDisconnect() {
-	std::cerr << "\n-UM Disconnected from server\n";
+	lNote("-UM Disconnected from server");
 }
 
 string UmCHI::getInstallInfo() {
@@ -263,11 +267,11 @@ string UmCHI::changeDatatypeVersion(string value, string datatype, int fromVersi
 }
 
 void UmCHI::onError(string node, string id, string description) {
-	std::cerr << "Error:\t" << description << std::endl;
+	lError("Error from: "+node+"OperationID: "+id+" desc: "+description);
 }
 
 void UmCHI::onWarning(string level, string node, string id, string description) {
-	std::cerr << "Warning:\t" << description << std::endl;
+	lWarnig("Warning from: "+node+"OperationID: "+id+" desc: "+description);
 }
 
 void UmCHI::checkDBTables() {

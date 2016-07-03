@@ -26,9 +26,8 @@ GUICore::GUICore(int WSListenPort, GuiCHI *ptr) : guiCHI(ptr) {
 void GUICore::WSDataReceived(int ID, std::string data) {
 	auto d = clients.find(ID);
 	if (d == clients.end()) {
-		std::cerr << "\nNO CLIENT FOUND\n";
+		lWarnig("WS-dataReceived: NoClient found. ID: "+std::to_string(ID)+" Data: "+data);
 	}
-	std::cout << "\n**GUI:WS received.\tID:" << ID << "\tData: " << data << std::endl;
 	clientData *cd;
 	if (clients.count(ID) == 0) {//new //todo: use a onNewClient event instead!
 		cd = new clientData;
@@ -98,7 +97,7 @@ void GUICore::hookFromClient(std::string EvntName, int clientID, string session)
 	clientData *cd = clients.at(clientID);
 	auto d = clients.find(clientID);
 	if (d == clients.end()) {
-		std::cerr << "\nNO CLIENT FOUND\n";
+		lWarnig("hookFromClient: NoClient found");
 	}
 
 	guiCHI->sm.communication.registerHook(EvntName, session);
@@ -115,9 +114,8 @@ void GUICore::callFromClient(std::string CmdName, std::string cmdID, int clientI
 }
 
 void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data) {
-	cerr << "\nCB: " << data;
 	if (cmdClients.count(cmdID) == 0) {
-		cerr << "\nERROR. Invalid Callback CommandID.";
+		lError("Invalid Callback CommandID. CmdID: "+cmdID+" node: "+node+"  Data: "+data)
 		return;
 	}
 	int clientID = cmdClients[cmdID];
@@ -137,7 +135,6 @@ void GUICore::callBackReceived(std::string node, std::string cmdID, std::string 
 }
 
 void GUICore::eventReceived(std::string name, std::string data) {
-	cerr << "\nEV: " << data;
 	JStruct Jtemp;
 	Jtemp.add("type", "event");
 	Jtemp.add("node", name);
@@ -145,7 +142,7 @@ void GUICore::eventReceived(std::string name, std::string data) {
 	for (std::map<int, clientData *>::iterator iter = clients.begin(); iter != clients.end(); iter++) {
 		for (int i = 0; i < iter->second->clientHooks.size(); i++) {
 			if (streq(name, iter->second->clientHooks[i])) {
-				cerr << "\nEV s. " << name;
+				//cerr << "\nEV s. " << name;
 				WS.send(WS.ConHdlFinder(iter->first), Jtemp.toString());
 				return;
 			}
@@ -154,9 +151,8 @@ void GUICore::eventReceived(std::string name, std::string data) {
 }
 
 void GUICore::errorReceived(std::string node, std::string cmdID, std::string desc) {
-	cerr << "\nER: " << cmdID << ":" << desc;
 	if (cmdClients.count(cmdID) == 0) {
-		cerr << "\nERROR. Invalid Callback CommandID.";
+		lError("erroReceived: Invalid callback CommandID");
 		return;
 	}
 	int clientID = cmdClients[cmdID];

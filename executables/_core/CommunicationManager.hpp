@@ -18,6 +18,7 @@
 #include "utility/utility.hpp"
 #include "utility/jsonParser.hpp"
 #include <map>
+#include "utility/logger.hpp"
 
 
 using namespace std;

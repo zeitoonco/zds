@@ -12,7 +12,7 @@ int main() {
 
 	try {
 		zeitoon::utility::UDPClient x;
-		std::cout << "Now Sending" << endl;
+		std::cout << "Now Sending" << std::endl;
 		x.send("127.0.0.1", 15001, std::string(temp, 60000));
 		x.disconnect(true);
 
@@ -20,6 +20,6 @@ int main() {
 		//x.send("127.0.0.1",15001,"Hellow");
 		//x.listen("127.0.0.1",15001);
 	} catch (exceptionEx &err) {
-		std::cerr << err->what();
+		std::cerr << err.what();
 	}
 }

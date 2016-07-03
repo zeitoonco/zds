@@ -121,7 +121,7 @@ void CommunicationManager::fireEvent(string eventName, string &data, string from
 				sendFunc(hook.extension, from, hook.eventName, data, MessageTypes::MTFire, "", "");
 			} catch (...) {
 				//todo: log fire fail
-				cerr << "LOG:Firing hook failed. " << eventName << ">" << hookId;
+				lError("LOG:Firing hook failed. "+eventName+ ">"+hookId);
 			}
 		}
 	} else

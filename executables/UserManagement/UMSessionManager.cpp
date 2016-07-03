@@ -48,8 +48,8 @@ void UMSessionManager::removeSession(int sessionID) {
 	int a = activeSessions.erase(sessionList.find(sessionID)->second.userID);
 	int b = sessionList.erase(sessionID);
 	if (a != 1 or b != 1) {            // make a log upon an unsuccessful session removal.
-		coreInstance->systemLog.log("SessionRemove Failed" + getNameAndType(), std::to_string((a == 1) ? b : a),
-		                            LogLevels::trace);
+//		coreInstance->systemLog.log("SessionRemove Failed" + getNameAndType(), std::to_string((a == 1) ? b : a),
+//		                            LogLevels::trace);
 	}
 }
 

@@ -156,6 +156,7 @@ namespace zeitoon {
 
             Chatconfig.serviceID = id;
             Chatconfig.save();
+            lNote("Service installed");
         }
 
         void ChatCHI::onEnable() {
@@ -166,7 +167,7 @@ namespace zeitoon {
                 temp += (i == 0 ? "" : ",") + insInfo.commands[i]->name.toString();
             }
             sm.communication.registerCommand(temp);
-            std::cout << temp << endl;
+            lNote("Commands list: "+temp);
 
             //--------register events
             length = insInfo.events.length();
@@ -175,7 +176,7 @@ namespace zeitoon {
                 temp += (i == 0 ? "" : ",") + insInfo.events[i]->name.toString();
             }
             sm.communication.registerEvent(temp);
-            std::cout << temp << endl;
+            lNote("Events list: "+temp);
 
             //--------register hooks
             length = insInfo.hooks.length();
@@ -184,25 +185,27 @@ namespace zeitoon {
                 temp += (i == 0 ? "" : ",") + insInfo.hooks[i]->name.toString();
             }
             sm.communication.registerHook(temp);
-            std::cout << temp << endl;
+            lNote("Hooks list: "+temp);
+            lNote("Service enabled");
 
         }
 
         void ChatCHI::onDisable() {
-
+            lWarnig("Service Disabled");
         }
 
         void ChatCHI::onUninstall() {
             Chatconfig.serviceID = "";
             Chatconfig.save();
+            lWarnig("Service Uninstalled");
         }
 
         void ChatCHI::onConnect() {
-            std::cerr << "\n+Chat Connected to server\n";
+            lNote("+Chat Connected to server");
         }
 
         void ChatCHI::onDisconnect() {
-            std::cerr << "\n-Chat Disconnected from server\n";
+            lNote("-Chat Disconnected to server");
         }
 
         string ChatCHI::getInstallInfo() {
@@ -227,11 +230,12 @@ namespace zeitoon {
         }
 
         void ChatCHI::onError(string node, string id, string description) {
-            std::cerr << "Error:\t" << description << std::endl;
+            lError("Error from: "+node+"OperationID: "+id+" desc: "+description);
         }
 
         void ChatCHI::onWarning(string level, string node, string id, string description) {
-            std::cerr << "Warning:\t" << description << std::endl;
+            lWarnig("Warning from: "+node+"OperationID: "+id+" desc: "+description);
+
         }
 
         void ChatCHI::pong(string id, int miliseconds) {

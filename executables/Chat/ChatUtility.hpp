@@ -6,7 +6,7 @@
 #define ZDS_CHATUTILITY_HPP
 
 #include "string"
-
+#include "utility/logger.hpp"
 namespace zeitoon {
 namespace chat {
 class CommandInfo {

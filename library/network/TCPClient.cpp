@@ -5,6 +5,7 @@
 #include "TCPClient.hpp"
 #include "networkUtility.hpp"
 #include <inttypes.h>
+#include "utility/logger.hpp"
 
 namespace zeitoon {
     namespace utility {
@@ -13,9 +14,6 @@ namespace zeitoon {
             if (isConnected()) {
                 this->disconnect();
             }
-            /*freeThreadPool();
-            uv_loop_close(&loop);*/
-            //delete listenTrd;
         }
 
         TCPClient::TCPClient() : dataTransmiter(this), addr(NULL), _connected(false), _buff(""), _lastPacketLen(0) {
@@ -85,16 +83,11 @@ namespace zeitoon {
             dataTransmiter.stopTransmissionProcess();
             uv_close((uv_handle_t *) &this->client, NULL);
             uv_unref((uv_handle_t *) &this->mainTimer);
-            /*     if(listenTrd->get_id() == this_thread::get_id())
-                     std::cerr<<"\nSAME THREAD\n";
-                 if (listenTrd->joinable())
-                     listenTrd->join();
- */
+
             if (not uv_is_closing((uv_handle_t *) &loop))//check if the handle is already closed
                 uv_loop_close(&loop);
             if (this->_onDisconnect != NULL)
                 this->_onDisconnect();
-            std::cerr << "DISCONNECT() FINISHED\n";
         }
 
 
@@ -107,16 +100,11 @@ namespace zeitoon {
             try {
                 int _interval = reconnectOptions.getNextInterval();
                 uv_timer_start(Rtimer_req, reconnTimerCB, (_interval * 1000), 0);
-                std::cerr << "Reconnect in " << _interval << " seconds" << std::endl;
-
-            } catch (networkMaxRetryReached *err) {
-                std::cerr << "ERROR: " << err->what() << std::endl;
-
-                disconnect();//STOPPING THE MAIN KEEP ALIVE TIMER CREATED EARLIER IN CONSTRUCTOR
-            } catch (networkNoRetryTimeSet *err) {
-                std::cerr << "ERROR: " << err->what() << std::endl;
-                this->setReconnectInterval("{\"timing\":[10,0]}");
-
+                lNote("Reconnect in " + std::to_string(_interval) + " seconds");
+            } catch (networkMaxRetryReached &err) {
+                EXTnetworkMaxRetryReachedI("TCP reconnect failed. max reconnect interval reached.", err);
+            } catch (networkNoRetryTimeSet &err) {
+                EXTnetworkNoRetryTimeSetI("TCP reconnect failed. no retry interval found", err);
             }
 
         }
@@ -131,18 +119,15 @@ namespace zeitoon {
 
         void TCPClient::runLoop() {
             try {
-                std::cerr <<
-                "\nTCPClien EVENTS LOOP Start\n";//todo:Use Logger by ajl /// what is log needed for? // how to log ?
+                lNote("TCPClient loop Started");
                 int r = uv_run(&this->loop, UV_RUN_DEFAULT);
-                std::cerr << "MAIN ABORTED. Status: " << r << " Error code: " << uv_err_name(r) << "  MSG:\n" <<
-                uv_strerror(r) << "\n";
                 uvEXT(r, "libuv events loop error: ");
-                std::cerr << "\nTCPClient EVENTS LOOP ended successfully " << r << std::endl;
-                this->_connected = false;//check if loop is blocking while running
+                lNote("TCPClient loop finished. " + std::string(uv_err_name(r)) + " " + std::string(uv_strerror(r)));
+                this->_connected = false;
 
             } catch (exceptionEx &ex) {
-                cerr << "\nERROR ON TCPClient EVENTS LOOP: " << ex.what() << std::endl;
                 disconnect();
+                EXTnetworkFailureI("TCP LOOP FAILED", ex);
             }
         }
 
@@ -173,7 +158,6 @@ namespace zeitoon {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             }
-            std::cerr << "TCP dataProcessor FINNISHED \n";
         }
 
         void TCPClient::DataTransmiter::freeThreadPool() {//todo: needs a lock
@@ -185,8 +169,6 @@ namespace zeitoon {
                 delete dataThreadPool[i];
             }
             dataThreadPool.clear();
-            std::cerr << "freeThreadPool FINNISHED \n";
-
         }
 
 //STATIC
@@ -195,24 +177,19 @@ namespace zeitoon {
             free(req);
 
             if (status) {
-                std::cerr << "CONNECTION FAILED\n\tERROR " << status << " : " << uv_err_name(status) << ": " <<
-                uv_strerror(status) <<"\n";
+
                 switch (status) {
                     case (-111): {
-                        std::cerr << "\nTerminating...\n";
+                        logger.log(c->getNameAndType(), "TCP Terminating.   nread: " + std::to_string(status),
+                                   zeitoon::utility::LogLevel::error);
                         c->disconnect();
                         break;
                     }
                     default:
-                        if (c->reconnectOptions.timingSize() > 0) {
-                            //uv_close((uv_handle_t *) &c->client, NULL);todo: in case of error uncomment
-                            c->reconnect();
-                        } else {
-                            std::cerr << "No reconnect intervals specified." << std::endl;
-                            //todo: uv_unref((uv_handle_t *) &c->dataTransmiter.receiveTimer);//STOPPING THE MAIN LOOP CREATED EARLIER IN CONSTRUCTOR
-                        }
-                        break;
+                        EXTnetworkFailureO("TCP onConnect failure. ERR: " + std::string(uv_strerror(status)) +
+                                           "  MSG:  " + std::string(uv_err_name(status)), c->getNameAndType());
                 }
+
 
             } else {
                 c->dataTransmiter.startTransmissionProcess();
@@ -230,24 +207,20 @@ namespace zeitoon {
         }
 
         void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
-            if (nread < 0)
-                std::cerr << "Client read ERR: " << uv_err_name(nread) << "  MSG:\n" << uv_strerror(nread);
-            //std::cerr << "NREAD: " << nread << std::endl;
-
             TCPClient *c = (TCPClient *) _client->data;
+
             if (nread == -4095) {
                 free(buf->base);
                 c->_connected = false;
-                // c->reconnect();
                 c->disconnect();
             }
             else if (nread < 0) { //Error
-                //todo:uv_close((uv_handle_t *) client, NULL); & free?
                 free(buf->base);
                 c->disconnect();
-                uvEXTO(nread, "TCP read failed", c->getNameAndType());
+                EXTnetworkFailureO("TCP onConnect failure. ERR: " + std::string(uv_strerror(nread)) +
+                                   "  MSG:  " + std::string(uv_err_name(nread)), c->getNameAndType());
             } else if (nread == 0) { //UNK!
-                fprintf(stderr, "TCPClient: read 0!");
+                logger.log(c->getNameAndType(), "TCPClient: read 0!", zeitoon::utility::LogLevel::warning);
             } else {
                 ssize_t ci = 0;
                 //char *cp = buf->base;
@@ -277,10 +250,8 @@ namespace zeitoon {
                     }   //else? rubbish!
 
                 }
-                //c->_buff = string(buf->base, (size_t) nread);
                 free(buf->base);
             }
-       //     std::cerr << "on_client_read FINNISHED \n";
         }
 
         void TCPClient::send(std::string data) {//todo:to be tested with valgrind for possible mem leaks
@@ -288,6 +259,7 @@ namespace zeitoon {
                 EXTnetworkFailure("SEND FAILED, NO CONNECTION");
             //FIXME: when disconnected, what happens to the buffer?? data would be transmited via newly established con*
             this->dataTransmiter.pendingBuffs.push(data);
+            lDebug("TCP-S: " + data);
 
 
         }
@@ -306,9 +278,34 @@ namespace zeitoon {
             tempCL->dataTransmiter.bufw = NULL;
         }
 
+        void TCPClient::_packetReceived() {
+            /* fixme:: this way, in case of NULL _onmsg-> this function would just empty the string, witch would
+                           * just clear the buffer and received data would be lost eventually.
+                           **/
+            if (this->_onMessage != NULL) {
+                dataTransmiter.receivedDataQ.push(this->_buff);
+                this->dataTransmiter.dataQ_Pushes++;
+            }
+            this->_buff = "";
+            this->_lastPacketLen = 0;
+        }
+
+
+        void TCPClient::_safeCaller(std::string data) {
+            lDebug("TCP-R: "+ data);
+            try {
+                this->_onMessage(data);
+            } catch (exceptionEx &ex) {
+                lError("TCPS.Error.OnReceive: " + std::string(ex.what()));
+            } catch (exception &ex) {
+                lError("TCPS.Error.OnReceive: " + std::string(ex.what()));
+            } catch (...) {
+                lError("TCPS.Error.OnReceive: UNKNOWN" );
+            }
+        }
+
 
         void TCPClient::reconnTimerCB(uv_timer_t *handle) {
-            //std::cerr << "reconnTimerCB reached" << std::endl;
             TCPClient *c = (TCPClient *) handle->data;
             free(handle);
             c->connect();
@@ -359,10 +356,6 @@ namespace zeitoon {
                         uv_strerror(r),
                         c->getNameAndType());
             }
-
-
-        //    std::cerr << "SEND FINNISHED \n";
-
         }
 
         void TCPClient::DataTransmiter::dataProcThreadMgrTimer(uv_timer_t *handle) {
@@ -371,17 +364,15 @@ namespace zeitoon {
             if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
                 c->dataProcThreadMaker(1);
                 c->check2 = 0;
-                //std::cerr << "NEW THREAD CREATED" << endl;
             } else if (c->dataQ_Pushes > c->dataQ_Pops) {
                 if (c->check2 == 5) {
                     c->dataProcThreadMaker(1);
                     c->check2 = 0;
-                    //std::cerr << "NEW THREAD CREATED" << endl;
                 } else {
                     c->check2++;
                 }
             } else if (c->dataQ_Pops > c->dataQ_Pushes &&
-                       c->dataThreadPool.size() > 4) {//todo:: to be double checked by ajl
+                       c->dataThreadPool.size() > 4) {
                 c->dataThreadPool.erase(c->dataThreadPool.begin() + 4);
             } else {
                 c->check2 = 0;

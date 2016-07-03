@@ -5,4 +5,4 @@
 #	PARENT_SCOPE
 #)
 
-AddSourceFilesP(utility.cpp jsonParser.cpp DTStructs.cpp FileSystem.cpp)
+AddSourceFilesP(utility.cpp jsonParser.cpp DTStructs.cpp FileSystem.cpp logger.cpp)

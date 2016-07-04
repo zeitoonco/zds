@@ -49,8 +49,8 @@ namespace zeitoon {
             bool banned = true;
             try {//fixme:use getfield instead of execute!! && why UM breaks after last query? why 2 query?
                 //if (this->executeSync("select count(*) from users where username = '" + username + "'") != 1) { //now it should save the ip and ban it if needed later on! but how? ip should be passed along
-                loginResult = this->querySync("select id, banned, banreason, name from users where username='" +
-                                              username + "' and password='" + hashingProccess(password) + "'");
+                loginResult = this->querySync("select id, banned, banreason, name from users where lower(username) = lower('" +
+                                              username + "') and password='" + hashingProccess(password) + "'");
             } catch (exceptionEx &errorInfo) {
                 EXTDBErrorI("Unable to fetch Loging info for user:" + username,
                             errorInfo);

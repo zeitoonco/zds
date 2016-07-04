@@ -26,15 +26,9 @@ GUICore::GUICore(int WSListenPort, GuiCHI *ptr) : guiCHI(ptr) {
 void GUICore::WSDataReceived(int ID, std::string data) {
 	auto d = clients.find(ID);
 	if (d == clients.end()) {
-		lWarnig("WS-dataReceived: NoClient found. ID: "+std::to_string(ID)+" Data: "+data);
+		EXTinvalidParameter("WS-dataReceived: NoClient found. ID: " + std::to_string(ID) + " Data: " + data);
 	}
-	clientData *cd;
-	if (clients.count(ID) == 0) {//new //todo: use a onNewClient event instead!
-		cd = new clientData;
-		clients[ID] = cd;
-		cd->id = ID;
-	} else
-		cd = clients.at(ID);
+	clientData *cd = clients.at(ID);
 
 	JStruct jdata(data);
 
@@ -75,7 +69,9 @@ void GUICore::WSDataReceived(int ID, std::string data) {
 }
 
 void GUICore::WSNewClient(int ID) {
-	//--
+	clientData *cd = new clientData;
+	clients[ID] = cd;
+	cd->id = ID;
 }
 
 void GUICore::WSClientDisconnect(int ID) {
@@ -90,7 +86,9 @@ void GUICore::WSClientDisconnect(int ID) {
 		guiCHI->sm.communication.runCommand(usermanagement::commandInfo::logout(),
 		                                    "{\"value\":" + clients[ID]->sessionID + "}", "", clients[ID]->sessionID);
 	}
+	clientData *cd = clients[ID];
 	clients.erase(ID);
+	delete cd;
 }
 
 void GUICore::hookFromClient(std::string EvntName, int clientID, string session) { //incomplete
@@ -115,7 +113,7 @@ void GUICore::callFromClient(std::string CmdName, std::string cmdID, int clientI
 
 void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data) {
 	if (cmdClients.count(cmdID) == 0) {
-		lError("Invalid Callback CommandID. CmdID: "+cmdID+" node: "+node+"  Data: "+data)
+		lError("Invalid Callback CommandID. CmdID: " + cmdID + " node: " + node + "  Data: " + data);
 		return;
 	}
 	int clientID = cmdClients[cmdID];

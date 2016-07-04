@@ -8,6 +8,7 @@
 #include <utility/exceptions.hpp>
 #include <thread>
 #include <iostream>
+#include <executables/GUI/websocketpp/common/connection_hdl.hpp>
 
 using websocketpp::server;
 using namespace zeitoon::utility;
@@ -26,13 +27,10 @@ WebSocketPort::WebSocketPort() {
 			init_asio();
 
 	GUI_WebSocketServer.set_reuse_addr(true);
-	GUI_WebSocketServer.
-			set_open_handler(std::bind(&WebSocketPort::on_open, this, websocketpp::lib::placeholders::_1));
-	GUI_WebSocketServer.
-			set_close_handler(
+	GUI_WebSocketServer.set_open_handler(std::bind(&WebSocketPort::on_open, this, websocketpp::lib::placeholders::_1));
+	GUI_WebSocketServer.set_close_handler(
 			std::bind(&WebSocketPort::on_close, this, websocketpp::lib::placeholders::_1));
-	GUI_WebSocketServer.
-			set_message_handler(
+	GUI_WebSocketServer.set_message_handler(
 			std::bind(&WebSocketPort::on_message, this, websocketpp::lib::placeholders::_1,
 			          websocketpp::lib::placeholders::_2));
 	//listenThread = new std::thread(&WebSocketPort::sendo, this);
@@ -79,11 +77,12 @@ void WebSocketPort::on_close(websocketpp::connection_hdl hdl) {
 void WebSocketPort::on_open(websocketpp::connection_hdl hdl) {
 	lNote("New Client " + std::to_string(conIDCounter + 1));
 	this->connectionList[hdl] = ++conIDCounter;
-	this->send(hdl, "hello " + std::to_string(conIDCounter));
+	if (_onClientConnect != NULL)
+		_onClientConnect(conIDCounter);
 }
 
 void WebSocketPort::on_message(websocketpp::connection_hdl HDL, websocketServer::message_ptr MSG) {
-	lDebug("WS-R: "+MSG->get_payload());
+	lDebug("WS-R: " + MSG->get_payload());
 	this->received(HDL, MSG->get_payload());
 }
 
@@ -100,7 +99,7 @@ void WebSocketPort::stopListening() {
 void WebSocketPort::send(websocketpp::connection_hdl client, std::string data) {
 
 	GUI_WebSocketServer.send(client, data, websocketpp::frame::opcode::text);
-	lDebug("WS-S: "+data);
+	lDebug("WS-S: " + data);
 }
 
 void WebSocketPort::received(websocketpp::connection_hdl client, std::string data) { //client
@@ -146,7 +145,7 @@ websocketpp::connection_hdl WebSocketPort::ConHdlFinder(int ID) {
 }
 
 std::string WebSocketPort::getNameAndType() {
-	return ("[WebSocketPort]");
+	return ("WebSocketPort");
 }
 
 

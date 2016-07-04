@@ -12,7 +12,7 @@
 #include "utility/logger.hpp"
 
 int main(int argc, char *argv[]) {//todo : load configurations
-    logger.enableDB("gui_log");
+    logger.enableFile("GUILog.log");
     logger.enableTerminalOut();
     GUIConfiguration.load();
     if (argc < 4) {

@@ -8,7 +8,7 @@ using namespace zeitoon::usermanagement;
 
 
 int main(int argc, char *argv[]) {
-    logger.enableDB("um_log");
+    logger.enableFile("UMLog.log");
     logger.enableTerminalOut();
 
     UmCHI Umediator;

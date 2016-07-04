@@ -10,7 +10,7 @@
 using namespace zeitoon::pgdatabase;
 
 int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
-    logger.enableDB("pgdb_log");
+    logger.enableFile("PGLog.log");
     logger.enableTerminalOut();
     PGconfiguration.load();
     if (argc < 8) {

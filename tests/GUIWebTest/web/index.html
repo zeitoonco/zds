@@ -171,7 +171,7 @@
     $(document).ready(function () {
         $('.tabs').hide();
         $("#wscc").click(function () {
-            Socket = new WebSocket("ws://138.201.152.83:5455");
+            Socket = new WebSocket("ws://127.0.0.1:5455");
             Socket.onmessage = dataReceived;
             Socket.onclose = function () {
                 $('#cstate').html("Disconnected !");

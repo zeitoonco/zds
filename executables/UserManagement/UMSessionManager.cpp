@@ -22,7 +22,7 @@ UMSessionManager::~UMSessionManager() {
 
 }
 
-int UMSessionManager::newSession(int userID) {
+int UMSessionManager::newSession(int userID,std::string &uname) {
 
 	int sessionID = 0;
 	if (activeSessions.count(userID) == 1) {
@@ -32,7 +32,7 @@ int UMSessionManager::newSession(int userID) {
 	} else {
 		sessionID = uniqueIdGenerator();
 		try {
-			auto temp = UMSession(userID, sessionID, this->coreInstance);
+			auto temp = UMSession(userID, sessionID, uname, this->coreInstance);
 			sessionList[sessionID] = temp;
 		} catch (zeitoon::utility::exceptionEx &err) {
 			EXTloginFailI("Unable to create new Session", err);
@@ -120,6 +120,7 @@ void UMSessionManager::permissionCacheLoader() {
 
 
 void UMSessionManager::permissionCacheUpdate(int permissionID) {
+//todo by inf: could get needed info from the caller function
 	try {
 		auto temRes = coreInstance->querySync(
 				"SELECT parentid, name FROM permission WHERE id= " + std::to_string(permissionID));

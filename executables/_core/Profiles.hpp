@@ -10,7 +10,7 @@
 
 #include <string>
 #include <utility/DTStructs.hpp>
-
+#include <chrono>
 using namespace std;
 
 namespace zeitoon {
@@ -55,7 +55,7 @@ public:
 	CommandProfile &command;
 	string identity;
 	string extension;
-
+	std::chrono::system_clock::time_point callStartTime;
 	string uniqId() {
 		return extension + "#" + identity;
 	}
@@ -76,7 +76,7 @@ public:
 	bool requirementsSatisfied;
 	bool CEPermissionsRegistered;
 	ssize_t netClientId;
-
+	std::chrono::system_clock::time_point pingStart;
 	string installID;
 
 	datatypes::DSInstallInfo serviceInfo;

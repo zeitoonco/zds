@@ -17,6 +17,7 @@
 #include <functional>
 #include <datatypes/DTTableString.hpp>
 #include <utility/jsonParser.hpp>
+#include <library/mediator/CommunicationHandlerInterface.hpp>
 #include "utility/DTStructs.hpp"
 #include "coreutility.hpp"
 
@@ -98,10 +99,6 @@ namespace zeitoon {
 
         void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
             using zeitoon::datatypes::DTTableString;
-            if (ext != NULL)
-                lNote("Net-R:(" + std::to_string(ext->netClientId) + "): " + data);
-            else
-                lNote("Net-R:(X): " + data);
             JStruct packet(data);
             string type, node, idata, id, sessionid;
             type = packet["type"].getValue();
@@ -113,6 +110,10 @@ namespace zeitoon {
                     id = packet["node"].getValue();
                     net.send(netid, "{\"type\":\"internal\",\"node\":\"pong\",\"id\":\"" + id + "\"}");
                 } else if (streq(node, "pong")) {
+                    auto _ttl = std::chrono::system_clock::now() - ext->pingStart;
+                    std::cerr << "PING " + ext->serviceInfo.name2.getValue() + ". latency: " +
+                                 std::to_string(chrono::duration_cast<chrono::microseconds>(_ttl).count()) + "μs.\n";
+
                     //um..what?! we even dont have a function to send ping yet!!!
                 } else if (streq(node, "hello")) {
                     string name = packet["name"].getValue();
@@ -216,8 +217,9 @@ namespace zeitoon {
                             comm.callCommand(node, idata, ext->serviceInfo.name.getValue(), id, sessionid);
                         else if (type == "fire")
                             comm.fireEvent(node, idata, ext->serviceInfo.name.getValue());
-                        else if (type == "callback")
+                        else if (type == "callback") {
                             comm.callCallback(id, idata, ext->serviceInfo.name.getValue());
+                        }
                     } catch (exceptionEx &ex) {
                         lError("Err on Packet Received. " + std::string(ex.what()));
                         string errp = CommunicationUtility::makeError(node, id, "Error occured: " + ex.toString());
@@ -229,7 +231,6 @@ namespace zeitoon {
                     }
                 }
             }
-
         }
 
         void Router::sendPacket(string &data, ExtensionProfile *extension) {
@@ -495,6 +496,14 @@ namespace zeitoon {
             string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
             comm.fireEvent(eventInfo::onServiceDisable(), dt, "_core");
             return true;
+        }
+
+        void Router::ping(ExtensionProfile *exte) {
+            this->net.send(exte->netClientId,
+                           "{\"type\" : \"internal\" , \"node\" :\"ping\" "
+                           + (exte->installID.size() > 0 ? " , \"id\" : \"" + CommunicationUtility::getRandomID() + "\""
+                                                         : "") + "}");
+            exte->pingStart = std::chrono::system_clock::now();
         }
 
         void Router::callCommandLocal(string node, string &data, string from, string id, string session) {

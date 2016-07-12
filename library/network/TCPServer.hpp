@@ -14,7 +14,7 @@
 #include <functional>
 #include <mutex>
 #include <queue>
-
+#include "utility/logger.hpp"
 namespace zeitoon {
 namespace utility {
 
@@ -44,6 +44,7 @@ public:
 					_id(id), _client(client), _parent(parent), _buff(""), _lastPacketLen(0), _isConnected(false) { }
 
 			void _packetReceived() {
+				lDebug("TCP-R. ID: " + std::to_string(_id) + "  " + _buff);
 				//if (this->_parent->_onMessage != NULL)
 				receivedData temp = {this->_id, this->_buff};
 				this->_parent->receivedDataQ.push(temp);

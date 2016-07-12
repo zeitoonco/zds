@@ -124,7 +124,6 @@ namespace zeitoon {
                 uvEXT(r, "libuv events loop error: ");
                 lNote("TCPClient loop finished. " + std::string(uv_err_name(r)) + " " + std::string(uv_strerror(r)));
                 this->_connected = false;
-
             } catch (exceptionEx &ex) {
                 disconnect();
                 EXTnetworkFailureI("TCP LOOP FAILED", ex);
@@ -155,7 +154,7 @@ namespace zeitoon {
                     this->parentClass->_safeCaller(temp);
                 } else {
                     lck.unlock();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    std::this_thread::sleep_for(std::chrono::microseconds(100));
                 }
             }
         }
@@ -182,7 +181,7 @@ namespace zeitoon {
                     case (-111): {
                         logger.log(c->getNameAndType(), "TCP Terminating.   nread: " + std::to_string(status),
                                    zeitoon::utility::LogLevel::error);
-                        c->disconnect();
+                        //  c->disconnect(); todo: review, breaks on stopSendProcess cuz its not started yet!
                         break;
                     }
                     default:
@@ -208,7 +207,6 @@ namespace zeitoon {
 
         void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
             TCPClient *c = (TCPClient *) _client->data;
-
             if (nread == -4095) {
                 free(buf->base);
                 c->_connected = false;
@@ -259,7 +257,6 @@ namespace zeitoon {
                 EXTnetworkFailure("SEND FAILED, NO CONNECTION");
             //FIXME: when disconnected, what happens to the buffer?? data would be transmited via newly established con*
             this->dataTransmiter.pendingBuffs.push(data);
-            lDebug("TCP-S: " + data);
 
 
         }
@@ -282,6 +279,8 @@ namespace zeitoon {
             /* fixme:: this way, in case of NULL _onmsg-> this function would just empty the string, witch would
                            * just clear the buffer and received data would be lost eventually.
                            **/
+            lDebug("TCP-R: " + this->_buff);
+
             if (this->_onMessage != NULL) {
                 dataTransmiter.receivedDataQ.push(this->_buff);
                 this->dataTransmiter.dataQ_Pushes++;
@@ -292,7 +291,6 @@ namespace zeitoon {
 
 
         void TCPClient::_safeCaller(std::string data) {
-            lDebug("TCP-R: "+ data);
             try {
                 this->_onMessage(data);
             } catch (exceptionEx &ex) {
@@ -300,7 +298,7 @@ namespace zeitoon {
             } catch (exception &ex) {
                 lError("TCPS.Error.OnReceive: " + std::string(ex.what()));
             } catch (...) {
-                lError("TCPS.Error.OnReceive: UNKNOWN" );
+                lError("TCPS.Error.OnReceive: UNKNOWN");
             }
         }
 
@@ -313,48 +311,47 @@ namespace zeitoon {
 
         //---------------------------------------------------------------------------
 
-        void TCPClient::DataTransmiter::sendProcessor(uv_timer_t *handle) {
-            TCPClient::DataTransmiter *c = (TCPClient::DataTransmiter *) handle->data;
+        void TCPClient::DataTransmiter::sendProcessor() {
+            while (!stopSendt) {
+                if (this->send_is_busy || this->pendingBuffs.size() == 0) {
+                    std::this_thread::sleep_for(chrono::microseconds(100));
+                    continue;
+                }
 
-            if (c->send_is_busy || !c->parentClass->_connected)
-                return;
+                if (this->bufw != NULL) {
+                    EXTnetworkFailureO("SEND FAILED. buffw != NULL", this->getNameAndType());
+                }
 
-            if (c->pendingBuffs.size() < 1) {
-                return;
-            }
+                this->send_is_busy = true;
+                std::string data = this->pendingBuffs.front();
+                this->pendingBuffs.pop();
 
-            if (c->bufw != NULL) {
-                EXTnetworkFailureO("SEND FAILED. buffw != NULL", c->getNameAndType());
-            }
-
-            c->send_is_busy = true;
-            std::string data = c->pendingBuffs.front();
-            c->pendingBuffs.pop();
-
-            uv_write_t *write_req = new uv_write_t[sizeof(uv_write_t)];
-            c->bufw = new uv_buf_t[sizeof(uv_buf_t)];
-            uint8_t *buff = new uint8_t[data.size() + 6];
+                uv_write_t *write_req = new uv_write_t[sizeof(uv_write_t)];
+                this->bufw = new uv_buf_t[sizeof(uv_buf_t)];
+                uint8_t *buff = new uint8_t[data.size() + 6];
 
 
-            uint32_t size = (uint32_t) data.size();
-            c->bufw->base = (char *) buff;
-            c->bufw->len = data.size() + 6;
-            memcpy(buff + 6, data.c_str(), data.size());
-            buff[0] = 12;
-            buff[1] = 26;
-            memcpy(buff + 2, (void *) (&size), 4);
-            write_req->data = (void *) c;
+                uint32_t size = (uint32_t) data.size();
+                this->bufw->base = (char *) buff;
+                this->bufw->len = data.size() + 6;
+                memcpy(buff + 6, data.c_str(), data.size());
+                buff[0] = 12;
+                buff[1] = 26;
+                memcpy(buff + 2, (void *) (&size), 4);
+                write_req->data = (void *) this;
 
 
-            int r = uv_write(write_req, (uv_stream_t *) &c->parentClass->client, c->bufw, 1,
-                             TCPClient::on_client_write);
+                int r = uv_write(write_req, (uv_stream_t *) &this->parentClass->client, this->bufw, 1,
+                                 TCPClient::on_client_write);
+                logger.log("TCPClient", "TCP-S: " + data, LogLevel::debug);
 
-            if (r != 0) {
-                c->send_is_busy = false;
-                EXTnetworkFailureO(
-                        "Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) + "]: " +
-                        uv_strerror(r),
-                        c->getNameAndType());
+                if (r != 0) {
+                    this->send_is_busy = false;
+                    EXTnetworkFailureO(
+                            "Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) + "]: " +
+                            uv_strerror(r),
+                            this->getNameAndType());
+                }
             }
         }
 

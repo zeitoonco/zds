@@ -96,7 +96,7 @@ namespace zeitoon {
                     bufw = NULL;
                     receiveTimer.data = this;
                     uv_timer_init(&parentClass->loop, &receiveTimer);
-                    //this->dataProcThreadMaker(4);//swap if error
+                    this->dataProcThreadMaker(4);//swap if error
                     __stopDataProcess = false;
                     uv_timer_start(&receiveTimer, dataProcThreadMgrTimer, 0, 500);
                 }
@@ -110,15 +110,12 @@ namespace zeitoon {
                 }
 
                 void stopSendProcess() {
-                    uv_unref(
-                            (uv_handle_t *) &this->sendTimer);//STOPPING THE MAIN LOOP CREATED EARLIER IN CONSTRUCTOR
-
+                    stopSendt=true;
                 }
 
                 void startSendProcess() {
-                    sendTimer.data = this;
-                    uv_timer_init(&parentClass->loop, &sendTimer);
-                    uv_timer_start(&sendTimer, sendProcessor, 0, 150);
+                    sendt=new std::thread(&DataTransmiter::sendProcessor,this);
+                    stopSendt=false;
                 }
 
                 void stopTransmissionProcess() {
@@ -130,12 +127,16 @@ namespace zeitoon {
                     return "TCPClient::dataTransmiter";
                 }
 
+
+
             private:
+                std::thread *sendt;
+                bool stopSendt;
                 void dataProcThreadMaker(int numberOfThreads = 4);
 
                 void freeThreadPool();
 
-                static void sendProcessor(uv_timer_t *handle);
+                void sendProcessor();
 
                 static void dataProcThreadMgrTimer(uv_timer_t *handle);
 
@@ -211,14 +212,12 @@ namespace zeitoon {
             DataTransmiter dataTransmiter;
 
 
-/*	std::thread sendThrd;
-	void sendTimerThread();*/
 
 //too cunstructor null shavad, to calback bad az delet null. dar new check shavad agar null = khata
 //todo: create  a struct for thread variables.
 
 
-            ReconnectConfig reconnectOptions;
+            zeitoon::utility::ReconnectConfig reconnectOptions;
             uv_timer_t mainTimer;
             uv_loop_t loop;
             uv_tcp_t client;

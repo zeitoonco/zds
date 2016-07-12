@@ -72,8 +72,8 @@ public:
 
 	virtual void pong(string id, int miliseconds) = 0;
 
-	virtual bool datareceive(string data) {
-		JStruct js(data);//todo:dont parse data field
+	virtual bool datareceive(zeitoon::utility::JStruct &js) {
+		//JStruct js(data);//todo:dont parse data field
 		string type = js["type"].getValue();
 		string node = js["node"].getValue();
 		if (!Strings::compare(type, "internal", false)) {

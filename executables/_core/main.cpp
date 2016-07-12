@@ -70,12 +70,13 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	if (!logger.isTerminalLog()) {
-		cout << "Zeitoon Server _Core Service\n";
-		cout << "Valid commands: (installinfo[if]|install[ins]|enable[enb]|disable[dsb]|uninstall[uin]) $service\n";
+		cout << "\nZeitoon Server _Core Service\n";
+	}
+		cout << "\nValid commands: (installinfo[if]|install[ins]|enable[enb]|disable[dsb]|uninstall[uin]) $service\n";
 		//cout << "                hello $service\n";
 		cout << "                ls lscmd lsevent lshook\n";
 		//cout << "Started Listening on port 5458\n";
-	}
+
 	logger.log("Core", "Started Listening on port " + coreConfig.listenPort.getValue(),
 	           zeitoon::utility::LogLevel::note);//Iwas here
 
@@ -83,12 +84,12 @@ int main(int argc, char *argv[]) {
 	string cmd;
 	int p1;
 	while (cmd != "q") {
-		cout << "\nCMD:";
+		cout << "\nCMD:\n";
 		cin >> cmd;
 		try {
 			cmd = Strings::toLower(cmd);
-			if (cmd == "ping") {
-				ExtensionProfile *se = inputExt();
+			if (streq(cmd, "ping")) {
+				r->ping(inputExt());
 				//todo:??
 			} else if (streq(cmd, "installinfo") || streq(cmd, "if")) {
 				ExtensionProfile *se = inputExt();

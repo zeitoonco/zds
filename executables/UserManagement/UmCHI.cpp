@@ -291,10 +291,10 @@ void UmCHI::checkDBTables() {
 }
 
 void UmCHI::pong(string id, int miliseconds) {
-	sm.send(
+	/*sm.send(
 			"{\"type\" : \"internal\" , \"node\" : \"ping\" , \"name\" : \"" + getServiceName() +
 			"\" , \"version\" : \"5\""
-			+ (id.length() > 0 ? " , \"id\" : \"" + getInstallID() + "\"" : "") + "}");
+			+ (id.length() > 0 ? " , \"id\" : \"" + getInstallID() + "\"" : "") + "}");*/
 }
 
 void UmCHI::setInstallInfo() {

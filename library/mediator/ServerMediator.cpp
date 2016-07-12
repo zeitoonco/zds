@@ -48,15 +48,16 @@ void ServerMediator::dataReceived(string data) {
 	JStruct js(data);
 	string type = js["type"].getValue();
 	string node = js["node"].getValue();
+
 	//todo: if type call  && node error ->> errReceived()
-	if (!Strings::compare(type, "internal") && !Strings::compare(node, "ping")) {
+	if (streq(type, "internal") && streq(node, "ping")) {
 		send("{\"type\" : \"internal\" , \"node\" : \"pong\" , \"id\" : \"" + js["id"].getValue() + "\"}");
 	} else {
 		if (!Strings::compare(type, "callback")) if (communication.dataReceive(data))
 			return;
 		if (!Strings::compare(type, "call") && streq(node, "error")) if (communication.errorReceive(data))
 			return;
-		owner->datareceive(data);
+		owner->datareceive(js);
 	}
 
 }

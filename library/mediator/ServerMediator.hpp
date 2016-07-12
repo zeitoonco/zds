@@ -13,6 +13,7 @@
 #include "DatabaseMediator.hpp"
 #include "SettingMediator.hpp"
 #include "CommunicationMediator.hpp"
+#include "utility/logger.hpp"
 
 namespace zeitoon {
 namespace utility {

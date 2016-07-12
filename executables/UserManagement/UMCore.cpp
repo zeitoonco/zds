@@ -47,10 +47,10 @@ namespace zeitoon {
             std::string name = "";
             int userID = 0;
             bool banned = true;
-            try {//fixme:use getfield instead of execute!! && why UM breaks after last query? why 2 query?
-                //if (this->executeSync("select count(*) from users where username = '" + username + "'") != 1) { //now it should save the ip and ban it if needed later on! but how? ip should be passed along
-                loginResult = this->querySync("select id, banned, banreason, name from users where lower(username) = lower('" +
-                                              username + "') and password='" + hashingProccess(password) + "'");
+            try {//todo: look for a better solution for case insensitive comparison.
+                loginResult = this->querySync(
+                        "select id, banned, banreason, name from users where lower(username) = lower('" +
+                        username + "') and password='" + hashingProccess(password) + "'");
             } catch (exceptionEx &errorInfo) {
                 EXTDBErrorI("Unable to fetch Loging info for user:" + username,
                             errorInfo);
@@ -68,7 +68,7 @@ namespace zeitoon {
                 } else {    //SUCCESSFUL AUTHENTICATION
                     desc = "";
                     try {
-                        sessionID = sessionManager.newSession(userID);
+                        sessionID = sessionManager.newSession(userID, username);
                         uID = userID;
                         if (!this->checkPermissionByName(sessionID, "userman.login")) {
                             sessionManager.removeSession(sessionID);
@@ -178,7 +178,8 @@ namespace zeitoon {
             try {
                 this->sessionManager.permissionCacheLoader();
                 this->sessionManager.userGroupCacheLoader();
-                lNote("Permission cache loaded. size: " + std::to_string(this->sessionManager.permissionNamesCache.size()));
+                lNote("Permission cache loaded. size: " +
+                      std::to_string(this->sessionManager.permissionNamesCache.size()));
                 lNote("Usergroup cache loaded. size: " + std::to_string(this->sessionManager.usergroupCache.size()));
             } catch (zeitoon::utility::exceptionEx err) {
                 EXTunknownException("Unable to load cache" + std::string(err.what()));
@@ -324,7 +325,7 @@ namespace zeitoon {
             } catch (exceptionEx &errorInfo) {
                 EXTDBErrorI("Unable to update permission[ID:" + std::to_string(permissionID) + "] in database",
                             errorInfo);
-            }//todo:first remove permission info of the cache
+            }//todo:first remove permission info of the cache---??
             umCHI->sm.communication.runEvent
                     (eventInfo::permissionModified(), zeitoon::usermanagement::DSUpdatePermission(
                             permissionID, name, title, desc, parentID).toString(true));
@@ -341,7 +342,7 @@ namespace zeitoon {
                                     " delete from grouppermission where permissionid=" + permIDStr + ";"
                                     " delete from permission where id=" + permIDStr + ";"
                                     " END;");
-                //todo: how to check if succeeded?
+                //todo@ ajl:  how to check if succeeded?
             } catch (exceptionEx &errorInfo) {
                 EXTDBErrorI("Unable to remove permission[ID: " + std::to_string(permissionID) + "] from database.",
                             errorInfo);
@@ -495,6 +496,10 @@ namespace zeitoon {
         DSUserGroupsList UMCore::listUsergroups() {
             DSUserGroupsList allGroups;
             zeitoon::datatypes::DTTableString result("");
+            /*todo @ Ajl: CANNOT make the list using the existing cache.
+             *  Class usergroupInfo does not have "title" and "desc" field
+             **/
+
             try {
                 result = querySync("select id,title,parentid,description from groups order by id");
             } catch (exceptionEx &errorInfo) {
@@ -731,20 +736,29 @@ namespace zeitoon {
         DSUserPermissionList UMCore::listUserPermissions(int userID) {
             DSUserPermissionList list;
             zeitoon::datatypes::DTTableString result("");
-            try {
-                result = querySync("select permissionid,state from userpermission where userid=" + to_string(userID));
-            } catch (exceptionEx &errorInfo) {
-                EXTDBErrorI("Unable to fetch  permission names from database", errorInfo);
-            }
-            try {
-                for (size_t i = 0; i < result.rowCount(); i++) {
-                    list.permissionsList.add(new DSPermissionState(stoi(result.fieldValue(i, 0)),
-                                                                   stoi(result.fieldValue(i, 1))), true);
+            if (this->sessionManager.getSessionIDbyUserID(userID) > -1) {
+                //Todo @ ajl : check -> now tries to fetch the list from user's active session if available
+                auto aa= this->sessionManager.sessionList.at(this->sessionManager.getSessionIDbyUserID(userID)).permissionsCache;
+                for (std::map<int,int>::iterator iter = aa.begin(); iter != aa.end(); iter++){
+                    list.permissionsList.add(new DSPermissionState(iter->first,iter->second) , true);
                 }
-                return list;
-            } catch (zeitoon::utility::exceptionEx &err) {
-                EXTDBErrorI("Unable to make a list of permissions", err);
+            } else {
+                try {
+                    result = querySync(
+                            "select permissionid,state from userpermission where userid=" + to_string(userID));
+                } catch (exceptionEx &errorInfo) {
+                    EXTDBErrorI("Unable to fetch  permission names from database", errorInfo);
+                }
+                try {
+                    for (size_t i = 0; i < result.rowCount(); i++) {
+                        list.permissionsList.add(new DSPermissionState(stoi(result.fieldValue(i, 0)),
+                                                                       stoi(result.fieldValue(i, 1))), true);
+                    }
+                } catch (zeitoon::utility::exceptionEx &err) {
+                    EXTDBErrorI("Unable to make a list of permissions", err);
+                }
             }
+            return list;
         }
 
         void UMCore::addUsergroupPermission(int usergroupID, int permissionID, int state) {
@@ -762,8 +776,9 @@ namespace zeitoon {
                                              zeitoon::usermanagement::DSUserPermission(usergroupID, permissionID,
                                                                                        state).toString(
                                                      true));
-            lNote(eventInfo::usergroupPermissionAdded() + "UsergroupID: " + std::to_string(usergroupID) + "PermissionID: " +
-                  std::to_string(permissionID)+" State: "+std::to_string(state));
+            lNote(eventInfo::usergroupPermissionAdded() + "UsergroupID: " + std::to_string(usergroupID) +
+                  "PermissionID: " +
+                  std::to_string(permissionID) + " State: " + std::to_string(state));
             sessionManager.updateUsergroupCache(usergroupID);//see if its modified in the cache
         }
 
@@ -782,7 +797,8 @@ namespace zeitoon {
                                              zeitoon::usermanagement::DSUserPermission(usergroupID, permissionID,
                                                                                        state).toString(
                                                      true));
-            lNote(eventInfo::usergroupPermissionRemoved() + "UsergroupID: " + std::to_string(usergroupID) + "PermissionID: " +
+            lNote(eventInfo::usergroupPermissionRemoved() + "UsergroupID: " + std::to_string(usergroupID) +
+                  "PermissionID: " +
                   std::to_string(permissionID));
             sessionManager.updateUsergroupCache(usergroupID);//see if it removes from cache
 

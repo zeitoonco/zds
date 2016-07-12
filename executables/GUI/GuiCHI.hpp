@@ -63,7 +63,7 @@ public:
 	void setInstallInfo();
 
 	std::string getNameAndType() {
-		return "PGmediator";
+		return "GUICHI";
 	}
 };
 

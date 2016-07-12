@@ -36,7 +36,7 @@ string CommunicationMediator::runCommandSync(string name, string data, string id
 				todo:put a timeout for commands
 			}*/
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(30));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 	string dt = x.data;
 	try {

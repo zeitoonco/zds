@@ -22,15 +22,17 @@ void Logger::log(string owner, string message, LogLevel::levels level) {
 	if (terminalOut) {
 		if (level < this->terminalLoglvl)
 			return;
-		if (owner.size() > 16)
+		if (owner.size() >= 16)
 			owner += "   ";
 		owner = zeitoon::utility::Strings::padRight(owner, 16);
 		std::string tempLvl = Strings::padRight(LogLevel::typeString[level], 8);
-		tempTime = zeitoon::utility::Strings::padRight(tempTime.substr(11, 50), 14);
+		tempTime = zeitoon::utility::Strings::padRight(tempTime.substr(11, 50), 17);
+		if (message.length()>121)
+			message=message.substr(0,120);
 		if (forceCerr || level >= LogLevel::warning)
-			std::cerr << "\n!> " << tempLvl << tempTime << owner << message;
+			std::cerr <<"!>" + tempLvl + tempTime + owner + message + "\n";
 		else
-			std::cout << "\n!> " << tempLvl << tempTime << owner << message;
+			std::cout <<"!>" + tempLvl + tempTime + owner + message + "\n";
 	}
 }
 
@@ -38,7 +40,6 @@ Logger::~Logger() {
 	if (logTofile)
 		_logFile.close();
 	this->disableDB();
-
 }
 
 void Logger::enableDB(std::string dbName) {
@@ -122,14 +123,14 @@ std::string Logger::currentTime() {
 		--time;
 		currentTimeRounded -= std::chrono::seconds(1);
 	}
-	int milliseconds = std::chrono::duration_cast<std::chrono::duration<int, std::milli> >(
+	int milliseconds = std::chrono::duration_cast<std::chrono::duration<int, micro> >(
 			currentTime - currentTimeRounded).count();
 	struct tm *values;
 	values = localtime(&time);
 	char buffer[80];
 	memset(buffer, 0, 80);
 	std::strftime(buffer, 80, "%F %X", values);
-	return std::string(buffer) + "." + Strings::padRight(std::to_string(milliseconds), 3, '0');
+	return std::string(buffer) + "." + Strings::padLeft(std::to_string(milliseconds), 6, '0');
 }
 
 void Logger::startDBLoop() {
@@ -182,7 +183,7 @@ void Logger::fileLogger(string owner, string &message, LogLevel::levels &level, 
 
 	owner = zeitoon::utility::Strings::padRight(owner, 32);
 	string tempLvl = Strings::padRight(LogLevel::typeString[level], 8);
-	time = Strings::padRight(time, 26);
+	time = Strings::padRight(time, 29);
 	_logFile << tempLvl << time << owner << message << "\n";
 
 }

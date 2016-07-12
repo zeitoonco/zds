@@ -71,9 +71,9 @@ public:
 	bool getInstallInfo(ExtensionProfile *exte);
 	bool uninstallService(ExtensionProfile *exte);
 	bool disableService(ExtensionProfile *exte);
-
+	void ping(ExtensionProfile *exte);
 	inline string getNameAndType() {
-		return "ExtensionManager";
+		return "Router";
 	}
 
 };

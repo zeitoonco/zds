@@ -12,7 +12,7 @@
 #include <executables/UserManagement/UMSession.hpp>
 #include <string>
 #include <map>
-
+#include "DTStructs.hpp"
 
 namespace zeitoon{
 namespace usermanagement{
@@ -29,16 +29,16 @@ public:
 	/**map usergroupParentCache haaviye int e ID e group va int ID e parent aan group ast*/
 	//std::map<int, int> userGroupParentCache;
 	/**map permissionParentCache haaviye Int e ID e permission va int e Id e parent e aan permission ast*/
-	std::map<int, int> permissionParentCache;
+	std::map<int, DSUpdatePermission*> permissionCache;
 
-	std::map<std::string, int> permissionNamesCache;
+	std::map<std::string, DSUpdatePermission*> permissionNamesCache;
 	/**UMSessionManager() Default Constructor*/
 	UMSessionManager(UMCore* instance);
 	/**newSession(int userID), Id e user ra daryaaft mikonad va yek sessionID e UNIQUE be aan ekhtesaas midahad,
 	 * login detail ra az database migirad  va dar map e sessionList zakhire mikonad
 	 * @param userID int
 	 * @return int sessionID e UNIQUE e sakhte shode */
-	int newSession(int userID, std::string &uname);
+	int newSession(int userID, std::string uname);
 	/**removeSession(int ID), id e session ra migirad va aan ra az map e sessionList paak mikonad
 	 * @param sessionID*/
 	void removeSession(int id);

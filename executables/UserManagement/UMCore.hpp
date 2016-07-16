@@ -16,273 +16,274 @@
 #include "DTStructs.hpp"
 
 namespace zeitoon {
-namespace usermanagement {
+    namespace usermanagement {
 
-class UmCHI;
+        class UmCHI;
 
-class UMCore {
-	UmCHI *umCHI;
+        class UMCore {
+            UmCHI *umCHI;
 
-public:
-	//logger systemLog;
+        public:
+            //logger systemLog;
 
-	UMCore(UmCHI *instancePtr);
+            UMCore(UmCHI *instancePtr);
 
-	~UMCore();
+            ~UMCore();
 
-	/**login(), ba daryaaft e voroodi, eghdaaam be login mikonad,
-	 * @param username string
-	 * @param password string
-	 * @param name string
-	 * @param sessionID int& -> az reference estefaade shode ke betavaan ba estefade az aan meghdari ra baaz gardand
-	 * @param desc string& -> az reference estefaade shode ke betavaan ba estefade az aan meghdari ra baaz gardand
-	 * @return UMLoginResult vaziat e login e anjaam shode
-	 * @return sessionID int , sessionId e generate shode, dar soorate adam e movafaghiat -1 baaz migardaanad
-	 * @return desc string, tozihaat  e marboot be login dar soorat e adam movafaghiat!*/
-	UMLoginResult::UMLoginResultEnum login(std::string username, std::string password,
-	                                       int &sessionID, int &uID,    //UMLoginResult
-	                                       std::string &desc);
+            /**login(), ba daryaaft e voroodi, eghdaaam be login mikonad,
+             * @param username string
+             * @param password string
+             * @param name string
+             * @param sessionID int& -> az reference estefaade shode ke betavaan ba estefade az aan meghdari ra baaz gardand
+             * @param desc string& -> az reference estefaade shode ke betavaan ba estefade az aan meghdari ra baaz gardand
+             * @return UMLoginResult vaziat e login e anjaam shode
+             * @return sessionID int , sessionId e generate shode, dar soorate adam e movafaghiat -1 baaz migardaanad
+             * @return desc string, tozihaat  e marboot be login dar soorat e adam movafaghiat!*/
+           DSLoginResult login(std::string username, std::string password);
 
-	/**logout(), ba daryaaft e session Id logout mikonad (az map e sessionList paak mikonad)
-	 * @param sessionID int*/
-	void logout(int sessionID);
+            /**logout(), ba daryaaft e session Id logout mikonad (az map e sessionList paak mikonad)
+             * @param sessionID int*/
+            void logout(int sessionID);
 
-	/**checkPermission() ba daryaaft e sessionID va permissionID,, baressi mikonad ke user e morde nazar aya daraye
-	 * permission e mored e nazar mibashad ya kheyr
-	 * @param sessionID int
-	 * @param permissionID int
-	 * @return boolean (0 agar mojavez nadasht,, 1 agar mojavez dasht)*/
-	bool checkPermission(int sessionID, int permissionID);
+            /**checkPermission() ba daryaaft e sessionID va permissionID,, baressi mikonad ke user e morde nazar aya daraye
+             * permission e mored e nazar mibashad ya kheyr
+             * @param sessionID int
+             * @param permissionID int
+             * @return boolean (0 agar mojavez nadasht,, 1 agar mojavez dasht)*/
+            bool checkPermission(int sessionID, int permissionID);
 
-	bool checkPermissionByName(int sessionID, string permissionName);
+            bool checkPermissionByName(int sessionID, string permissionName);
 
-	/**addUser() ba daryaft e naam va naam e karbari va password, yek user ba hamaan moshakhasat misazad
-	 * va Id e marboot be  user ke dar database darj shode ra barmigardaanad
-	 * @param username string
-	 * @param password string
-	 * @param name string
-	 * @return int id e user dar DB*/
-	int addUser(std::string username, std::string password, std::string name);
+            /**addUser() ba daryaft e naam va naam e karbari va password, yek user ba hamaan moshakhasat misazad
+             * va Id e marboot be  user ke dar database darj shode ra barmigardaanad
+             * @param username string
+             * @param password string
+             * @param name string
+             * @return int id e user dar DB*/
+            int addUser(std::string username, std::string password, std::string name);
 
-	/**removeUser(), id e user ra daryaaft karde va aan user raa az database hazv mikonadd
-	 * @param userID int*/
-	void removeUser(int userID);
-	/**modifyUser(), moshakhasaat e user raa daryaafte karde va kolle moskhasaat e darj shode dar database ra ba tavajoh
-	 * be id e user taghyir midahat
-	 * @param userID int
-	 * @param username string
-	 * @param password string
-	 * @param name string*/
-	void modifyUser(int userID, std::string username, std::string password, std::string name);
+            /**removeUser(), id e user ra daryaaft karde va aan user raa az database hazv mikonadd
+             * @param userID int*/
+            void removeUser(int userID);
 
-	/**getUserInfo() baa daryaaft e Id e User, moshakhasat e marboot be user e mored e nazar ra (dar ghaaleb e yek class)
-	 * barmigardanad.
-	 * @param ID int UserID
-	 * @return UMUserInfo user information*/
-	UMUserInfo getUserInfo(int userID);
+            /**modifyUser(), moshakhasaat e user raa daryaafte karde va kolle moskhasaat e darj shode dar database ra ba tavajoh
+             * be id e user taghyir midahat
+             * @param userID int
+             * @param username string
+             * @param password string
+             * @param name string*/
+            void modifyUser(int userID, std::string username, std::string password, std::string name);
 
-	/**registerPermission(), tamam e moshakhasaat e yek permission e jadid raagerefte va aan ra dar
-	 * database zakhireh mikonad va ID e aan ra barmigardaanad
-	 * @param name string
-	 * @param title string
-	 * @param desc string
-	 * @param parentID int
-	 * @return int permissionID*/
-	int registerPermission(std::string name, std::string title, std::string desc, int parent);
+            /**getUserInfo() baa daryaaft e Id e User, moshakhasat e marboot be user e mored e nazar ra (dar ghaaleb e yek class)
+             * barmigardanad.
+             * @param ID int UserID
+             * @return UMUserInfo user information*/
+            UMUserInfo getUserInfo(int userID);
 
-	/**updatePermission(), tamam e moshakhast e yek permission ra migirad va baa tavajoh be ID e permission
-	 * aan ra taghyir midahad
-	 * @param permissionID int
-	 * @param name string
-	 * @param title string
-	 * @param desc string
-	 * @param parentID int*/
-	void updatePermission(int permissionID, std::string name, std::string title, std::string desc, int parentID);
+            /**registerPermission(), tamam e moshakhasaat e yek permission e jadid raagerefte va aan ra dar
+             * database zakhireh mikonad va ID e aan ra barmigardaanad
+             * @param name string
+             * @param title string
+             * @param desc string
+             * @param parentID int
+             * @return int permissionID*/
+            int registerPermission(std::string name, std::string title, std::string desc, int parent);
 
-	/**removePermission(), id e permission ra gerefte va aan ra az database hazv mikonad
-	 * @param permissionID int
-	 */
-	void removePermission(int permissionID);
+            /**updatePermission(), tamam e moshakhast e yek permission ra migirad va baa tavajoh be ID e permission
+             * aan ra taghyir midahad
+             * @param permissionID int
+             * @param name string
+             * @param title string
+             * @param desc string
+             * @param parentID int*/
+            void updatePermission(int permissionID, std::string name, std::string title, std::string desc,
+                                  int parentID);
 
-	/** registerUsergroup(), moshakhasaat e marboot be yek usergroup e jadid ragerefte va
-	 * aan ra dar database zakhireh mikonad va meghdaar e aan ra barmigardaanad.
-	 * @param title string
-	 * @param prentID int
-	 * @param desc string
-	 * @return int usergroupID
-	 */
-	int registerUsergroup(std::string title, int parentID, std::string desc);
+            /**removePermission(), id e permission ra gerefte va aan ra az database hazv mikonad
+             * @param permissionID int
+             */
+            void removePermission(int permissionID);
 
-	/**updateUsergroup(), tamam e moshakhast e marboot be usergroup ra daryaaft mikonad
-	 * va baa tavajoh be Id e usergroup, aan ra taghyiir midahat.
-	 * @param usergroupID int
-	 * @param title string
-	 * @param parentID int
-	 * @param desc string
-	 */
-	void updateUsergroup(int usergroupID, std::string title, int parentID, std::string desc);
+            /** registerUsergroup(), moshakhasaat e marboot be yek usergroup e jadid ragerefte va
+             * aan ra dar database zakhireh mikonad va meghdaar e aan ra barmigardaanad.
+             * @param title string
+             * @param prentID int
+             * @param desc string
+             * @return int usergroupID
+             */
+            int registerUsergroup(std::string title, int parentID, std::string desc);
 
-	/**removeUsergroup(), ID e usergroup ra daryaaf mikonad va aaan ra az database hazv mikonad
-	 * @param usergroupID int
-	 */
-	void removeUsergroup(int usergroupID);
+            /**updateUsergroup(), tamam e moshakhast e marboot be usergroup ra daryaaft mikonad
+             * va baa tavajoh be Id e usergroup, aan ra taghyiir midahat.
+             * @param usergroupID int
+             * @param title string
+             * @param parentID int
+             * @param desc string
+             */
+            void updateUsergroup(int usergroupID, std::string title, int parentID, std::string desc);
 
-	/** listUsers(), tamami e userhaaye mojood dar database raa be soorat e yek vector e "zeitoon::datatypes::DTString" baaz migardaanad
-	 * @return vector<"zeitoon::datatypes::DTString"> users
-	 */
-	DSUserList listUsers();
+            /**removeUsergroup(), ID e usergroup ra daryaaf mikonad va aaan ra az database hazv mikonad
+             * @param usergroupID int
+             */
+            void removeUsergroup(int usergroupID);
 
-	/** listUsersByGroup(), baa daryaft e id yek group, list e naam e tamamiye
-	 * user-haaye e ozv e aan group raa be soorate vector<"zeitoon::datatypes::DTString"> barmigardaanad
-	 *@param groupID int
-	 *@return vector<"zeitoon::datatypes::DTString">
-	 */
-	DSUserList listUsersByGroup(int groupID);
+            /** listUsers(), tamami e userhaaye mojood dar database raa be soorat e yek vector e "zeitoon::datatypes::DTString" baaz migardaanad
+             * @return vector<"zeitoon::datatypes::DTString"> users
+             */
+            DSUserList listUsers();
 
-	/**listPermissions(), listi az naam e kolle permission haaye mojood dar database ra
-	 * be soorat e vector<"zeitoon::datatypes::DTString"> bar-migardaanad
-	 * @return vector<"zeitoon::datatypes::DTString">
-	 */
-	DSPermissionsList listPermissions();
+            /** listUsersByGroup(), baa daryaft e id yek group, list e naam e tamamiye
+             * user-haaye e ozv e aan group raa be soorate vector<"zeitoon::datatypes::DTString"> barmigardaanad
+             *@param groupID int
+             *@return vector<"zeitoon::datatypes::DTString">
+             */
+            DSUserList listUsersByGroup(int groupID);
 
-	/** listi az kolle userGroup-haaye mojood dar database raa be soorat e yek vector<"zeitoon::datatypes::DTString"> barmigardanad
-	 * @return vector<"zeitoon::datatypes::DTString">
-	 */
-	DSUserGroupsList listUsergroups();
+            /**listPermissions(), listi az naam e kolle permission haaye mojood dar database ra
+             * be soorat e vector<"zeitoon::datatypes::DTString"> bar-migardaanad
+             * @return vector<"zeitoon::datatypes::DTString">
+             */
+            DSPermissionsList listPermissions();
 
-	/** executeSync() baa daryaaft e string e haaviye "SQL" be soorat e Synchronize tedaad e tupple haay e ta'sir gerefte az farmaan
-	 * raa baaz migardanad.
-	 * @param string cmd Haaviye farmaan e sql
-	 * @return int affected rows
-	 */
-	int executeSync(std::string cmd);
+            /** listi az kolle userGroup-haaye mojood dar database raa be soorat e yek vector<"zeitoon::datatypes::DTString"> barmigardanad
+             * @return vector<"zeitoon::datatypes::DTString">
+             */
+            DSUserGroupsList listUsergroups();
 
-	/** querySync() baa daryafte farman e sql, result ra be soorat e class e DTTableString barmigardaanad
-	 * @param string cmd farmaan e sql
-	 * @return zeitoon::datatypes::DTTableString Nataayej e farman sql
-	 */
-	zeitoon::datatypes::DTTableString querySync(std::string sql);
+            /** executeSync() baa daryaaft e string e haaviye "SQL" be soorat e Synchronize tedaad e tupple haay e ta'sir gerefte az farmaan
+             * raa baaz migardanad.
+             * @param string cmd Haaviye farmaan e sql
+             * @return int affected rows
+             */
+            int executeSync(std::string cmd);
 
-	/** singleFieldQuerySync() ba daryaft e farman sql meghdar e field e 0,0 ra barmigardaanad,
-	 * @param string query Farmaan e SQL
-	 * @return string Meghdaar e tak field
-	 */
-	std::string singleFieldQuerySync(std::string query);
+            /** querySync() baa daryafte farman e sql, result ra be soorat e class e DTTableString barmigardaanad
+             * @param string cmd farmaan e sql
+             * @return zeitoon::datatypes::DTTableString Nataayej e farman sql
+             */
+            zeitoon::datatypes::DTTableString querySync(std::string sql);
 
-	void addUserUsergroup(int userID, int usergroupID);
+            /** singleFieldQuerySync() ba daryaft e farman sql meghdar e field e 0,0 ra barmigardaanad,
+             * @param string query Farmaan e SQL
+             * @return string Meghdaar e tak field
+             */
+            std::string singleFieldQuerySync(std::string query);
 
-	void removeUserUsergroup(int userID, int usergroupID);
+            void addUserUsergroup(int userID, int usergroupID);
 
-	void addUserPermission(int userID, int permissionID, int state);
+            void removeUserUsergroup(int userID, int usergroupID);
 
-	void removeUserPermission(int userID, int permissionID);
+            void addUserPermission(int userID, int permissionID, int state);
 
-	DSUserPermissionList listUserPermissions(int userID);
+            void removeUserPermission(int userID, int permissionID);
 
-	void addUsergroupPermission(int usergroupID, int permissionID, int state);
+            DSUserPermissionList listUserPermissions(int userID);
 
-	void removeUsergroupPermission(int usergroupID, int permissionID, int state = 0);
+            void addUsergroupPermission(int usergroupID, int permissionID, int state);
 
-	DSUsergroupPermissionList listUsergroupPermissions(int usergroupID);
+            void removeUsergroupPermission(int usergroupID, int permissionID, int state = 0);
 
-	/**
-    * bool isOnline returns user stats
-	 **/
-	bool isOnline(int userID);
+            DSUsergroupPermissionList listUsergroupPermissions(int usergroupID);
 
-	void loadCaches();
-private:
-	/*
-	 typedef  void (UMCore::*BPTR) (std::string);
-	 void (UMCore::*queryFuncPtr) (std::string);// &UMCore::query();
-	 void (UMCore::*Executes)(std::string);// &UMCore::Executes;
-	 */
-	/**
-	 * struct userAllInfo{} baraye negah daari e info e marboot be login e useri mmibaashad ke hata yek baar password e khod
-	 * raa eshtebah mizanad,
-	 * @param vector<int> logAttemptTimes haavi e zaman e har eghdaam be login e  eshtebah mibaashad
-	 * @param int numberOfAttempts yek counter baraye tedad e dafa'aat e login e eshtebah ast
-	 * @param int Bannedtime baraye sabt zaman e ban shodan e movaghat mibaashad
-	 * @param bool banned baraye moshakhas kardannn vaziat e ban e user ast
-	 */
-	struct userLogInfoStruct {
+            /**
+            * bool isOnline returns user stats
+             **/
+            bool isOnline(int userID);
 
-		std::vector<int> logAttemptTimes;
-		int Banedtime = 0;
-		bool banned = false;
-	};
-	/**
-	 * map usreLogInfo baraye negah-daari e etelaa@ e login har user dar marhaleye authentication hast!(makhsoos e False attempts)
-	 *  std::map<std::string (username), userAllInfo>
-	 */
-	std::map<std::string, userLogInfoStruct> userLogInfo;
+            void loadCaches();
 
-	/** Object e USMcoreUser baraye estefaadeye class e UMCore az class e UMSessionManager sakhte shode
-	 */
-	UMSessionManager sessionManager;
+        private:
+            /*
+             typedef  void (UMCore::*BPTR) (std::string);
+             void (UMCore::*queryFuncPtr) (std::string);// &UMCore::query();
+             void (UMCore::*Executes)(std::string);// &UMCore::Executes;
+             */
+            /**
+             * struct userAllInfo{} baraye negah daari e info e marboot be login e useri mmibaashad ke hata yek baar password e khod
+             * raa eshtebah mizanad,
+             * @param vector<int> logAttemptTimes haavi e zaman e har eghdaam be login e  eshtebah mibaashad
+             * @param int numberOfAttempts yek counter baraye tedad e dafa'aat e login e eshtebah ast
+             * @param int Bannedtime baraye sabt zaman e ban shodan e movaghat mibaashad
+             * @param bool banned baraye moshakhas kardannn vaziat e ban e user ast
+             */
+            struct userLogInfoStruct {
 
-	/** hashingProccess(), yek string daryaft mikonad va pas az hash kardan, aan ra barmigardaanad
-	 * @param STRING sting
-	 * @return string HASHED-STRING
-	 */
-	std::string hashingProccess(std::string STRING);
+                std::vector<int> logAttemptTimes;
+                int Banedtime = 0;
+                bool banned = false;
+            };
+            /**
+             * map usreLogInfo baraye negah-daari e etelaa@ e login har user dar marhaleye authentication hast!(makhsoos e False attempts)
+             *  std::map<std::string (username), userAllInfo>
+             */
+            std::map<std::string, userLogInfoStruct> userLogInfo;
 
-	/**checkUserPermissionState(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
-	 * agar permission e mored e nazar dar map e permissionCache e user mojood bashad,
-	 * State e aan ra barmigardaanad
-	 * @param sessionID int
-	 * @param permissionID int
-	 * @return int permission State
-	 */
-	int checkUserPermissionState(int &sessionID, int &permissionID);
+            /** Object e USMcoreUser baraye estefaadeye class e UMCore az class e UMSessionManager sakhte shode
+             */
+            UMSessionManager sessionManager;
 
-	/**checkUserPermissionParentState(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
-	 * agar permission parent  e permission e  mored e nazar dar map e permissionCache e user mojood bashad,
-	 * State e aan ra barmigardaanad
-	 * @param sessionID int
-	 * @param permissionID int
-	 * @return int permission State
-	 */
-	int checkUserPermissionParentState(int &sessionID, int &permissionID);
+            /** hashingProccess(), yek string daryaft mikonad va pas az hash kardan, aan ra barmigardaanad
+             * @param STRING sting
+             * @return string HASHED-STRING
+             */
+            std::string hashingProccess(std::string STRING);
 
-	/**checkUsergroupPermission(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
-	 * agar permission e mored e nazar dar map e yeki az usergroup haaye user mojood bashad,
-	 * State e aan ra barmigardaanad
-	 * @param sessionID int
-	 * @param permissionID int
-	 * @return int permission State
-	 */
-	int checkUsergroupPermission(int &sessionID, int &PermissionID);
+            /**checkUserPermissionState(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
+             * agar permission e mored e nazar dar map e permissionCache e user mojood bashad,
+             * State e aan ra barmigardaanad
+             * @param sessionID int
+             * @param permissionID int
+             * @return int permission State
+             */
+            int checkUserPermissionState(int &sessionID, int &permissionID);
 
-	/**checkUsergroupParentPermission(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
-	 * agar permission e mored e nazar dar map e yeki az usergroupParent haaye user mojood bashad,
-	 * State e aan ra barmigardaanad
-	 * @param sessionID int
-	 * @param permissionID int
-	 * @return int permission State
-	 */
-	int checkUsergroupParentPermission(int &userGroupID, int &sessionID, int &permissionID);
+            /**checkUserPermissionParentState(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
+             * agar permission parent  e permission e  mored e nazar dar map e permissionCache e user mojood bashad,
+             * State e aan ra barmigardaanad
+             * @param sessionID int
+             * @param permissionID int
+             * @return int permission State
+             */
+            int checkUserPermissionParentState(int &sessionID, int &permissionID);
 
-	/**getPermissionParent() baraye daryaft e parent e permission dar mavagheye khaas(maanand vaghty ke parent dar Cache vojood nadarad)
-	 * @param permissionID int
-	 * @return int Permission Parent ID
-	 */
-	int getPermissionParent(int &permissionID);
+            /**checkUsergroupPermission(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
+             * agar permission e mored e nazar dar map e yeki az usergroup haaye user mojood bashad,
+             * State e aan ra barmigardaanad
+             * @param sessionID int
+             * @param permissionID int
+             * @return int permission State
+             */
+            int checkUsergroupPermission(int &sessionID, int &PermissionID);
 
-	/**getUsergroupParent() baraye daryaft e parent e usergroup dar mavagheye khaas(maanand vaghty ke parent dar Cache vojood nadarad)
-	 * @param permissionID int
-	 * @return int usergroup parent ID
-	 */
-	int getUsergroupParent(int groupID);
+            /**checkUsergroupParentPermission(), ba daryafte sessionID va Permission e mored e nazar, baresi mikonad
+             * agar permission e mored e nazar dar map e yeki az usergroupParent haaye user mojood bashad,
+             * State e aan ra barmigardaanad
+             * @param sessionID int
+             * @param permissionID int
+             * @return int permission State
+             */
+            int checkUsergroupParentPermission(int &userGroupID, int &sessionID, int &permissionID);
 
-	/**
-	 * getNameAndType baraye moshakhas kardan Owner e exception ast va kaarbord e ann faghat baraye exceptionEx hast
-	 */
-	std::string getNameAndType();
+            /**getPermissionParent() baraye daryaft e parent e permission dar mavagheye khaas(maanand vaghty ke parent dar Cache vojood nadarad)
+             * @param permissionID int
+             * @return int Permission Parent ID
+             */
+            int getPermissionParent(int &permissionID);
 
+            /**getUsergroupParent() baraye daryaft e parent e usergroup dar mavagheye khaas(maanand vaghty ke parent dar Cache vojood nadarad)
+             * @param permissionID int
+             * @return int usergroup parent ID
+             */
+            int getUsergroupParent(int groupID);
 
-};
+            /**
+             * getNameAndType baraye moshakhas kardan Owner e exception ast va kaarbord e ann faghat baraye exceptionEx hast
+             */
+            std::string getNameAndType();
 
-}//usermanagement
+            DTSet<DSBrfPermission> userPermissionDetailedList(int userID);
+        };
+
+    }//usermanagement
 }//zeitoon
 #endif /* USERMANAGEMENT_UMCORE_HPP_ */

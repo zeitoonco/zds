@@ -25,5 +25,21 @@ const char* Strings::xBaseDigit="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 const char* MessageTypes::typeString[__MAX] = { "fire", "call", "callback" };
 
+template<class T>
+bool find(T itm, const vector<T> &lst) {
+	for (int i = 0; i < lst.size(); i++)
+		if (lst[i] == itm)
+			return true;
+	return false;
+}
+
+template<>
+bool find(string itm, const vector<string> &lst) {
+	for (int i = 0; i < lst.size(); i++)
+		if (streq(lst[i], itm))
+			return true;
+	return false;
+}
+
 }
 }

@@ -263,7 +263,7 @@
     }
 
     function cbLogin(data) {
-        if (data.UMLoginResult == "ok") {
+        if (data.result == "ok") {
             sessionid = data.sessionID;
             $("#sessionid").html("ok:" + sessionid);
             $("#login").attr('value','Logout');

@@ -125,7 +125,7 @@ void GUICore::callBackReceived(std::string node, std::string cmdID, std::string 
 
 	if (streq(node, usermanagement::commandInfo::login())) {
 		JStruct dt(data);
-		if (streq(dt["UMLoginResult"].getValue(), "ok"))
+		if (streq(dt["result"].getValue(), "ok"))
 			clients[clientID]->sessionID = dt["sessionID"].getValue();
 	}
 	WS.send(WS.ConHdlFinder(clientID), Jtemp.toString());

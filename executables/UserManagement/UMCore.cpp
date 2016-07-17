@@ -845,7 +845,6 @@ DTSet<DSBrfPermission> UMCore::userPermissionDetailedList(int userID) {
     DTSet<DSBrfPermission> temp = {"permissions"};
 
 
-    //  DSBrfPermission temp;
     auto sID = this->sessionManager.getSessionIDbyUserID(userID);
     if (sID < 0)
         EXTunknownException("LIST USER PERMISSIONS FAILED. User is offline");
@@ -858,11 +857,8 @@ DTSet<DSBrfPermission> UMCore::userPermissionDetailedList(int userID) {
                                      perCache->second->parentID.getValue(),
                                      this->checkPermission(sID, perCache->second->permissiosnID.getValue())),
                  true);
-        //}
     }
-    std::cerr << &temp << ",  " << temp.list[1];
 
-    std::cerr << temp.toString();
     return temp;
 }
 

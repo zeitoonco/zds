@@ -210,9 +210,9 @@ public:
         list.push_back(&isOnline);
     }
 
-    DSUserInfo(std::string data) :
+    DSUserInfo(std::string name) :
             DSUserInfo() {
-        this->fromString(data);
+        setName(name);
     }
 
     DSUserInfo(int iuserID, std::string iusername, std::string iname, bool ibanned, std::string ibanReason,
@@ -661,10 +661,10 @@ public:
 
 class DSLoginResult : public DTStruct {
 public:
-    DTString UMLoginResult = {"UMLoginResult"};
+    DTString UMLoginResult = {"result"};
     DTString description = {"description"};
     DTInteger<int> sessionID = {"sessionID"};
-    DSUserInfo userInfo;
+    DSUserInfo userInfo = {"userInfo"};
     DTSet<DSBrfPermission> permissions = {"permissions"};
 
     static std::string getStructName() {

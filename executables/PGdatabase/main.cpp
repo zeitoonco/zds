@@ -15,12 +15,15 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
     PGconfiguration.load();
 
     std::string argsTemp[7];
-    if (argc < 8) {
+    if (argc < 8 && argc >1) {
         logger.log("PGDatabase", "Invalid number of arguments provided", zeitoon::utility::LogLevel::note);
         logger.log("PGDatabase",
                    "Required arguments: ServerIP ServerPort DBUsername DBPassword DBAddress DBPort DBName",
                    zeitoon::utility::LogLevel::note);
-        logger.log("PGDatabase", "Trying to load from configuration", zeitoon::utility::LogLevel::note);
+        return -1;
+    }
+    if(argc ==1){
+        logger.log("PGDatabase", "No Parameter provided. Trying to load from configuration", zeitoon::utility::LogLevel::note);
         argsTemp[0] = PGconfiguration.serverIP.getValue();
         argsTemp[1] = PGconfiguration.serverPort.getValue();
         argsTemp[4] = PGconfiguration.DBserverAddr.getValue();
@@ -28,20 +31,8 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
         argsTemp[2] = PGconfiguration.adminUsrPGDB.getValue();
         argsTemp[3] = PGconfiguration.adminPwPGDB.getValue();
         argsTemp[6] = PGconfiguration.PGDBName.getValue();
-
-    }/*        PGconfiguration.serverIP = argv[1];
-        PGconfiguration.serverPort = argv[2];
-        PGconfiguration.DBserverAddr = argv[5];
-        PGconfiguration.DBserverPort = argv[6];
-        PGconfiguration.adminUsrPGDB = argv[3];
-        PGconfiguration.adminPwPGDB = argv[4];
-        PGconfiguration.PGDBName = argv[7];*/
-    else {
-        logger.log("PGDatabase", "Server Addr:   " + std::string(argv[0]) + "Port:   " + std::string(argv[1]),
-                   zeitoon::utility::LogLevel::note);
-        logger.log("PGDatabase", "Database Addr:   " + std::string(argv[4]) + "Port:   " + std::string(argv[5]),
-                   zeitoon::utility::LogLevel::note);
-
+    }
+    else if(argc == 8){
         argsTemp[0] = argv[1];
         argsTemp[1] = argv[2];
         argsTemp[4] = argv[5];
@@ -50,6 +41,7 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
         argsTemp[3] = argv[4];
         argsTemp[6] = argv[7];
     }
+
     try {
         PGmediator pg(argsTemp[2], argsTemp[3], argsTemp[4], std::stoi(argsTemp[5]), argsTemp[6]);
         if (not PGconfiguration.exists("networkReconnectInterval")) {
@@ -58,6 +50,10 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
         }
         pg.sm.setNetReconnectInterval(PGconfiguration.get("networkReconnectInterval"));
         pg.connect(argsTemp[0], std::stoi(argsTemp[1]));
+        logger.log("PGDatabase", "Server Addr:   " + std::string(argsTemp[0]) + "Port:   " + std::string(argsTemp[1]),
+                   zeitoon::utility::LogLevel::note);
+        logger.log("PGDatabase", "Database Addr:   " + std::string(argsTemp[4]) + "Port:   " + std::string(argsTempls[5]),
+                   zeitoon::utility::LogLevel::note);
         if (argc == 9) {
             if (std::string(argv[8]) == "-save") {
                 PGconfiguration.serverIP = argsTemp[0];

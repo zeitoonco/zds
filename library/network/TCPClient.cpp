@@ -118,7 +118,6 @@ namespace zeitoon {
 
         void TCPClient::runLoop() {
             try {
-                lNote("TCPClient loop Started");
                 int r = uv_run(&this->loop, UV_RUN_DEFAULT);
                 uvEXT(r, "libuv events loop error: ");
                 lNote("TCPClient loop finished. " + std::string(uv_err_name(r)) + " " + std::string(uv_strerror(r)));

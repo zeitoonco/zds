@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {// 1:Server IP  2:Server Port  3:
         pg.connect(argsTemp[0], std::stoi(argsTemp[1]));
         logger.log("PGDatabase", "Server Addr:   " + std::string(argsTemp[0]) + "Port:   " + std::string(argsTemp[1]),
                    zeitoon::utility::LogLevel::note);
-        logger.log("PGDatabase", "Database Addr:   " + std::string(argsTemp[4]) + "Port:   " + std::string(argsTempls[5]),
+        logger.log("PGDatabase", "Database Addr:   " + std::string(argsTemp[4]) + "Port:   " + std::string(argsTemp[5]),
                    zeitoon::utility::LogLevel::note);
         if (argc == 9) {
             if (std::string(argv[8]) == "-save") {

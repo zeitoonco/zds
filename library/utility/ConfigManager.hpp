@@ -98,6 +98,13 @@ public:
 		}
 		EXTinvalidName("Invalid config name");
 	}
+    bool exists(std::string configName){
+        for (int i= 0; i < this->length(); i++){
+            if (this->contains(configName))
+                return true;
+        }
+        return false;
+    }
 
 	std::string getNameAndType() {
 		return "ConfigManager";

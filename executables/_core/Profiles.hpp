@@ -69,7 +69,7 @@ public:
 class ExtensionProfile {
 public:
 	enum class extensionState {
-		unknown = 0, notInstalled, installing, installed, enabled
+		unknown = 0, notInstalled, installing, installed, enabling, enabled
 	};
 
 	extensionState state;

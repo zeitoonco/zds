@@ -78,5 +78,21 @@ void ServerMediator::onNetDisconnect() {
 	owner->onDisconnect();//todo: called after destruction of owner! sigabrt
 }
 
+void ServerMediator::setNetReconnectInterval(std::string jsonArray) {
+	if (jsonArray.size() > 2){
+		tcpc.setReconnectInterval(jsonArray);
+	}
+//	tcpc.setReconnectInterval();
+
+}
+
+std::string ServerMediator::getNetReconnectInterval() {
+	return tcpc.getReconnectInterval();
+}
+std::string ServerMediator::getDefaultNetReconnect(){
+	return tcpc.defaultReconnInterval();
+}
+
+
 } /* namespace utility */
 } /* namespace zeitoon */

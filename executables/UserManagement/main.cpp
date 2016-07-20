@@ -13,7 +13,15 @@ int main(int argc, char *argv[]) {
 
     UmCHI Umediator;
     UMconfig.load();
-    // std::string serverIP = "", serverPort = "";
+    if (not UMconfig.exists("networkReconnectInterval")){
+        UMconfig.addConfig("networkReconnectInterval", Umediator.sm.getDefaultNetReconnect());
+        UMconfig.save();
+    }
+    Umediator.sm.setNetReconnectInterval(UMconfig.get("networkReconnectInterval"));
+ //   if (UMconfig.netReconnectInterval.list.size() > 0){
+        std::cerr << "Net Reconnect option Enabled\n";
+
+    //}
     if (argc < 3) {
         logger.log("UserMAnagement", "Invalid number of arguments provided", zeitoon::utility::LogLevel::note);
         logger.log("UserMAnagement", "Required arguments: ServerIP ServerPort", zeitoon::utility::LogLevel::note);

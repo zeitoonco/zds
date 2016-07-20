@@ -65,7 +65,8 @@ public:
 	bool checkCoreRequirements();
 	void registerCEP();
 	void registerServiceCEPermissions(ExtensionProfile *ext);
-
+	void enableIfReqSatisfied();
+	void disableIfReqNotSatisfied();
 	bool enableService(ExtensionProfile *exte);
 	bool installService(ExtensionProfile *exte);
 	bool getInstallInfo(ExtensionProfile *exte);

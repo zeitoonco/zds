@@ -35,7 +35,7 @@ namespace zeitoon {
             DSInteger temp;
             temp.fromString(data);
             DSCheckMessages result;
-            result = chatCore.checkNewMessages(temp.value.getValue());
+            result.fromString((chatCore.checkNewMessages(temp.value.getValue())).toString());
             sm.communication.runCallback(node, result.toString(true), id);
         }
 
@@ -107,8 +107,7 @@ namespace zeitoon {
             DSInteger temp;
             temp.fromString(data);
             DSSession result;
-            result = chatCore.getSession(temp.value.getValue());
-            sm.communication.runCallback(node, result.toString(true), id);
+            sm.communication.runCallback(node, (chatCore.getSession(temp.value.getValue())).toString(true), id);
         }
         else if (!Strings::compare(node, CommandInfo::SessionUserList(), false)) {
             DSInteger temp;

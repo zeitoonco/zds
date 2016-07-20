@@ -36,6 +36,15 @@ void Logger::log(string owner, string message, LogLevel::levels level) {
 	}
 }
 
+void Logger::flush() {
+	if (this->terminalOut)
+		std::cout.flush();
+	if (this->logTofile)
+		this->_logFile.flush();
+
+}
+
+
 Logger::~Logger() {
 	if (logTofile)
 		_logFile.close();

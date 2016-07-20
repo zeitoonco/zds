@@ -15,20 +15,33 @@ int main(int argc, char *argv[]) {//todo : load configurations
     logger.enableFile("GUILog.log");
     logger.enableTerminalOut();
     GUIConfiguration.load();
+    std::string argsTemp[3];
+
     if (argc < 4) {
         logger.log("GUI", "Invalid number of arguments provided", zeitoon::utility::LogLevel::note);
         logger.log("GUI",
                    "Required arguments: ServerIP ServerPort WSPort", zeitoon::utility::LogLevel::note);
+        argsTemp[1] = GUIConfiguration.serverIP.getValue();
+        argsTemp[2] = GUIConfiguration.serverPort.getValue();
+        argsTemp[3] = GUIConfiguration.WSserverPort.getValue();
     } else {
-        GUIConfiguration.serverIP = argv[1];
-        GUIConfiguration.serverPort = argv[2];
-        GUIConfiguration.WSserverPort = argv[3];
+        argsTemp[1] = argv[1];
+        argsTemp[2] = argv[2];
+        argsTemp[3] = argv[3];
     }
     try {
-        zeitoon::GUI::GuiCHI GUI(std::stoi(GUIConfiguration.WSserverPort));
-        GUI.connect(GUIConfiguration.serverIP, std::stoi(GUIConfiguration.serverPort.getValue()));
+        zeitoon::GUI::GuiCHI GUI(std::stoi(argsTemp[3]));
+        if (not GUIConfiguration.exists("networkReconnectInterval")){
+            GUIConfiguration.addConfig("networkReconnectInterval", GUI.sm.getDefaultNetReconnect());
+            GUIConfiguration.save();
+        }
+        GUI.sm.setNetReconnectInterval(GUIConfiguration.get("networkReconnectInterval"));
+        GUI.connect(argsTemp[1], std::stoi(argsTemp[2]));
         if (argc == 5) {
             if (std::string(argv[4]) == "-save") {
+                GUIConfiguration.serverIP = argv[1];
+                GUIConfiguration.serverPort = argv[2];
+                GUIConfiguration.WSserverPort = argv[3];
                 GUIConfiguration.save();
                 logger.log("GUI", "Configuration saved", zeitoon::utility::LogLevel::note);
 

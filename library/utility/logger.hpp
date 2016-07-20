@@ -35,7 +35,6 @@ public:
 	const static string typeString[];
 };
 
-
 /**
  * class makhsoose log gereftan dar system. in class ye database mahali ijad mikonad va tamami peygham haye daryafti ra dar an zakhira mikonad.
  */
@@ -108,6 +107,8 @@ public:
 	std::string getNameAndType() {
 		return "Logger";
 	}
+	void flush();
+
 
 	std::string currentTime();
 

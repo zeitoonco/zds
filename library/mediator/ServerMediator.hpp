@@ -62,6 +62,11 @@ public:
 	void joinNet() {
 		tcpc.joinOnConnectionThread();
 	}
+	void setNetReconnectInterval(std::string jsonArray);
+
+	std::string getNetReconnectInterval();
+
+	std::string getDefaultNetReconnect();
 
 	string getNameAndType() {
 		return "ServerMediator";

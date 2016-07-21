@@ -42,13 +42,13 @@ public:
      * @return makaane '"' bad az pos.
      *
      */
-    static size_t getEndOfString(string str, int pos) {
-        int newPos = 1;
+    static size_t getEndOfString(string str, size_t pos) {
+        size_t newPos = 1;
         while (newPos > 0) {
             newPos = str.find('"', pos + 1);
             if (newPos > 0) {
                 int count = 0;
-                for (int i = newPos - 1; str[i] == '\\'; i--) {
+                for (size_t i = newPos - 1; str[i] == '\\'; i--) {
                     if (str[i] == '\\')
                         count++;
                 }
@@ -74,14 +74,20 @@ public:
      *
      */
     static size_t getEndOfStruct(string str, int pos) {
-        for (uint i = pos + 1; i < str.size(); i++) {
-            if (str[i] == '"')
+        for (size_t i = pos + 1; i < str.size(); i++) {
+            if (str[i] == '"') {
                 i = getEndOfString(str, i);
-            else if (str[i] == '{')
+                if (i == string::npos)
+                    return string::npos;
+            } else if (str[i] == '{') {
                 i = getEndOfStruct(str, i);
-            else if (str[i] == '[')
+                if (i == string::npos)
+                    return string::npos;
+            } else if (str[i] == '[') {
                 i = getEndOfArray(str, i);
-            else if (str[i] == '}')
+                if (i == string::npos)
+                    return string::npos;
+            } else if (str[i] == '}')
                 return i;
         }
         return string::npos;
@@ -99,15 +105,21 @@ public:
      * @return makani az string ke arraye dar anjaa tamam shode ast.
      *
      */
-    static size_t getEndOfArray(string str, int pos) {
-        for (uint i = pos + 1; i < str.size(); i++) {
-            if (str[i] == '"')
+    static size_t getEndOfArray(string str, size_t pos) {
+        for (size_t i = pos + 1; i < str.size(); i++) {
+            if (str[i] == '"') {
                 i = getEndOfString(str, i);
-            else if (str[i] == '{')
+                if (i == string::npos)
+                    return string::npos;
+            } else if (str[i] == '{') {
                 i = getEndOfStruct(str, i);
-            else if (str[i] == '[')
+                if (i == string::npos)
+                    return string::npos;
+            } else if (str[i] == '[') {
                 i = getEndOfArray(str, i);
-            else if (str[i] == ']')
+                if (i == string::npos)
+                    return string::npos;
+            } else if (str[i] == ']')
                 return i;
         }
         return string::npos;

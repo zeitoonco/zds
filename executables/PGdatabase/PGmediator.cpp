@@ -113,11 +113,11 @@ void PGmediator::onUninstall() { //fixme: remove db things
 }
 
 void PGmediator::onConnect() {
-	lNote("+UM Connected to server");
+	lNote("+PG Connected to server");
 }
 
 void PGmediator::onDisconnect() {
-	lNote("-UM Disconnected from server");
+	lNote("-PG Disconnected from server");
 }
 
 string PGmediator::getInstallInfo() {

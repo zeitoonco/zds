@@ -14,7 +14,7 @@ namespace utility {
  * listi as caracter haaye khaas ke dar encodeString va decodeString be kar miravand.
  */
 const char JSONUtility::specialChars[specialCharsLen][2] = { { '\\', '\\' },  { '\b', 'b' },
-		{ '\f', 'f' }, { '\n', 'n' }, { '\r', 'r' }, { '\t', 't' } };//{ '"', '"' }, { '/', '/' },
+		{ '\f', 'f' }, { '\n', 'n' }, { '\r', 'r' }, { '\t', 't' }, { '"', '"' }, { '/', '/' }};
 
 /**
  * character haye default ke dar tavaabe ye trim() be kaar miravand.

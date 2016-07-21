@@ -26,7 +26,7 @@ namespace utility {
 
 class JSONUtility {
 protected:
-    const static int specialCharsLen = 6;
+    const static int specialCharsLen = 8;
     const static char specialChars[specialCharsLen][2];
 
 public:

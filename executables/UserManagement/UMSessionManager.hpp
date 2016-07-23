@@ -66,8 +66,6 @@ public:
 private:
 UMCore* coreInstance;
 
-	/**uniqueIdGenerator(), yek ID e Unique generate mikonad ke baraye sessionID estefaade mishavad*/
-	int uniqueIdGenerator();
 	/**
 	 * getNameAndType baraye moshakhas kardan Owner e exception ast va kaarbord e ann faghat baraye exceptionEx hast
 	 */

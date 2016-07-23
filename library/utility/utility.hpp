@@ -512,13 +512,17 @@ public:
 
 class CommunicationUtility {
 public:
-    static string getRandomID() {
+    static int getRandomIDInt() {
         static int flag = 0;
         if (flag == 0) {
             flag = 9;
             srand(time(NULL));
         }
-        return Strings::itoa(rand());
+        return rand();
+    }
+
+    static string getRandomID() {
+        return Strings::itoa(getRandomIDInt());
     }
 
     static string makeCommand(string node, string data) {

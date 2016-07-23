@@ -15,6 +15,7 @@
 #include <mutex>
 #include <queue>
 #include "utility/logger.hpp"
+
 namespace zeitoon {
 namespace utility {
 
@@ -202,8 +203,8 @@ private:
 	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
 	bool stopDataProcess = false;
 	std::mutex mtx;
-	std::vector<std::thread *> dataThreadPool;
 	uv_timer_t mainTimer;
+	std::vector<std::thread *> dataThreadPool;
 	int _port;
 	uv_loop_t loop;
 	uv_tcp_t server;
@@ -213,10 +214,11 @@ private:
 	onClientConnectDLG _onClientDisconnect;
 	onConnectDLG _onConnect;
 	onConnectDLG _onDisconnect;
+	uv_timer_t flushTimer;
 
 	void _listen();
 
-	void _safeCaller(size_t id, std::string data) ;
+	void _safeCaller(size_t id, std::string data);
 
 	static void on_new_connection(uv_stream_t *server, int status);
 
@@ -227,6 +229,10 @@ private:
 	static void on_client_write(uv_write_t *req, int status);
 
 	static void dataProcThreadMgrTimer(uv_timer_t *handle);
+
+	static void keepAliveTimerCB(uv_timer_t *handle) {
+		logger.flush();
+	}
 };
 
 

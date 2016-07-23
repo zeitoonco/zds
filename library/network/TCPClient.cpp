@@ -14,7 +14,7 @@ namespace zeitoon {
             if (isConnected()) {
                 this->disconnect();
             }
-            uv_unref((uv_handle_t *) &this->mainTimer);
+            uv_timer_stop(&this->mainTimer);
             if (not uv_is_closing((uv_handle_t *) &loop))//check if the handle is already closed
                 uv_loop_close(&loop);
         }
@@ -330,46 +330,53 @@ namespace zeitoon {
         //---------------------------------------------------------------------------
 
         void TCPClient::DataTransmiter::sendProcessor() {
-            while (!stopSendt) {
-                if (this->send_is_busy || this->pendingBuffs.size() == 0) {
-                    std::this_thread::sleep_for(chrono::microseconds(100));
-                    continue;
+            try {
+                while (!stopSendt) {
+                    if (this->send_is_busy || this->pendingBuffs.size() == 0) {
+                        std::this_thread::sleep_for(chrono::microseconds(100));
+                        continue;
+                    }
+
+                    if (this->bufw != NULL) {
+                        EXTnetworkFailureO("SEND FAILED. buffw != NULL", this->getNameAndType());
+                    }
+
+                    this->send_is_busy = true;
+                    std::string data = this->pendingBuffs.front();
+                    this->pendingBuffs.pop();
+
+                    uv_write_t *write_req = new uv_write_t[sizeof(uv_write_t)];
+                    this->bufw = new uv_buf_t[sizeof(uv_buf_t)];
+                    uint8_t *buff = new uint8_t[data.size() + 6];
+
+
+                    uint32_t size = (uint32_t) data.size();
+                    this->bufw->base = (char *) buff;
+                    this->bufw->len = data.size() + 6;
+                    memcpy(buff + 6, data.c_str(), data.size());
+                    buff[0] = 12;
+                    buff[1] = 26;
+                    memcpy(buff + 2, (void *) (&size), 4);
+                    write_req->data = (void *) this;
+
+
+                    int r = uv_write(write_req, (uv_stream_t *) &this->parentClass->client, this->bufw, 1,
+                                     TCPClient::on_client_write);
+                    logger.log("TCPClient", "TCP-S: " + data, LogLevel::debug);
+
+                    if (r != 0) {
+                        this->send_is_busy = false;
+                        EXTnetworkFailureO(
+                                "Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) +
+                                "]: " +
+                                uv_strerror(r),
+                                this->getNameAndType());
+                    }
                 }
-
-                if (this->bufw != NULL) {
-                    EXTnetworkFailureO("SEND FAILED. buffw != NULL", this->getNameAndType());
-                }
-
-                this->send_is_busy = true;
-                std::string data = this->pendingBuffs.front();
-                this->pendingBuffs.pop();
-
-                uv_write_t *write_req = new uv_write_t[sizeof(uv_write_t)];
-                this->bufw = new uv_buf_t[sizeof(uv_buf_t)];
-                uint8_t *buff = new uint8_t[data.size() + 6];
-
-
-                uint32_t size = (uint32_t) data.size();
-                this->bufw->base = (char *) buff;
-                this->bufw->len = data.size() + 6;
-                memcpy(buff + 6, data.c_str(), data.size());
-                buff[0] = 12;
-                buff[1] = 26;
-                memcpy(buff + 2, (void *) (&size), 4);
-                write_req->data = (void *) this;
-
-
-                int r = uv_write(write_req, (uv_stream_t *) &this->parentClass->client, this->bufw, 1,
-                                 TCPClient::on_client_write);
-                logger.log("TCPClient", "TCP-S: " + data, LogLevel::debug);
-
-                if (r != 0) {
-                    this->send_is_busy = false;
-                    EXTnetworkFailureO(
-                            "Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) + "]: " +
-                            uv_strerror(r),
-                            this->getNameAndType());
-                }
+            }catch(exceptionEx ex){
+                lError("SendErr: "+ex.toString());
+            }catch(...){
+                lError("SendErr: Unknown error...");
             }
         }
 

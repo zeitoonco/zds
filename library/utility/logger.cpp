@@ -79,8 +79,8 @@ void Logger::clearDB() {
 }
 
 void Logger::enableFile(std::string filename) {
-	_logFile.open(filename, std::ios::out);
-	_logFile << "\n\n\tLog Enabled:   " << this->currentTime() << " ---------------\n";
+	_logFile.open(filename,std::ios::app);
+	_logFile << "\n\n++++++++++ Log Enabled:   " << this->currentTime() << " ---------------\n";
 	logTofile = true;
 }
 

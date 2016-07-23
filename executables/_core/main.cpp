@@ -40,7 +40,19 @@ ExtensionProfile *inputExt() {
 	}
 }
 
+void signalHandler(int s) {
+	logger.log("MAIN", "Caught signal " + to_string(s), LogLevel::fatal);
+	logger.flush();
+	exit(1);
+}
+
 int main(int argc, char *argv[]) {
+	//handle signals > ctrl+C
+	struct sigaction sigIntHandler;
+	sigIntHandler.sa_handler = signalHandler;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = 0;
+	sigaction(SIGINT, &sigIntHandler, NULL);
 	logger.enableFile("CoreLog.log");
 	logger.enableTerminalOut();
 	coreConfig.load();

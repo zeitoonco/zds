@@ -17,16 +17,22 @@ namespace zeitoon {
             if (port != -1)
                 _port = port;
             int r;
+
             r = uv_loop_init(&loop);
             uvEXT(r, "uv_loop_init failed")
             r = uv_tcp_init(&loop, &server);
             uvEXT(r, "uv_tcp_init failed")
             this->dataProcThreadMaker(4);
+            flushTimer.data = this;//remove no need for CB to have access
+            uv_timer_init(&loop, &flushTimer);
+            uv_timer_start(&flushTimer, &keepAliveTimerCB, 500, 5000);
 
         }
 
         TCPServer::~TCPServer() {
             //free something!
+            uv_timer_stop(&this->mainTimer);
+            uv_timer_stop(&this->flushTimer);
         }
 
         void TCPServer::listen(int port) {

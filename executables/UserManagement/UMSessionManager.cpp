@@ -30,7 +30,7 @@ namespace zeitoon {
                 sessionID = activeSessions.find(userID)->second;
 
             } else {
-                sessionID = uniqueIdGenerator();
+                sessionID = utility::CommunicationUtility::getRandomIDInt();
                 try {
                     auto temp = UMSession(userID, sessionID, uname, this->coreInstance);
                     sessionList[sessionID] = temp;
@@ -192,9 +192,6 @@ namespace zeitoon {
             return -1;
         }
 
-        int UMSessionManager::uniqueIdGenerator() {
-            return (int) clock();
-        }
 
         std::string UMSessionManager::getNameAndType() {
             return "[UMSessionManager]";

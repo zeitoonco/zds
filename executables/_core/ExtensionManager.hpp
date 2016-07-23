@@ -114,7 +114,7 @@ extensionList.erase(excpp);*/
 				return false;
 			if (ext->serviceInfo.minSupportedVersion.getValue() > list[i]->version.getValue())
 				return false;
-			if (ext->state != ExtensionProfile::extensionState::enabled)
+			if (!ext->isRunning())
 				return false;
 			//else its ok!
 		}

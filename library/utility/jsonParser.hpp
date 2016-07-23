@@ -256,7 +256,7 @@ public:
 
 	bool isFloat() const;
 
-	bool isBoolian() const;
+	bool isBoolean() const;
 
 	long long int toInt() const;
 
@@ -264,7 +264,7 @@ public:
 
 	long double toFloat() const;
 
-	bool toBoolian() const;
+	bool toBoolean() const;
 
 	string getValue() const;
 

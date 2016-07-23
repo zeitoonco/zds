@@ -14,18 +14,24 @@ namespace zeitoon {
             if (isConnected()) {
                 this->disconnect();
             }
+            uv_unref((uv_handle_t *) &this->mainTimer);
+            if (not uv_is_closing((uv_handle_t *) &loop))//check if the handle is already closed
+                uv_loop_close(&loop);
         }
 
         TCPClient::TCPClient() : dataTransmiter(this), addr(NULL), _connected(false), _buff(""), _lastPacketLen(0) {
             int r;
+            // = (uv_timer_t *) malloc(sizeof(uv_timer_t));
             r = uv_loop_init(&loop);
+            this->Rtimer_req.data = this;
+            uv_timer_init(&loop, &Rtimer_req);
             uvEXT(r, "uv_loop_init failed");
             mainTimer.data = this;//remove no need for CB to have access
             uv_timer_init(&loop, &mainTimer);
             uv_timer_start(&mainTimer, &keepAliveTimerCB, 500, 5000);
 
-            client.data = this;
-            listenTrd = new std::thread(&TCPClient::runLoop, this);
+
+            listenTrd =std::thread(&TCPClient::runLoop, this);
 
         }
 
@@ -59,7 +65,7 @@ namespace zeitoon {
         void TCPClient::connect() {
             if (addr == NULL)
                 EXTinvalidParameter("No valid address provided");
-
+            client.data = this;
             int r = uv_tcp_init(&loop, &client);
             uvEXT(r, "uv_tcp_init failed")
             uv_connect_t *connect = (uv_connect_t *) malloc(sizeof(uv_connect_t));
@@ -82,24 +88,17 @@ namespace zeitoon {
 
             dataTransmiter.stopTransmissionProcess();
             uv_close((uv_handle_t *) &this->client, NULL);
-            uv_unref((uv_handle_t *) &this->mainTimer);
 
-            if (not uv_is_closing((uv_handle_t *) &loop))//check if the handle is already closed
-                uv_loop_close(&loop);
+
             if (this->_onDisconnect != NULL)
                 this->_onDisconnect();
         }
 
 
         void TCPClient::reconnect() {//uv_connect_t *connect = (uv_connect_t *) malloc(sizeof(uv_connect_t));
-
-            uv_timer_t *Rtimer_req = (uv_timer_t *) malloc(sizeof(uv_timer_t));
-            Rtimer_req->data = this;
-            uv_timer_init(&this->loop, Rtimer_req);
-
             try {
                 int _interval = reconnectOptions.getNextInterval();
-                uv_timer_start(Rtimer_req, reconnTimerCB, (_interval * 1000), 0);
+                uv_timer_start(&Rtimer_req, reconnTimerCB, (_interval * 1000), 0);
                 lNote("Reconnect in " + std::to_string(_interval) + " seconds");
             } catch (networkMaxRetryReached &err) {
                 EXTnetworkMaxRetryReachedI("TCP reconnect failed. max reconnect interval reached.", err);
@@ -114,17 +113,15 @@ namespace zeitoon {
         }
 
         void TCPClient::joinOnConnectionThread() {
-            listenTrd->join();
+            listenTrd.join();
         }
 
         void TCPClient::runLoop() {
             try {
-                lNote("TCPClient loop Started");
                 int r = uv_run(&this->loop, UV_RUN_DEFAULT);
                 uvEXT(r, "libuv events loop error: ");
                 lNote("TCPClient loop finished. " + std::string(uv_err_name(r)) + " " + std::string(uv_strerror(r)));
                 this->_connected = false;
-
             } catch (exceptionEx &ex) {
                 disconnect();
                 EXTnetworkFailureI("TCP LOOP FAILED", ex);
@@ -135,7 +132,17 @@ namespace zeitoon {
             reconnectOptions.setTiming(JSON);
         }
 
-        void TCPClient::DataTransmiter::dataProcThreadMaker(int numberOfThreads) {
+    std::string TCPClient::getReconnectInterval() {
+        return reconnectOptions.getTiming();
+    }
+
+
+    std::string TCPClient::defaultReconnInterval() {
+       return "[2,2,4,3,8,4,16,5,32,6,64,0]";
+    }
+
+
+    void TCPClient::DataTransmiter::dataProcThreadMaker(int numberOfThreads) {
             for (int i = 0; i < numberOfThreads; i++) {
                 std::thread *temp = new std::thread(&zeitoon::utility::TCPClient::DataTransmiter::dataProcessor, this);
                 dataThreadPool.push_back(temp);
@@ -155,7 +162,7 @@ namespace zeitoon {
                     this->parentClass->_safeCaller(temp);
                 } else {
                     lck.unlock();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    std::this_thread::sleep_for(std::chrono::microseconds(100));
                 }
             }
         }
@@ -177,16 +184,22 @@ namespace zeitoon {
             free(req);
 
             if (status) {
+                try {
+                    c->reconnect();
+                }catch(zeitoon::utility::exceptionEx &err){
 
-                switch (status) {
+
+               /* switch (status) {
+
                     case (-111): {
+
                         logger.log(c->getNameAndType(), "TCP Terminating.   nread: " + std::to_string(status),
                                    zeitoon::utility::LogLevel::error);
-                        c->disconnect();
+                        //  c->disconnect(); todo: review, breaks on stopSendProcess cuz its not started yet!
                         break;
                     }
                     default:
-                        EXTnetworkFailureO("TCP onConnect failure. ERR: " + std::string(uv_strerror(status)) +
+               */         EXTnetworkFailureO("TCP onConnect failure. ERR: " + std::string(uv_strerror(status)) +
                                            "  MSG:  " + std::string(uv_err_name(status)), c->getNameAndType());
                 }
 
@@ -194,9 +207,10 @@ namespace zeitoon {
             } else {
                 c->dataTransmiter.startTransmissionProcess();
                 c->_connected = true;
+                c->reconnectOptions.resetInterval();
                 if (c->_onConnect != NULL)
                     c->_onConnect();
-                fprintf(stderr, "Connected.\n");
+               // fprintf(stderr, "Connected.\n");
                 uv_read_start((uv_stream_t *) &c->client, TCPClient::alloc_buffer, TCPClient::on_client_read);
             }
         }
@@ -208,11 +222,13 @@ namespace zeitoon {
 
         void TCPClient::on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf) {
             TCPClient *c = (TCPClient *) _client->data;
-
             if (nread == -4095) {
                 free(buf->base);
+
                 c->_connected = false;
-                c->disconnect();
+               // uv_close((uv_handle_t *) _client, NULL);/////////////
+                 c->disconnect();
+                c->reconnect();
             }
             else if (nread < 0) { //Error
                 free(buf->base);
@@ -259,7 +275,6 @@ namespace zeitoon {
                 EXTnetworkFailure("SEND FAILED, NO CONNECTION");
             //FIXME: when disconnected, what happens to the buffer?? data would be transmited via newly established con*
             this->dataTransmiter.pendingBuffs.push(data);
-            lDebug("TCP-S: " + data);
 
 
         }
@@ -282,6 +297,8 @@ namespace zeitoon {
             /* fixme:: this way, in case of NULL _onmsg-> this function would just empty the string, witch would
                            * just clear the buffer and received data would be lost eventually.
                            **/
+            lDebug("TCP-R: " + this->_buff);
+
             if (this->_onMessage != NULL) {
                 dataTransmiter.receivedDataQ.push(this->_buff);
                 this->dataTransmiter.dataQ_Pushes++;
@@ -292,7 +309,6 @@ namespace zeitoon {
 
 
         void TCPClient::_safeCaller(std::string data) {
-            lDebug("TCP-R: "+ data);
             try {
                 this->_onMessage(data);
             } catch (exceptionEx &ex) {
@@ -300,61 +316,60 @@ namespace zeitoon {
             } catch (exception &ex) {
                 lError("TCPS.Error.OnReceive: " + std::string(ex.what()));
             } catch (...) {
-                lError("TCPS.Error.OnReceive: UNKNOWN" );
+                lError("TCPS.Error.OnReceive: UNKNOWN");
             }
         }
 
 
         void TCPClient::reconnTimerCB(uv_timer_t *handle) {
             TCPClient *c = (TCPClient *) handle->data;
-            free(handle);
+            //free(handle);
             c->connect();
         }
 
         //---------------------------------------------------------------------------
 
-        void TCPClient::DataTransmiter::sendProcessor(uv_timer_t *handle) {
-            TCPClient::DataTransmiter *c = (TCPClient::DataTransmiter *) handle->data;
+        void TCPClient::DataTransmiter::sendProcessor() {
+            while (!stopSendt) {
+                if (this->send_is_busy || this->pendingBuffs.size() == 0) {
+                    std::this_thread::sleep_for(chrono::microseconds(100));
+                    continue;
+                }
 
-            if (c->send_is_busy || !c->parentClass->_connected)
-                return;
+                if (this->bufw != NULL) {
+                    EXTnetworkFailureO("SEND FAILED. buffw != NULL", this->getNameAndType());
+                }
 
-            if (c->pendingBuffs.size() < 1) {
-                return;
-            }
+                this->send_is_busy = true;
+                std::string data = this->pendingBuffs.front();
+                this->pendingBuffs.pop();
 
-            if (c->bufw != NULL) {
-                EXTnetworkFailureO("SEND FAILED. buffw != NULL", c->getNameAndType());
-            }
-
-            c->send_is_busy = true;
-            std::string data = c->pendingBuffs.front();
-            c->pendingBuffs.pop();
-
-            uv_write_t *write_req = new uv_write_t[sizeof(uv_write_t)];
-            c->bufw = new uv_buf_t[sizeof(uv_buf_t)];
-            uint8_t *buff = new uint8_t[data.size() + 6];
+                uv_write_t *write_req = new uv_write_t[sizeof(uv_write_t)];
+                this->bufw = new uv_buf_t[sizeof(uv_buf_t)];
+                uint8_t *buff = new uint8_t[data.size() + 6];
 
 
-            uint32_t size = (uint32_t) data.size();
-            c->bufw->base = (char *) buff;
-            c->bufw->len = data.size() + 6;
-            memcpy(buff + 6, data.c_str(), data.size());
-            buff[0] = 12;
-            buff[1] = 26;
-            memcpy(buff + 2, (void *) (&size), 4);
-            write_req->data = (void *) c;
+                uint32_t size = (uint32_t) data.size();
+                this->bufw->base = (char *) buff;
+                this->bufw->len = data.size() + 6;
+                memcpy(buff + 6, data.c_str(), data.size());
+                buff[0] = 12;
+                buff[1] = 26;
+                memcpy(buff + 2, (void *) (&size), 4);
+                write_req->data = (void *) this;
 
 
-            int r = uv_write(write_req, (uv_stream_t *) &c->parentClass->client, c->bufw, 1,
-                             TCPClient::on_client_write);
+                int r = uv_write(write_req, (uv_stream_t *) &this->parentClass->client, this->bufw, 1,
+                                 TCPClient::on_client_write);
+                logger.log("TCPClient", "TCP-S: " + data, LogLevel::debug);
 
-            if (r != 0) {
-                c->send_is_busy = false;
-                EXTnetworkFailureO(
-                        "Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) + "]: " +
-                        uv_strerror(r),
-                        c->getNameAndType());
+                if (r != 0) {
+                    this->send_is_busy = false;
+                    EXTnetworkFailureO(
+                            "Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) + "]: " +
+                            uv_strerror(r),
+                            this->getNameAndType());
+                }
             }
         }
 

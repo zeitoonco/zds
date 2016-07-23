@@ -45,7 +45,7 @@ namespace zeitoon {
         }
 
         void GuiCHI::onConnect() {
-            lNote("+GUI Connected from server");
+            lNote("+GUI Connected to server");
         }
 
         void GuiCHI::onDisconnect() {

@@ -13,6 +13,7 @@
 #include "DatabaseMediator.hpp"
 #include "SettingMediator.hpp"
 #include "CommunicationMediator.hpp"
+#include "utility/logger.hpp"
 
 namespace zeitoon {
 namespace utility {
@@ -61,6 +62,11 @@ public:
 	void joinNet() {
 		tcpc.joinOnConnectionThread();
 	}
+	void setNetReconnectInterval(std::string jsonArray);
+
+	std::string getNetReconnectInterval();
+
+	std::string getDefaultNetReconnect();
 
 	string getNameAndType() {
 		return "ServerMediator";

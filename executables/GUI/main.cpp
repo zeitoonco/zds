@@ -12,23 +12,45 @@
 #include "utility/logger.hpp"
 
 int main(int argc, char *argv[]) {//todo : load configurations
-    logger.enableDB("gui_log");
+    logger.enableFile("GUILog.log");
     logger.enableTerminalOut();
     GUIConfiguration.load();
-    if (argc < 4) {
+    std::string argsTemp[3];
+/*if (argc < 3 || argc > 1) {
+		std::cout << "Invalid number of arguments provided" << std::endl;
+		std::cout << "Required arguments: ServerIP ServerPort" << std::endl;
+		return -1;
+	} else if(argc == 0){
+		std::cout << "Trying */
+    if (argc < 4 && argc > 1) {
         logger.log("GUI", "Invalid number of arguments provided", zeitoon::utility::LogLevel::note);
         logger.log("GUI",
                    "Required arguments: ServerIP ServerPort WSPort", zeitoon::utility::LogLevel::note);
-    } else {
-        GUIConfiguration.serverIP = argv[1];
-        GUIConfiguration.serverPort = argv[2];
-        GUIConfiguration.WSserverPort = argv[3];
+      return -1;
+    } else if (argc == 4){
+        argsTemp[0] = argv[1];
+        argsTemp[1] = argv[2];
+        argsTemp[2] = argv[3];
+    }else if(argc == 1){
+        logger.log("GUI", "No Parameter provided. Trying to load from configuration" , zeitoon::utility::LogLevel::note);
+        argsTemp[0] = GUIConfiguration.serverIP.getValue();
+        argsTemp[1] = GUIConfiguration.serverPort.getValue();
+        argsTemp[2] = GUIConfiguration.WSserverPort.getValue();
     }
+
     try {
-        zeitoon::GUI::GuiCHI GUI(std::stoi(GUIConfiguration.WSserverPort));
-        GUI.connect(GUIConfiguration.serverIP, std::stoi(GUIConfiguration.serverPort.getValue()));
+        zeitoon::GUI::GuiCHI GUI(std::stoi(argsTemp[2]));
+        if (not GUIConfiguration.exists("networkReconnectInterval")){
+            GUIConfiguration.addConfig("networkReconnectInterval", GUI.sm.getDefaultNetReconnect());
+            GUIConfiguration.save();
+        }
+        GUI.sm.setNetReconnectInterval(GUIConfiguration.get("networkReconnectInterval"));
+        GUI.connect(argsTemp[0], std::stoi(argsTemp[1]));
         if (argc == 5) {
             if (std::string(argv[4]) == "-save") {
+                GUIConfiguration.serverIP = argv[1];
+                GUIConfiguration.serverPort = argv[2];
+                GUIConfiguration.WSserverPort = argv[3];
                 GUIConfiguration.save();
                 logger.log("GUI", "Configuration saved", zeitoon::utility::LogLevel::note);
 

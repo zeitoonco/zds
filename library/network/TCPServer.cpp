@@ -60,7 +60,6 @@ namespace zeitoon {
         }
 
         void TCPServer::_safeCaller(size_t id, std::string data) {
-            lDebug("TCP-R. ID: " + std::to_string(id) + "  " + data);
             try {
                 this->_onMessage(id, data);
             } catch (exceptionEx &ex) {
@@ -120,7 +119,9 @@ namespace zeitoon {
                 //todo:uv_close((uv_handle_t *) client, NULL); & free?
                 c->stop();
                 if (nread == -104) {
-                    logger.log("TCPServer, on_client_read", "Nread = -104, breaking out of the function. debug needed.",
+                    logger.log("TCPServer, on_client_read",
+                               "Nread = -104, breaking out of the function. debug needed." +
+                               std::string(uv_err_name(10)),
                                LogLevel::error);
                     return;
                 }
@@ -169,7 +170,6 @@ namespace zeitoon {
             if (!this->_isConnected)
                 return;
 
-            lDebug("TCP-S. ID: " + std::to_string(this->_id) + std::to_string(this->_id) + " : " + data);
             uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
             uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));
             uint8_t *buff = (uint8_t *) malloc(data.size() + 6);
@@ -183,6 +183,8 @@ namespace zeitoon {
             write_req->data = (void *) bufw->base;
 
             int r = uv_write(write_req, (uv_stream_t *) this->_client, bufw, 1, TCPServer::on_client_write);
+            logger.log("TCPServer", "TCP-S. ID: " + std::to_string(this->_id) + " : " + data, LogLevel::debug);
+
             try {
                 uvEXT(r, "Network uv_write failed");
             } catch (zeitoon::utility::exceptionEx err) {
@@ -264,22 +266,18 @@ namespace zeitoon {
             lck.unlock();
             while (not stopDataProcess) {
                 lck.lock();
-
                 if (receivedDataQ.size() > 0) {
                     receivedData temp = this->receivedDataQ.front();
                     this->receivedDataQ.pop();
                     this->dataQ_Pops++;
-
                     lck.unlock();
                     _safeCaller(temp.clientID, temp.data);
                 } else {
                     lck.unlock();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    std::this_thread::sleep_for(std::chrono::microseconds(100));
                 }
 
             }
-
-
         }
 
     }//zeitoon

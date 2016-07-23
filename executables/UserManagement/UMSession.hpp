@@ -34,7 +34,7 @@ public:
 	/**Overloaded constructor.
 	 *@param userIDIN int ID e user
 	 *@param sessionIDIN e UNIQUE */
-	UMSession(int userIDIN, int sessionIDIN, UMCore* instance);
+	UMSession(int userIDIN, int sessionIDIN, std::string &username, UMCore* instance);
 	/**updatePermissionsCache() tamaamiye permissionhaaye marboot be user ra az Database mikhaanad
 	 * va dar map permissions load mikonad*/
 	void updatePermissionsCache();

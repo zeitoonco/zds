@@ -155,7 +155,7 @@ bool JVariable::isFloat() const { //TODO: make sure that 'e','E','.' r only used
 	return (!isString && Strings::isFloat(value));
 }
 
-bool JVariable::isBoolian() const {
+bool JVariable::isBoolean() const {
 	return (!isString && Strings::isBoolian(value));
 }
 
@@ -177,8 +177,8 @@ long double JVariable::toFloat() const {
 	return stold(value);
 }
 
-bool JVariable::toBoolian() const {
-	if (!isBoolian())
+bool JVariable::toBoolean() const {
+	if (!isBoolean())
 		EXTcantParseString("can't convert value to boolean");
 	string tval = Strings::toLower(Strings::trim(value));
 	if (streq(tval, "true"))
@@ -233,7 +233,7 @@ void JVariable::fromString(string str) {
 		isString = false;
 	}
 	value = str;
-	if (!isString && (!isFloat() && !isBoolian() && !isNull()))
+	if (!isString && (!isFloat() && !isBoolean() && !isNull()))
 		//EXTinvalidParameter("Invalid value: "+str);
 		isString = true;
 }

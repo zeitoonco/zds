@@ -65,15 +65,16 @@ public:
 	bool checkCoreRequirements();
 	void registerCEP();
 	void registerServiceCEPermissions(ExtensionProfile *ext);
-
+	void enableIfReqSatisfied();
+	void disableIfReqNotSatisfied();
 	bool enableService(ExtensionProfile *exte);
 	bool installService(ExtensionProfile *exte);
 	bool getInstallInfo(ExtensionProfile *exte);
 	bool uninstallService(ExtensionProfile *exte);
 	bool disableService(ExtensionProfile *exte);
-
+	void ping(ExtensionProfile *exte);
 	inline string getNameAndType() {
-		return "ExtensionManager";
+		return "Router";
 	}
 
 };

@@ -48,15 +48,16 @@ void ServerMediator::dataReceived(string data) {
 	JStruct js(data);
 	string type = js["type"].getValue();
 	string node = js["node"].getValue();
+
 	//todo: if type call  && node error ->> errReceived()
-	if (!Strings::compare(type, "internal") && !Strings::compare(node, "ping")) {
+	if (streq(type, "internal") && streq(node, "ping")) {
 		send("{\"type\" : \"internal\" , \"node\" : \"pong\" , \"id\" : \"" + js["id"].getValue() + "\"}");
 	} else {
 		if (!Strings::compare(type, "callback")) if (communication.dataReceive(data))
 			return;
 		if (!Strings::compare(type, "call") && streq(node, "error")) if (communication.errorReceive(data))
 			return;
-		owner->datareceive(data);
+		owner->datareceive(js);
 	}
 
 }
@@ -76,6 +77,22 @@ void ServerMediator::onNetConnect() {
 void ServerMediator::onNetDisconnect() {
 	owner->onDisconnect();//todo: called after destruction of owner! sigabrt
 }
+
+void ServerMediator::setNetReconnectInterval(std::string jsonArray) {
+	if (jsonArray.size() > 2){
+		tcpc.setReconnectInterval(jsonArray);
+	}
+//	tcpc.setReconnectInterval();
+
+}
+
+std::string ServerMediator::getNetReconnectInterval() {
+	return tcpc.getReconnectInterval();
+}
+std::string ServerMediator::getDefaultNetReconnect(){
+	return tcpc.defaultReconnInterval();
+}
+
 
 } /* namespace utility */
 } /* namespace zeitoon */

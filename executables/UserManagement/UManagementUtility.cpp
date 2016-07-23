@@ -52,7 +52,7 @@ std::string UMUserInfo::getNameAndType() {
 	return "UMUserInfo[" + std::to_string(id) + "]";
 }
 
-std::string UMLoginResult::typeString[UMLoginResult::__MAX] = { "ok", "invalidUserPass", "banned", "unknownError" };
+std::string UMLoginResult::typeString[UMLoginResult::__MAX] = { "ok", "invalidUserPass", "banned","accessDenied", "unknownError" };
 
 
 

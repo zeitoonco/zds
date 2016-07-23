@@ -136,17 +136,26 @@ namespace zeitoon {
 //todo by inf: could get needed info from the caller function
             try {
                 auto temRes = coreInstance->querySync(
-                        "SELECT parentid, name FROM permission WHERE id= " + std::to_string(permissionID));
+                        "SELECT name, title, description, parentid FROM permission WHERE id= " + std::to_string(permissionID));
                 if (temRes.rowCount() == 1) {
-                    permissionCache.at(permissionID)->parentID =  temRes.fieldValueInt(0, 0, -1);
+                    std::string _name = temRes.fieldValue(0,0);
+                    std::string _title = temRes.fieldValue(0,1);
+                    std::string _description = temRes.fieldValue(0,2);
+                    int _parentid = temRes.fieldValueInt(0,3,-1);
+                    if (permissionCache.count(permissionID) > 0) {
+                        permissionCache.at(permissionID)->parentID = _parentid;
+                    }else{
+                        permissionCache[permissionID] = new DSUpdatePermission(permissionID,_name,_title,_description,_parentid);
 
-                    permissionNamesCache[temRes.fieldValue(0, 1)]->permissiosnID = permissionID;
+                    }
                 } else if (temRes.rowCount() != 1) {
                     permissionCache.erase(permissionID);
                     for (std::map<std::string, DSUpdatePermission*>::iterator iter = permissionNamesCache.begin();
                          iter != permissionNamesCache.end(); iter++) {
                         if (iter->second->permissiosnID.getValue() == permissionID)
+                            //todo:: erase and free memory
                             permissionNamesCache.erase(iter);
+
                     }
                     for (std::map<int, UMSession>::iterator iter = sessionList.begin();
                          iter != sessionList.end(); iter++) {

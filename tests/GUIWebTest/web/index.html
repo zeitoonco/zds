@@ -191,14 +191,14 @@
                 var msg = {
                     type: "call",
                     node: "userman.login",
-                    id: "1234568",
+                    id: Math.round(Math.random() * 1000000000).toString(),
                     data: {username: $("#iUser").val(), password: $("#iPass").val()}
                 }
             }else{
                 var msg = {
                     type: "call",
                     node: "userman.logout",
-                    id: "1234568",
+                    //id: "1234568",
                     data: {value: sessionid}
                 }
                 $("#login").attr('value','Login');

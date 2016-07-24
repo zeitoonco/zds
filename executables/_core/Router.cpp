@@ -451,6 +451,7 @@ bool Router::enableService(ExtensionProfile *ext) {///-1
     if (!ext->requirementsSatisfied) {
         ext->requirementsSatisfied = false;
         ext->state = ExtensionProfile::extensionState::enabled;
+        lWarnig("onEnable sent to "+ext->serviceInfo.name.getValue());
         return true;
     } else {
         ext->requirementsSatisfied = true;
@@ -663,6 +664,7 @@ void Router::disableIfReqNotSatisfied() {
             if (!extManager[i]->requirementsSatisfied) {
                 this->disableService(extManager[i]);
                 extManager[i]->state = ExtensionProfile::extensionState::enabled;
+                extManager.save();
             }
         }
     }

@@ -36,7 +36,7 @@ namespace zeitoon {
         }
 
         void GuiCHI::onDisable() {
-
+            lWarnig("Service disabled");
         }
 
         void GuiCHI::onUninstall() {

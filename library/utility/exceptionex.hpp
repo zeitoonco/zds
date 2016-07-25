@@ -17,7 +17,7 @@ protected:
 	int _line;
 	std::string _file;
 	std::string _function;
-
+	std::string tempStr;
 public:
 
 	exceptionEx() : exceptionEx(getDefTitle(), "", "", "", "", -1) {
@@ -55,8 +55,9 @@ public:
 		return getName();
 	}
 
-	virtual const char *what() const throw() {
-		return this->toString().c_str();
+	virtual const char *what() throw() {
+		tempStr = this->toString();
+		return tempStr.c_str();
 	}
 
 	virtual std::string toString() const {

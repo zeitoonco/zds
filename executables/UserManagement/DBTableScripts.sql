@@ -122,7 +122,7 @@ CREATE TABLE if not exists "UserManagement".userpermission
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT userpermission_userid_fkey FOREIGN KEY (userid)
       REFERENCES "UserManagement".users (id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE RESTRICT
+      ON UPDATE CASCADE ON DELETE CASCADE
 )
 WITH (
   OIDS=FALSE

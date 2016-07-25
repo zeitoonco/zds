@@ -228,7 +228,7 @@ int UMCore::addUser(std::string username, std::string password,
 void UMCore::removeUser(int userID) {
     std::string userName = "";
     auto isessionID = sessionManager.getSessionIDbyUserID(userID);
-    if (isessionID != -1)
+    //if (isessionID != -1)
         logout(isessionID);
 
     try {//remove user from users in database
@@ -238,13 +238,13 @@ void UMCore::removeUser(int userID) {
     } catch (exceptionEx &errorInfo) {
         EXTDBErrorI("removeUser failed for userID[" + std::to_string(userID), errorInfo);
     }
-    if (userName.size() < 1) {
-        /**this condition verfies size of username
+    /*if (userName.size() < 1) {
+        *//**this condition verfies size of username
          * since the username with lest than 3 characters is prohibited in add user function
          * returning any username.size() less than 3 is invalid thus should be considered as an invalid userID.//by inf
-         **/
+         **//*
         EXTDBError("USER REMOVE FAILED. User" + std::to_string(userID) + "was not found in database");
-    }
+    }*/
     try {        //remove all permissions of user from DB
         executeSync("DELETE FROM userpermission WHERE userid=" + std::to_string(userID));
     } catch (exceptionEx &errorInfo) {
@@ -264,6 +264,8 @@ void UMCore::removeUser(int userID) {
 
 
 void UMCore::modifyUser(int userID, std::string username, std::string password, std::string name) {
+    if (username.size() < 3 || password.size() == 0 || name.size() ==0)
+        EXTinvalidParameter("Invalid parameters provided.");
     try {
         //todo: compare username in database and function parameter after update to check
         if (this->executeSync(
@@ -276,14 +278,13 @@ void UMCore::modifyUser(int userID, std::string username, std::string password, 
     } catch (exceptionEx &errorInfo) {
         EXTDBErrorI("Unable to modify user[" + std::to_string(userID) + "] in database.", errorInfo);
     }
-//	systemLog.log(getNameAndType(), "User[" + std::to_string(userID) + "] modified.", LogLevels::note);
     try {
         auto tempSession = sessionManager.sessionList.find(sessionManager.getSessionIDbyUserID(userID));
         if (tempSession != sessionManager.sessionList.end())
             tempSession->second.username = username;//updates session's username if user has an active session going on
         lNote("User " + std::to_string(userID) + " modified. Username: " + tempSession->second.username);
-    } catch (zeitoon::utility::outOfRange err) {
-        EXToutOfRangeI("Session update failed. User has no active session. ", err);
+    } catch (...) {
+        EXToutOfRange("Session update failed. ");
     }
 
     umCHI->sm.communication.runEvent(eventInfo::userModified(), zeitoon::usermanagement::DSUserInfo(

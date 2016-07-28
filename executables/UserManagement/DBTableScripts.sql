@@ -131,7 +131,7 @@ ALTER TABLE "UserManagement".userpermission
   OWNER TO "UserManagement";
 
 
-
+CREATE TABLE if not exists "UserManagement".contacts
 (
   userid integer NOT NULL,
   contactid integer NOT NULL,

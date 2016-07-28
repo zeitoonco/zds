@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
         argsTemp[3] = PGconfiguration.adminPwPGDB.getValue();
         argsTemp[6] = PGconfiguration.PGDBName.getValue();
     }
-    else if(argc == 8){
+    else if(argc >= 8){
         argsTemp[0] = argv[1];
         argsTemp[1] = argv[2];
         argsTemp[4] = argv[5];

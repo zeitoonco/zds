@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 		logger.log("UserMAnagement", "Invalid number of arguments provided", zeitoon::utility::LogLevel::note);
 		logger.log("UserMAnagement", "Required arguments: ServerIP ServerPort", zeitoon::utility::LogLevel::note);
 		return -1;
-	} else if (argc == 3) {
+	} else if (argc >= 3) {
 		UMconfig.serverIP = argv[1];
 		UMconfig.serverPort = argv[2];
 	} else if (argc == 1) {

@@ -52,20 +52,27 @@
     <div class="tabs" id="tabCore">
         _core
         <br/><input type="button" value="Get list of Services" onclick="sendCMD('_core.getListOfServices')">
-        <br/><input type="button" value="Get info about Services" onclick="sendCMD('_core.getServiceInfo',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Get info about Services"
+                    onclick="sendCMD('_core.getServiceInfo',{name:$('#suSN').val()})">
         Service Name:<input type="text" id="suSN">
-        <br/><input type="button" value="Install Services" onclick="sendCMD('_core.installService',{name:$('#suSN').val()})">
-        <br/><input type="button" value="Enable Services" onclick="sendCMD('_core.enableService',{name:$('#suSN').val()})">
-        <br/><input type="button" value="Disable Services" onclick="sendCMD('_core.disableService',{name:$('#suSN').val()})">
-        <br/><input type="button" value="Uninstall Services" onclick="sendCMD('_core.uninstallService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Install Services"
+                    onclick="sendCMD('_core.installService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Enable Services"
+                    onclick="sendCMD('_core.enableService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Disable Services"
+                    onclick="sendCMD('_core.disableService',{name:$('#suSN').val()})">
+        <br/><input type="button" value="Uninstall Services"
+                    onclick="sendCMD('_core.uninstallService',{name:$('#suSN').val()})">
         <br/><input type="button" value="Kick Services" onclick="sendCMD('_core.kickService',{name:$('#suSN').val()})">
     </div>
     <div class="tabs" id="tabUM">
         userman
         <br/><input type="button" value="Get list of Users" onclick="sendCMD('userman.listUsers')">
-        <br/><input type="button" value="Get list of Users from Group" onclick="sendCMD('userman.listUsersByGroup',{value:parseInt($('#luugid').val())})">
+        <br/><input type="button" value="Get list of Users from Group"
+                    onclick="sendCMD('userman.listUsersByGroup',{value:parseInt($('#luugid').val())})">
         userGroupID:<input type="text" id="luugid">
-        <br/><input type="button" value="Get User Info" onclick="sendCMD('userman.getUserInfo',{value:parseInt($('#userID').val())})">
+        <br/><input type="button" value="Get User Info"
+                    onclick="sendCMD('userman.getUserInfo',{value:parseInt($('#userID').val())})">
         userID:<input type="text" id="userID">
         <br/><input type="button" value="Add User"
                     onclick="sendCMD('userman.addUser',{username:$('#adduUN').val(),password:$('#adduPS').val(),name:$('#adduN').val()})">
@@ -75,7 +82,8 @@
         <br/><input type="button" value="Modify User"
                     onclick="sendCMD('userman.modifyUser',{userID:parseInt($('#userIDren').val()),username:$('#adduUN').val(),password:$('#adduPS').val(),name:$('#adduN').val()})">
         userID:<input type="text" id="userIDren">
-        <br/><input type="button" value="Remove User" onclick="sendCMD('userman.removeUser',{value:parseInt($('#userIDrem').val())})">
+        <br/><input type="button" value="Remove User"
+                    onclick="sendCMD('userman.removeUser',{value:parseInt($('#userIDrem').val())})">
         userID:<input type="text" id="userIDrem">
 
 
@@ -85,15 +93,16 @@
         name:<input type="text" id="newpName">
         title:<input type="text" id="newpTitl">
         description:<input type="text" id="newpDsc">
-        parentID:<input type="text" id="newpPID" value="-1">
         <br/><input type="button" value="Modify Permission"
                     onclick="sendCMD('userman.updatePermission',{permissionID:parseInt($('#modpPID').val()),name:$('#newpName').val(),title:$('#newpTitl').val(),description:$('#newpDsc').val(),parentID:parseInt($('#newpPID').val())})">
         PermissionID:<input type="text" id="modpPID">
-        <br/><input type="button" value="Remove Permission" onclick="sendCMD('userman.removePermission',{value:parseInt($('#rempPID').val())})">
+        <br/><input type="button" value="Remove Permission"
+                    onclick="sendCMD('userman.removePermission',{value:parseInt($('#rempPID').val())})">
         PermissionID:<input type="text" id="rempPID">
 
         <br/><input type="button" value="Get list of Permissions" onclick="sendCMD('userman.listPermissions')">
-        <br/><input type="button" value="Get Permissions of User" onclick="sendCMD('userman.listUserPermissions',{value:parseInt($('#lpuserID').val())})">
+        <br/><input type="button" value="Get Permissions of User"
+                    onclick="sendCMD('userman.listUserPermissions',{value:parseInt($('#lpuserID').val())})">
         userID:<input type="text" id="lpuserID">
         <br/><input type="button" value="Set Permission for User"
                     onclick="sendCMD('userman.addUserPermission',{userID:parseInt($('#upUID').val()),permissionID:parseInt($('#upPID').val()),state:parseInt($('#upState').val())})">
@@ -118,7 +127,8 @@
         <br/><input type="button" value="Modify UserGroup"
                     onclick="sendCMD('userman.updateUsergroup',{userGroupID:parseInt($('#mugUGID').val()),title:$('#nugTitl').val(),parentID:parseInt($('#nugPID').val()),description:$('#nugDsc').val()})">
         userGroupID:<input type="text" id="mugUGID">
-        <br/><input type="button" value="Remove UserGroup" onclick="sendCMD('userman.removeUsergroup',{value:parseInt($('#remugid').val())})">
+        <br/><input type="button" value="Remove UserGroup"
+                    onclick="sendCMD('userman.removeUsergroup',{value:parseInt($('#remugid').val())})">
         userGroupID:<input type="text" id="remugid">
         <br/><input type="button" value="Get list of UserGroups" onclick="sendCMD('userman.listUsergroups')">
         <br/><input type="button" value="Add User to UserGroup"
@@ -134,8 +144,22 @@
         State:<input type="text" id="augState">
         <br/><input type="button" value="Remove Permission from UserGroup"
                     onclick="sendCMD('userman.removeUsergroupPermission',{usergroupID:parseInt($('#augUGID').val()),permissionID:parseInt($('#augPID').val()),state:parseInt($('#augState').val())})">
-        <br/><input type="button" value="Get Permissions of Usergroup" onclick="sendCMD('userman.listUsergroupPermissions',{value:parseInt($('#lpusergID').val())})">
+        <br/><input type="button" value="Get Permissions of Usergroup"
+                    onclick="sendCMD('userman.listUsergroupPermissions',{value:parseInt($('#lpusergID').val())})">
         usergroupID:<input type="text" id="lpusergID">
+        <br/><input type="button" value="Add contact"
+                    onclick="sendCMD('userman.addContact',{userID:parseInt($('#newuID').val()),contactID:parseInt($('#newConID').val()),note:$('#newNote').val()})">
+        userID:<input type="text" id="newuID">
+        contactID:<input type="text" id="newConID">
+        note:<input type="text" id="newNote">
+        <br/><input type="button" value="Remove contact"
+                    onclick="sendCMD('userman.removeContact',{userID:parseInt($('#newuID').val()),contactID:parseInt($('#newConID').val())})">
+        <br/><input type="button" value="modify Contact"
+                    onclick="sendCMD('userman.modifyContact', {userID:parseInt($('#newuID').val()),contactID:parseInt($('#newConID').val()),note:$('#newNote').val()})">
+        <br/><input type="button" value="List Contacts"
+                    onclick="sendCMD('userman.listContacts', {value:parseInt($('#userIID').val())})">
+        userID:<input type="text" id="userIID">
+
     </div>
 </div>
 <div></div>
@@ -166,6 +190,7 @@
         "userman.registerUsergroup": "New UserGroup ID",
         "userman.listUsergroups": "List of UserGroups",
         "userman.listUsergroupPermissions": "List of Usergroup Permissions",
+        "userman.listContacts": "Contacts List",
     };
 
     $(document).ready(function () {
@@ -187,21 +212,21 @@
             Socket.close();
         });
         $("#login").click(function () {
-            if (sessionid==-1) {
+            if (sessionid == -1) {
                 var msg = {
                     type: "call",
                     node: "userman.login",
                     id: Math.round(Math.random() * 1000000000).toString(),
                     data: {username: $("#iUser").val(), password: $("#iPass").val()}
                 }
-            }else{
+            } else {
                 var msg = {
                     type: "call",
                     node: "userman.logout",
                     //id: "1234568",
                     data: {value: sessionid}
                 }
-                $("#login").attr('value','Login');
+                $("#login").attr('value', 'Login');
                 $("#sessionid").html("");
                 sessionid = -1;
             }
@@ -266,11 +291,11 @@
         if (data.result == "ok") {
             sessionid = data.sessionID;
             $("#sessionid").html("ok:" + sessionid);
-            $("#login").attr('value','Logout');
+            $("#login").attr('value', 'Logout');
         } else {
             $("#sessionid").html("Failed:" + data.description);
             sessionid = -1;
-            $("#login").attr('value','Login');
+            $("#login").attr('value', 'Login');
         }
     }
 
@@ -335,25 +360,25 @@
     }
 
     function sendCMD(inode, idata) {
-        if (skiplogin!=110 && sessionid==-1){
+        if (skiplogin != 110 && sessionid == -1) {
             alert('Login First!');
             return;
         }
-        var ss="";
+        var ss = "";
         if (!idata)
-            ss=(JSON.stringify({
+            ss = (JSON.stringify({
                 type: 'call',
                 node: inode,
                 id: Math.round(Math.random() * 1000000000).toString()
             }));
         else
-            ss=(JSON.stringify({
+            ss = (JSON.stringify({
                 type: 'call',
                 node: inode,
                 id: Math.round(Math.random() * 1000000000).toString(),
                 data: idata
             }));
-        console.log("SenD:"+ss);
+        console.log("SenD:" + ss);
         Socket.send(ss);
     }
 
@@ -367,3 +392,4 @@
 </script>
 </body>
 </html>
+

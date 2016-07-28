@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
         logger.log("GUI",
                    "Required arguments: ServerIP ServerPort WSPort", zeitoon::utility::LogLevel::note);
       return -1;
-    } else if (argc == 4){
+    } else if (argc >= 4){
         argsTemp[0] = argv[1];
         argsTemp[1] = argv[2];
         argsTemp[2] = argv[3];

@@ -169,6 +169,14 @@ namespace zeitoon {
              */
             std::string singleFieldQuerySync(std::string query);
 
+            void addContact(int userID, int contactID, std::string note);
+
+            void modifyContact(int userID, int contactID, std::string note);
+
+            void removeContact(int userID,int contactID);
+
+            DSUserContactList listContacts(int userID);
+
             void addUserUsergroup(int userID, int usergroupID);
 
             void removeUserUsergroup(int userID, int usergroupID);

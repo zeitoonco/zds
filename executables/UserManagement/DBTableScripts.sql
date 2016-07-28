@@ -131,6 +131,25 @@ ALTER TABLE "UserManagement".userpermission
   OWNER TO "UserManagement";
 
 
+
+(
+  userid integer NOT NULL,
+  contactid integer NOT NULL,
+  note character varying,
+  CONSTRAINT contacts_pkey PRIMARY KEY (userid, contactid),
+  CONSTRAINT contacts_contactid_fkey FOREIGN KEY (contactid)
+      REFERENCES "UserManagement".users (id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE NO ACTION,
+  CONSTRAINT contacts_userid_fkey FOREIGN KEY (userid)
+      REFERENCES "UserManagement".users (id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE "UserManagement".contacts
+  OWNER TO "UserManagement";
+
 INSERT INTO permission(id,parentid,name,title) select 0, NULL,'_masterPermission','Permissions' WHERE NOT EXISTS (SELECT id FROM permission WHERE id=0);
 
 END;

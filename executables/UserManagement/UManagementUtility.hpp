@@ -110,6 +110,16 @@ public:
     static std::string removeUsergroupPermission() { return "userman.removeUsergroupPermission"; }
 
     static std::string listUsergroupPermissions() { return "userman.listUsergroupPermissions"; }
+
+    static std::string addContact(){return "userman.addContact";}
+
+    static std::string removeContact(){return "userman.removeContact";}
+
+    static std::string modifyContact(){return "userman.modifyContact";}
+
+    static std::string listContacts(){return "userman.listContacts";}
+
+
 };
 
 class eventInfo {

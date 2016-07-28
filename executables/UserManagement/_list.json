@@ -8,6 +8,22 @@
     {
       "name": "checkPermissionFail",
       "title": "Check-Permission failed"
+    },
+    {
+      "name": "addContactFailed",
+      "title": "Add-Contact failed"
+    },
+    {
+      "name": "removeContactFailed",
+      "title": "Remove-Contact failed"
+    },
+    {
+      "name": "listContactsFailed",
+      "title": "List-Contacts failed"
+    },
+    {
+      "name": "modifyContactFailed",
+      "title": "Modify-Contact failed"
     }
   ]
 }

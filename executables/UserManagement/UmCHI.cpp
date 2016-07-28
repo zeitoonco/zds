@@ -156,7 +156,28 @@ namespace zeitoon {
                     DSUsergroupPermissionList permsList = userMngrInterface.listUsergroupPermissions(
                             usergroupID.value.value());
                     sm.communication.runCallback(node, permsList.toString(true), id);
+                }else if (!Strings::compare(node, commandInfo::addContact(), false)) {
+                    DSAddContact temp;
+                    temp.fromString(data);
+                    userMngrInterface.addContact(temp.userID.getValue(), temp.contactID, temp.note.getValue() );
+                    //todo by inf :cb needed for all void funcs
+                }else if (!Strings::compare(node, commandInfo::modifyContact(), false)) {
+                    DSAddContact temp;
+                    temp.fromString(data);
+                    userMngrInterface.modifyContact(temp.userID.getValue(), temp.contactID, temp.note.getValue() );
+                }else if (!Strings::compare(node, commandInfo::removeContact(), false)) {
+                    DSRemoveContact temp;
+                    temp.fromString(data);
+                    userMngrInterface.removeContact(temp.userID.getValue(), temp.contactID.getValue());
+
+                }else if (!Strings::compare(node, commandInfo::listContacts(), false)) {
+                    DSInteger temp;
+                    temp.fromString(data);
+                    DSUserContactList tempList;
+                    tempList.fromString(userMngrInterface.listContacts(temp.value.value()).toString());
+                    sm.communication.runCallback(node,tempList.toString(true), id);
                 }
+
             } catch (exceptionEx &errorInfo) {
                 sm.communication.errorReport(node, id, errorInfo.what());
                 lError("node: " + node + " id: " + id + " errMsg:" + errorInfo.what());
@@ -224,7 +245,6 @@ namespace zeitoon {
             }
             sm.communication.registerHook(temp);
             lNote("Hooks list: " + temp);
-//	std::cout << temp << endl;
 
             this->userMngrInterface.loadCaches();///todo: to be checked and trace-checked
             lNote("Service enabled");
@@ -422,6 +442,31 @@ namespace zeitoon {
                                                        DSInteger::getStructVersion(),
                                                        DSUsergroupPermissionList::getStructName(),
                                                        DSUsergroupPermissionList::getStructVersion()), true);
+            insInfo.commands.add(
+                    new DSInstallInfo::DSCommandDetail(commandInfo::addContact(),
+                                                       DSAddContact::getStructName(),
+                                                       DSAddContact::getStructVersion(),
+                                                       "",
+                                                       0), true);
+            insInfo.commands.add(
+                    new DSInstallInfo::DSCommandDetail(commandInfo::modifyContact(),
+                                                       DSAddContact::getStructName(),
+                                                       DSAddContact::getStructVersion(),
+                                                       "",
+                                                       0), true);
+            insInfo.commands.add(
+                    new DSInstallInfo::DSCommandDetail(commandInfo::removeContact(),
+                                                       DSRemoveContact::getStructName(),
+                                                       DSRemoveContact::getStructVersion(),
+                                                       "",
+                                                       0), true);
+            insInfo.commands.add(
+                    new DSInstallInfo::DSCommandDetail(commandInfo::listContacts(),
+                                                       DSInteger::getStructName(),
+                                                       DSInteger::getStructVersion(),
+                                                       DSUserContactList::getStructName(),
+                                                       DSUserContactList::getStructVersion()), true);
+
 
 //--------set available events info
 
@@ -587,6 +632,27 @@ namespace zeitoon {
                     new DSInstallInfo::DSInstallInfoDatatypesDetail(
                             zeitoon::usermanagement::DSUserPermission::getStructName(),
                             zeitoon::usermanagement::DSUserPermission::getStructVersion()),
+                    true);
+            //----------------TODO: temporary to be checked by ajl
+            insInfo.datatypes.add(
+                    new DSInstallInfo::DSInstallInfoDatatypesDetail(
+                            zeitoon::usermanagement::DSAddContact::getStructName(),
+                            zeitoon::usermanagement::DSAddContact::getStructVersion()),
+                    true);
+            insInfo.datatypes.add(
+                    new DSInstallInfo::DSInstallInfoDatatypesDetail(
+                            zeitoon::usermanagement::DSRemoveContact::getStructName(),
+                            zeitoon::usermanagement::DSRemoveContact::getStructVersion()),
+                    true);
+            insInfo.datatypes.add(
+                    new DSInstallInfo::DSInstallInfoDatatypesDetail(
+                            zeitoon::usermanagement::DSUserContactList::getStructName(),
+                            zeitoon::usermanagement::DSUserContactList::getStructVersion()),
+                    true);
+            insInfo.datatypes.add(
+                    new DSInstallInfo::DSInstallInfoDatatypesDetail(
+                            zeitoon::usermanagement::DSUserContactInfo::getStructName(),
+                            zeitoon::usermanagement::DSUserContactInfo::getStructVersion()),
                     true);
             ///------------set available hooks
 

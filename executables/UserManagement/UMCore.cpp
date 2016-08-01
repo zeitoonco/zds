@@ -282,7 +282,7 @@ void UMCore::modifyUser(int userID, std::string username, std::string password, 
 		auto tempSession = sessionManager.sessionList.find(sessionManager.getSessionIDbyUserID(userID));
 		if (tempSession != sessionManager.sessionList.end())
 			tempSession->second.username = username;//updates session's username if user has an active session going on
-		lNote("User " + std::to_string(userID) + " modified. Username: " + tempSession->second.username);
+		lNote("User " + std::to_string(userID) + " modified. Username: " + username);
 	} catch (...) {
 		EXToutOfRange("Session update failed. ");
 	}
@@ -349,7 +349,7 @@ void UMCore::removePermission(int permissionID) {
 	std::string permIDStr = std::to_string(permissionID);
 	try {        //remove permission from users permission table in database
 		executeSync("BEGIN;"
-				            " delete from userpermission where id=" + permIDStr + ";"
+				            " delete from userpermission where permissionid=" + permIDStr + ";"
 				            " delete from grouppermission where permissionid=" + permIDStr + ";"
 				            " delete from permission where id=" + permIDStr + ";"
 				            " END;");

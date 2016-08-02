@@ -56,7 +56,7 @@ namespace zeitoon {
         void UMSessionManager::updateUsergroupCache(int groupID) {//todo:: needs a lock+
             try {
                 auto tempUsrgrpINFO = coreInstance->querySync(
-                        "SELECT parentid FROM groups WHERE id" + std::to_string(groupID));
+                        "SELECT parentid FROM groups WHERE id=" + std::to_string(groupID));
                 if (tempUsrgrpINFO.rowCount() < 1) {
                     for (auto iter = sessionList.begin(); iter != sessionList.end(); iter++) {
                         for (std::vector<int>::iterator usergroupIter = iter->second.usergroups.begin();

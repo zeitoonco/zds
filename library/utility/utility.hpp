@@ -546,19 +546,20 @@ public:
                 "}");
     }
 
-    static string makeCallback(string node, string data) {
-        return makeCallback(node, "", "", data);
+    static string makeCallback(string node, string data,bool success) {
+        return makeCallback(node, "", "", data,success);
     }
 
-    static string makeCallback(string node, string id, string data) {
-        return makeCallback(node, id, "", data);
+    static string makeCallback(string node, string id, string data, bool success) {
+        return makeCallback(node, id, "", data, success);
     }
 
-    static string makeCallback(string node, string id, string from, string data) {
+    static string makeCallback(string node, string id, string from, string data, bool success) {//todo: add success field here
         return ("{\"type\" : \"callback\" , \"node\" : \"" + node + "\" " +
                 (id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
                 (from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
                 (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+                ", \"success\" : " +(success ? "true": "false") +
                 "}");
     }
 

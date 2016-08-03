@@ -36,7 +36,7 @@ DSLoginResult UMCore::login(std::string username, std::string password) {
 				//sessionID = -1;
 				//uID = -1;
 				tempResult.userInfo.userID = -1;
-				tempResult.UMLoginResult = UMLoginResult::typeString[UMLoginResult::banned];
+				tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::banned];
 				//desc = "User is temporary banned(too many false login attempts)";
 				tempResult.description = "User is temporary banned(too many false login attempts)";
 				lTrace("Login Failed for User: [" + username + "]." + tempResult.description.getValue());
@@ -65,11 +65,11 @@ DSLoginResult UMCore::login(std::string username, std::string password) {
 			tempResult.sessionID = -1;
 			tempResult.userInfo.userID = -1;
 			tempResult.description = loginResult.fieldValue(0, 2);
-			tempResult.UMLoginResult = UMLoginResult::typeString[UMLoginResult::banned];
+			tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::banned];
 			return tempResult;
 		} else {    //SUCCESSFUL AUTHENTICATION
 			try {
-				tempResult.UMLoginResult = UMLoginResult::typeString[UMLoginResult::ok];
+				tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::ok];
 				/*auto dds= this->sessionManager.newSession(tempResult.userInfo.userID.getValue(),
 														  tempResult.userInfo.username.getValue());*/
 				tempResult.sessionID = this->sessionManager.newSession(tempResult.userInfo.userID.getValue(),
@@ -78,7 +78,7 @@ DSLoginResult UMCore::login(std::string username, std::string password) {
 					sessionManager.removeSession(tempResult.sessionID);
 					tempResult.sessionID = -1;
 					tempResult.description = "Access Denied";
-					tempResult.UMLoginResult = UMLoginResult::typeString[UMLoginResult::accessDenied];
+					tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::accessDenied];
 					return tempResult;
 				}
 				tempResult.userInfo.isOnline = true;
@@ -124,14 +124,14 @@ DSLoginResult UMCore::login(std::string username, std::string password) {
 		tempResult.sessionID = -1;
 		tempResult.userInfo.userID = -1;
 		tempResult.description = "Invalid Username or Password.";
-		tempResult.UMLoginResult = UMLoginResult::typeString[UMLoginResult::invalidUserPass];
+		tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::invalidUserPass];
 		lNote("Invalid username or password for USER: [" + username + "]. ");
 		return tempResult;
 	} else {    //IF ANY THING OTHER THAN PREVIOUSLY DEFINED CONDITIONS HAPPEN.
 		tempResult.sessionID = -1;
 		tempResult.userInfo.userID = -1;
 		tempResult.description = "Unknown Error!";
-		tempResult.UMLoginResult = UMLoginResult::typeString[UMLoginResult::unknownError];
+		tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::unknownError];
 		lDebug("Unknown Error on login attempt for USER: [" + username + "]. ");
 		return tempResult;
 	}
@@ -284,7 +284,7 @@ void UMCore::modifyUser(int userID, std::string username, std::string password, 
 			tempSession->second.username = username;//updates session's username if user has an active session going on
 		lNote("User " + std::to_string(userID) + " modified. Username: " + username);
 	} catch (...) {
-		EXToutOfRange("Session update failed. ");
+		lNote("Session update failed. User " + username + " is offline.");
 	}
 
 	umCHI->sm.communication.runEvent(eventInfo::userModified(), zeitoon::usermanagement::DSUserInfo(
@@ -559,7 +559,7 @@ void UMCore::modifyContact(int userID, int contactID, std::string note) {
 	try {
 		temp = executeSync(
 				"UPDATE contacts SET note='" + note + "' Where userid=" +
-						std::to_string(userID) + " AND contactid=" + std::to_string(contactID));
+				std::to_string(userID) + " AND contactid=" + std::to_string(contactID));
 	} catch (zeitoon::utility::exceptionEx &err) {
 		EXTmodifyContactFailed("Error: " + std::string(err.what()));
 	}

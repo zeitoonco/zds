@@ -111,7 +111,7 @@ void GUICore::callFromClient(std::string CmdName, std::string cmdID, int clientI
 	cmdClients[cmdID] = clientID;
 }
 
-void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data) {
+void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data,std::string success) {
 	if (cmdClients.count(cmdID) == 0) {
 		lError("Invalid Callback CommandID. CmdID: " + cmdID + " node: " + node + "  Data: " + data);
 		return;
@@ -121,8 +121,10 @@ void GUICore::callBackReceived(std::string node, std::string cmdID, std::string 
 	Jtemp.add("type", "callback");
 	Jtemp.add("node", node);
 	Jtemp.add("id", cmdID);
-	Jtemp.add("data", data);//todo: clear all cb's after connection closed.
-
+	if ( data.size() > 0)
+		Jtemp.add("data", data);//todo: clear all cb's after connection closed
+	if ( success.size() > 0)
+		Jtemp.add("success", success);
 	if (streq(node, usermanagement::commandInfo::login())) {
 		JStruct dt(data);
 		if (streq(dt["result"].getValue(), "ok"))

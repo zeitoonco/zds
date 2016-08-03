@@ -27,8 +27,8 @@ void Logger::log(string owner, string message, LogLevel::levels level) {
 		owner = zeitoon::utility::Strings::padRight(owner, 16);
 		std::string tempLvl = Strings::padRight(LogLevel::typeString[level], 8);
 		tempTime = zeitoon::utility::Strings::padRight(tempTime.substr(11, 50), 17);
-		if (message.length()>121)
-			message=message.substr(0,120);
+		/*if (message.length()>121)
+			message=message.substr(0,120);*/
 		if (forceCerr || level >= LogLevel::warning)
 			std::cerr <<"!>" + tempLvl + tempTime + owner + message + "\n";
 		else

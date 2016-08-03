@@ -49,7 +49,7 @@ public:
 
 	string runCommandSync(string name, string data);
 
-	void runCallback(string name, string data, string id);
+	void runCallback(string name, string data, string id, bool success);
 
 	void runEvent(string name, string data);
 
@@ -61,7 +61,7 @@ public:
 
 	string runCommandSync(string name, datatypes::DTStruct &data);
 
-	void runCallback(string name, datatypes::DTStruct &data, string id);
+	void runCallback(string name, datatypes::DTStruct &data, string id, bool success);
 
 	void runEvent(string name, datatypes::DTStruct &data);
 

@@ -27,8 +27,8 @@ class UmCHI: public CommunicationHandlerInterface {
 public:
 
 	UmCHI();
-	void onCommand(string node, string data, string id, string from);
-	void onCallback(string node, string data, string id, string from);
+	bool onCommand(string node, string data, string id, string from, std::string &result);
+	void onCallback(string node, string data, string id, string from,  std::string success);
 	void onEvent(string node, string data, string from);
 	void onInstall(string id);
 	void onEnable();

@@ -13,7 +13,7 @@
 #include "datatypes/DTTableString.hpp"
 #include <vector>
 #include <string>
-
+#include "UManagementUtility.hpp"
 namespace zeitoon {
 namespace usermanagement {
 
@@ -661,7 +661,7 @@ public:
 
 class DSLoginResult : public DTStruct {
 public:
-	DTString UMLoginResult = {"result"};
+	DTEnum<UMLoginResult> loginResult = {"result"};
 	DTString description = {"description"};
 	DTInteger<int> sessionID = {"sessionID"};
 	DSUserInfo userInfo = {"userInfo"};
@@ -676,7 +676,7 @@ public:
 	}
 
 	DSLoginResult() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
-		this->list.push_back(&UMLoginResult);
+		this->list.push_back(&loginResult);
 		this->list.push_back(&description);
 		this->list.push_back(&sessionID);
 		this->list.push_back(&userInfo);
@@ -688,9 +688,9 @@ public:
 		this->fromString(data);
 	}
 
-	DSLoginResult(std::string iUMLoginResult, std::string idescription, int isessionID) :
+	DSLoginResult(zeitoon::usermanagement::UMLoginResult::UMLoginResultEnum iUMLoginResult, std::string idescription, int isessionID) :
 			DSLoginResult() {//todo by inf: incompplete ! constructors input args?!
-		UMLoginResult = iUMLoginResult;
+		loginResult = iUMLoginResult;
 		description = idescription;
 		sessionID = isessionID;
 	}

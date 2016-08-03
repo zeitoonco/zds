@@ -25,21 +25,21 @@ PGmediator::PGmediator(std::string pgAdminUserName, std::string pgAdminPassWord,
 	this->setInstallInfo();
 }
 
-void PGmediator::onCommand(string node, string data, string id, string from) {
+bool PGmediator::onCommand(string node, string data, string id, string from, std::string &resultStr) {
 	try {
 		if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::query(), false)) {
 			DSDBQuery sql(data, true);
 			DTTableString result(conMgr.query(from, sql.query.getValue()).toString(), "");
-			this->sm.communication.runCallback(node, result.toString(), id);
+			resultStr = result.toString(true);
 		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::execute(), false)) {
 			DSDBQuery sql(data, true);
 			DSInteger result;
 			result.value = conMgr.execute(from, sql.query.getValue());
-			this->sm.communication.runCallback(node, result.toString(), id);
+			resultStr = result.toString(true);
 		} else if (!Strings::compare(node, zeitoon::pgdatabase::commandInfo::singlefieldquery(), false)) {
 			DSDBQuery sql(data, true);
 			DSString result(conMgr.singleFieldQuery(from, sql.query.getValue()), false);
-			this->sm.communication.runCallback(node, result.toString(), id);
+			resultStr = result.toString(true);
 		}
 	} catch (exceptionEx &errorInfo) {
 		lError("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
@@ -48,9 +48,10 @@ void PGmediator::onCommand(string node, string data, string id, string from) {
 		lError("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 		sm.communication.errorReport(node, id, errorInfo.what());
 	}
+	return true;
 }
 
-void PGmediator::onCallback(string node, string data, string id, string from) {
+void PGmediator::onCallback(string node, string data, string id, string from,  std::string success) {
 }
 
 void PGmediator::onEvent(string node, string data, string from) {

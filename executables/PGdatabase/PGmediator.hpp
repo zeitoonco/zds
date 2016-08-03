@@ -48,12 +48,12 @@ public:
 	 * @param id string , id e makhsoos e in ertebaat.
 	 * @param from  string, naam e node e darkhaast konandeh
 	 */
-	void onCommand(string node, string data, string id, string from);
+	bool onCommand(string node, string data, string id, string from, std::string &resultStr);
 	/**
 	 * onCallback()
 	 * NOT IMPLEMENTED
 	 */
-	void onCallback(string node, string data, string id, string from);
+	void onCallback(string node, string data, string id, string from,  std::string success);
 	/**
 	 * onEvent()
 	 * NOT IMPLEMENTED

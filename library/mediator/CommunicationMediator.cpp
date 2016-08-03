@@ -67,8 +67,8 @@ string CommunicationMediator::runCommandSync(string name, string data) {
 	return runCommandSync(name, data, utility::CommunicationUtility::getRandomID());
 }
 
-void CommunicationMediator::runCallback(string name, string data, string id) {
-	sm->send(CommunicationUtility::makeCallback(name, id, sm->owner->getServiceName(), data));
+void CommunicationMediator::runCallback(string name, string data, string id,bool success) {
+	sm->send(CommunicationUtility::makeCallback(name, id, sm->owner->getServiceName(), data, success));
 }
 
 void CommunicationMediator::runEvent(string name, string data) {
@@ -91,8 +91,8 @@ string CommunicationMediator::runCommandSync(string name, datatypes::DTStruct &d
 	return runCommandSync(name, data, utility::CommunicationUtility::getRandomID());
 }
 
-void CommunicationMediator::runCallback(string name, datatypes::DTStruct &data, string id) {
-	this->runCallback(name, data.toString(true), id);
+void CommunicationMediator::runCallback(string name, datatypes::DTStruct &data, string id, bool success) {
+	this->runCallback(name, data.toString(true), id, success);
 }
 
 void CommunicationMediator::runEvent(string name, datatypes::DTStruct &data) {

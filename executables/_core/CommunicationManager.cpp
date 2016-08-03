@@ -118,7 +118,7 @@ namespace zeitoon {
                     try {
                         HookProfile &hook = hookList.at(hookId);
                         lock.unlock();
-                        sendFunc(hook.extension, from, hook.eventName, data, MessageTypes::MTFire, "", "");
+                        sendFunc(hook.extension, from, hook.eventName, data, MessageTypes::MTFire, "", "", "");
                     } catch (...) {
                         //todo: log fire fail
                         lError("LOG:Firing hook failed. " + eventName + ">" + hookId);
@@ -172,14 +172,14 @@ namespace zeitoon {
                 }
                 lock.unlock();
                 sendFunc(cmd->second.extension, from, cmd->second.name, data, MessageTypes::MTCall, cbp.uniqId(),
-                         sessionid);
+                         sessionid, "");
 
                 return cbp.uniqId();
             } else
                 EXTnamesMismatch("No command named '" + cmdName + "' is registered");
         }
 
-        void CommunicationManager::callCallback(string id, string &data, string from) {
+            void CommunicationManager::callCallback(string id, string &data, string from, std::string success) {
 
             lockg(MTXCallback);
             auto clb = callbackList.find(id);
@@ -191,10 +191,11 @@ namespace zeitoon {
                     idData *x = idList[id];
                     x->data = data;
                     x->set = true;
+                    x->success = success;
 
                 } else {            //else, send it
                     sendFunc(clb->second.extension, from, clb->second.command.name, data, MessageTypes::MTCallback,
-                             clb->second.identity, "");
+                             clb->second.identity, "", success);
                 }
                 callbackList.erase(id);
             } else
@@ -216,7 +217,7 @@ namespace zeitoon {
                     ((JVariable &) jdata["id"]).setValue(clb->second.identity);
                     string rdata = jdata.toString();
                     sendFunc(clb->second.extension, from, "error", rdata, MessageTypes::MTCall,
-                             clb->second.identity, "");
+                             clb->second.identity, "","");
                 }
                 callbackList.erase(id);
             } else

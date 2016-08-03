@@ -52,7 +52,7 @@ public:
 
 	void callFromClient(std::string CmdName, std::string cmdID, int clientID, std::string data, string session);
 
-	void callBackReceived(std::string node, std::string id, std::string data);
+	void callBackReceived(std::string node, std::string id, std::string data, std::string success);
 
 	void eventReceived(std::string name, std::string data);
 

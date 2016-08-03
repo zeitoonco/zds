@@ -17,7 +17,7 @@ namespace utility {
 
 class CommunicationHandlerInterface {
 private:
-	map<string, std::chrono::system_clock::time_point> pingtimes;
+	map <string, std::chrono::system_clock::time_point> pingtimes;
 
 public:
 	ServerMediator sm;
@@ -37,9 +37,9 @@ public:
 		return id;
 	}
 
-	virtual void onCommand(string node, string data, string id, string from) = 0;
+	virtual bool onCommand(string node, string data, string id, string from, std::string &result) = 0;
 
-	virtual void onCallback(string node, string data, string id, string from) = 0;
+	virtual void onCallback(string node, string data, string id, string from, std::string success) = 0;
 
 	virtual void onEvent(string node, string data, string from) = 0;
 
@@ -76,11 +76,14 @@ public:
 		//JStruct js(data);//todo:dont parse data field
 		string type = js["type"].getValue();
 		string node = js["node"].getValue();
+		//std::string success;
+		JItem *success = js.getField("success");
+		//success = (successJ == NULL ? "" : successJ->value->getValue());
 		if (!Strings::compare(type, "internal", false)) {
 			if (!Strings::compare(node, "pong", false)) {
 				string id = js["node"].getValue();
 				std::chrono::system_clock::time_point t = std::chrono::system_clock::now();
-				auto d = std::chrono::duration_cast<std::chrono::duration<int, ratio<1, 1000>>>(t - pingtimes[id]);
+				auto d = std::chrono::duration_cast<std::chrono::duration<int, ratio < 1, 1000>> > (t - pingtimes[id]);
 				pingtimes.erase(id);
 				pong(id, d.count());
 			} else if (!Strings::compare(node, "hello", false)) {
@@ -100,7 +103,7 @@ public:
 			if (!Strings::compare(type, "fire", false)) { //communication
 				this->onEvent(node, data, from);
 			} else if (!Strings::compare(type, "callback", false)) { //communication
-				this->onCallback(node, data, id, from);
+				this->onCallback(node, data, id, from,success->getValue());
 			} else if (!Strings::compare(type, "call", false)) { //communication
 				if (!Strings::compare(node, "onInstall", false)) {
 					if (dataj == NULL)
@@ -109,14 +112,16 @@ public:
 					this->onInstall(jdata["id"].getValue());
 					//todo: receive a bool, that shows if install process was successful, for next line
 					this_thread::sleep_for(chrono::milliseconds(200));
-					sm.send(CommunicationUtility::makeCallback("onInstall", id, getServiceName(), "{\"success\":true}"));
+					sm.send(CommunicationUtility::makeCallback("onInstall", id, getServiceName(),
+					                                           "{\"success\":true}"));
 				} else if (!Strings::compare(node, "onUninstall", false)) {
 					this->onUninstall();
 				} else if (!Strings::compare(node, "onEnable", false)) {
 					this->onEnable();
 					//todo: receive a bool, that shows if install process was successful, for next line
 					this_thread::sleep_for(chrono::milliseconds(200));
-					sm.send(CommunicationUtility::makeCallback("onEnable", id, getServiceName(), "{\"success\":true}"));
+					sm.send(CommunicationUtility::makeCallback("onEnable", id, getServiceName(), "{\"success\":true}",
+					                                           true));
 				} else if (!Strings::compare(node, "onDisable", false)) {
 					this->onDisable();
 				} else if (!Strings::compare(node, "error", false)) {
@@ -129,10 +134,10 @@ public:
 						EXTinvalidParameter("warning: Data field is empty!");
 					JStruct &jdata = *((JStruct *) dataj->value);
 					this->onWarning(jdata["level"].getValue(), jdata["node"].getValue(), jdata["id"].getValue(),
-					          jdata["description"].getValue());
+					                jdata["description"].getValue());
 				} else if (!Strings::compare(node, "getInstallInfo", false)) {
 					sm.send(CommunicationUtility::makeCallback("getInstallInfo", id, getServiceName(),
-					                                           this->getInstallInfo()));
+					                                           this->getInstallInfo(), true));
 				} else if (!Strings::compare(node, "changeDatatypeVersion", false)) {
 					if (dataj == NULL)
 						EXTinvalidParameter("changeDatatypeVersion: Data field is empty!");
@@ -147,11 +152,16 @@ public:
 							CommunicationUtility::makeCallback("changeDatatypeVersion", id, getServiceName(),
 							                                   "{ \"datatype\" : \"" + jdata["datatype"].getValue() +
 							                                   "\" , \"newversion\" : \"" + Strings::itoa(newVer)
-							                                   + "\" , \"value\" : " + newdata + "}"
+							                                   + "\" , \"value\" : " + newdata + "}", true
 							));
-				} else
-					this->onCommand(node, data, id, from);
+				} else {
+					std::string tempResult = "";
+					bool success = this->onCommand(node, data, id, from, tempResult);
+					if (id.size()>0)
+						this->sm.communication.runCallback(node, tempResult, id, success);
+				}
 			}
+
 		}
 		return false;
 	}

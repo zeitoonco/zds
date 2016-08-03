@@ -31,7 +31,7 @@ class CommunicationManager {
 
 public:
 	typedef std::function<void(string, string, string, string &, MessageTypes::MessageTypes_, string,
-	                           string)> sendFuncDLG;
+	                           string, string)> sendFuncDLG;
 	sendFuncDLG sendFunc;
 
 	unordered_map<string, EventProfile> eventList;
@@ -48,6 +48,7 @@ public:
 	struct idData {
 		string data;
 		bool set;
+		std::string success;
 	};
 	map<string, idData *> idList;
 	mutex MtxIdList;
@@ -88,7 +89,7 @@ public:
 
 	string callCommand(string cmdName, string &data, string from, string id, string sessionid="");
 
-	void callCallback(string id, string &data, string from);
+	void callCallback(string id, string &data, string from, std::string success="");
 
 	void callCallbackError(string &data, string from);
 

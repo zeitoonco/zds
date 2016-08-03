@@ -50,7 +50,7 @@ public:
 	void sendPacket(string &data, ExtensionProfile *extension);
 
 	void sendMessage(string extension, string source, string node, string &data, MessageTypes::MessageTypes_ msgT,
-	                 string id, string session = "");
+	                 string id, string session = "", std::string success = "");
 
 	void callCommandLocal(string node, string &data, string from, string id, string session); //s
 

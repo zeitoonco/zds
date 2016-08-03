@@ -580,13 +580,13 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 			      to_string((int) e->state) + "}";
 		}
 		dt += "]}";
-		comm.callCallback(id, dt, "_core");
+		comm.callCallback(id, dt, "_core","true");//ddd
 	} else if (streq(node, "_core.getServiceInfo")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL) {
 			string dt = ext->serviceInfo.toString();
-			comm.callCallback(id, dt, "_core");
+			comm.callCallback(id, dt, "_core","true");
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (streq(node, "_core.installService")) {

@@ -758,12 +758,12 @@ void UMCore::removeUserUsergroup(int userID, int groupID) {
 void UMCore::addUserPermission(int userID, int permissionID, int state) {
 	int a = 0;
 	try {
+		/*"INSERT INTO userpermission (userid, permissionid, state) SELECT "++", WHERE NOT EXISTS( SELECT * FROM userpermission WHERE state = "+ std::to_string(state)+")"*/
 
 		a = executeSync(
-				"insert into userpermission values(" + std::to_string(userID) + ", " +
-				std::to_string(permissionID) +
-				", " + std::to_string(state) + ")");
-
+				"INSERT INTO userpermission(userid, permissionid, state) VALUES(" + std::to_string(userID) + ", " +
+				std::to_string(permissionID) + ", " + std::to_string(state) +
+				") ON CONFLICT(userid,permissionid) DO UPDATE SET state=" + std::to_string(state));
 		if (a < 1) {
 			EXTDBError("No permission added for user:" + std::to_string(userID));
 		}
@@ -837,9 +837,9 @@ void UMCore::addUsergroupPermission(int usergroupID, int permissionID, int state
 		int a = executeSync(
 				"insert into grouppermission(permissionid,groupid,state) values(" +
 				std::to_string(permissionID) + ", " + std::to_string(usergroupID) +
-				", " + std::to_string(state) + ")");
+						", " + std::to_string(state) + ") ON CONFLICT(permissionid, groupid) DO UPDATE SET state=" + std::to_string(state));
 		if (a != 1)
-			EXTDBError("INSERT FAILED");
+		EXTDBError("INSERT FAILED");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to add the permission for the user", errorInfo);
 	}

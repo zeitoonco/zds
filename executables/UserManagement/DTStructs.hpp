@@ -14,6 +14,7 @@
 #include <vector>
 #include <string>
 #include "UManagementUtility.hpp"
+
 namespace zeitoon {
 namespace usermanagement {
 
@@ -688,7 +689,8 @@ public:
 		this->fromString(data);
 	}
 
-	DSLoginResult(zeitoon::usermanagement::UMLoginResult::UMLoginResultEnum iUMLoginResult, std::string idescription, int isessionID) :
+	DSLoginResult(zeitoon::usermanagement::UMLoginResult::UMLoginResultEnum iUMLoginResult, std::string idescription,
+	              int isessionID) :
 			DSLoginResult() {//todo by inf: incompplete ! constructors input args?!
 		loginResult = iUMLoginResult;
 		description = idescription;
@@ -701,6 +703,7 @@ public:
 			skipf = new vector<string>{userInfo.getName(), permissions.getName()};
 		return DTStruct::toString(includeVersion, indent, indentContent, skipf);
 	}
+
 
 };
 
@@ -792,6 +795,7 @@ public:
 		this->note = inote;
 	}
 };
+
 class DSRemoveContact : public DTStruct {
 
 public:
@@ -820,6 +824,25 @@ public:
 		this->userID = iuserID;
 		this->contactID = icontactID;
 		this->note = inote;
+	}
+};
+
+class DSServicePermissions : public DTStruct {
+public:
+	DTString servicename = {"servicename"};
+	DTSet<DTString> permissionName = {"permissionName"};
+
+	static std::string getStructName() {
+		return "DSServicePermissions";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSServicePermissions() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&servicename);
+		list.push_back(&permissionName);
 	}
 };
 

@@ -68,13 +68,16 @@ public:
 
 class ExtensionProfile {
 public:
+	enum class cepState{
+		notRegistered = 0, registered, upgrading,
+	};
 	enum class extensionState {
-		unknown = 0, notInstalled, installing, installed, enabling, enabled
+		unknown = 0, notInstalled, installing, installed, enabling, upgrading, enabled,
 	};
 
 	extensionState state;
 	bool requirementsSatisfied;
-	bool CEPermissionsRegistered;
+	cepState CEPermissionsRegistered;
 	ssize_t netClientId;
 	std::chrono::system_clock::time_point pingStart;
 	string installID;
@@ -82,11 +85,11 @@ public:
 	datatypes::DSInstallInfo serviceInfo;
 private:
 	ExtensionProfile(extensionState sstate, ssize_t netid) :
-			serviceInfo("", "", 0, 0, datatypes::EnmServiceType::other) {
+			serviceInfo("", "", 0, 0, datatypes::EnmServiceType::other), oldServiceInfo("", "", 0, 0, datatypes::EnmServiceType::other) {
 		netClientId = netid;
 		state = sstate;
 		requirementsSatisfied = false;
-		CEPermissionsRegistered = false;
+		CEPermissionsRegistered = cepState::notRegistered;
 	}
 
 public:

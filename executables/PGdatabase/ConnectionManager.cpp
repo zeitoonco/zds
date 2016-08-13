@@ -160,6 +160,12 @@ void ConnectionManager::connectionMaker(std::string extensionName) {
 	//##Event Fired
 }
 
+
+void ConnectionManager::dropConnection(std::string extensionName) {
+this->connectionList.erase(extensionName);
+}
+
+
 bool ConnectionManager::checkIfExtensionRegistered(std::string extension) {
 	return adminConnection.query("SELECT id FROM __local.extension WHERE name =\'" + extension + "\'").rowCount() == 1;
 }
@@ -184,12 +190,15 @@ void ConnectionManager::createDatabase(std::string userName, std::string passWor
 
 void pgdatabase::ConnectionManager::removeExtension(std::string serviceName) {
 	try {
-		int a = adminConnection.execute("DROP SCHEMA \"" + serviceName + "\" CASCADE");
-		lWarnig("Removing DB schema for user: " + serviceName + " .... " + std::to_string(a));
+		lWarnig("Removing DB schema for user: " + serviceName + " .... " );
+		int a = adminConnection.execute("DROP SCHEMA IF EXISTS \"" + serviceName + "\" CASCADE");
+		lWarnig("Removing service name from DB for user: " + serviceName + " .... ");
 		int b = adminConnection.execute("DELETE FROM __local.extension WHERE name = '" + serviceName + "'");
-		lWarnig("Removing service name from DB for user: " + serviceName + " .... " + std::to_string(b));
-		int c = adminConnection.execute("DROP ROLE \"" + serviceName + "\"");
-		lWarnig("Removing role "+ serviceName + " ....  "+std::to_string(c));
+		lWarnig("Removing role "+ serviceName + " ....  ");
+		int c = adminConnection.execute("DROP ROLE IF EXISTS \"" + serviceName + "\"");
+		lWarnig("terminating DB connection for "+serviceName);
+		this->dropConnection(serviceName);
+		lNote("Done");
 
 	} catch (zeitoon::utility::exceptionEx &err) {
 		EXTDBErrorI("Removing Extention FAILED", err);

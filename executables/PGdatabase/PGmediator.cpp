@@ -44,9 +44,11 @@ bool PGmediator::onCommand(string node, string data, string id, string from, std
 	} catch (exceptionEx &errorInfo) {
 		lError("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 		sm.communication.errorReport(node, id, errorInfo.what());
+		return false;
 	} catch (exception &errorInfo) {
 		lError("node: " + node + " id:" + id + " errMsg:" + errorInfo.what());
 		sm.communication.errorReport(node, id, errorInfo.what());
+		return false;
 	}
 	return true;
 }
@@ -58,7 +60,7 @@ void PGmediator::onEvent(string node, string data, string from) {
 	try {
 		JStruct temp(data);
 		if (!Strings::compare(node, zeitoon::_core::eventInfo::onServiceUninstall(), false)) {
-			auto d = temp["name"].getValue();
+			std::string d = temp["name"].getValue();
 			conMgr.removeExtension(d);
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {

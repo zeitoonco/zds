@@ -51,7 +51,7 @@ void ServerMediator::dataReceived(string data) {
 
 	//todo: if type call  && node error ->> errReceived()
 	if (streq(type, "internal") && streq(node, "ping")) {
-		send("{\"type\" : \"internal\" , \"node\" : \"pong\" , \"id\" : \"" + js["id"].getValue() + "\"}");
+		send("{\"type\" : \"internal\" , \"node\" : \"pong\""+ (js.contains("id") ? ", \"id\" : \"" + js["id"].getValue() + "\"" :"" )+"}");
 	} else {
 		if (!Strings::compare(type, "callback")) if (communication.dataReceive(data))
 			return;

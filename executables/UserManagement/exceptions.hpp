@@ -186,8 +186,6 @@ public:
 	}
 
 };
-
-
 } // zeitoon
 } // usermanagement
 
@@ -229,7 +227,6 @@ public:
 #define EXTmodifyContactFailedO(msg, owner) throw zeitoon::usermanagement::modifyContactFailed(msg,owner,__FILE__,__func__,__LINE__)
 #define EXTmodifyContactFailedI(msg, inner) throw zeitoon::usermanagement::modifyContactFailed(msg,this->getNameAndType(),__FILE__,__func__,__LINE__,inner)
 #define EXTmodifyContactFailedIO(msg, owner, inner) throw zeitoon::usermanagement::modifyContactFailed(msg,owner,__FILE__,__func__,__LINE__,inner)
-
 
 
 #endif //ZEITOON_USERMANAGEMENT_EXCEPTIONS_HPP

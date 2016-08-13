@@ -87,7 +87,7 @@ namespace zeitoon {
              * @param desc string
              * @param parentID int
              * @return int permissionID*/
-            int registerPermission(std::string name, std::string title, std::string desc, int parent);
+            int registerPermission(std::string name, std::string title, std::string desc, int parent, const std::string &from);
 
             /**updatePermission(), tamam e moshakhast e yek permission ra migirad va baa tavajoh be ID e permission
              * aan ra taghyir midahad
@@ -143,7 +143,7 @@ namespace zeitoon {
              * be soorat e vector<"zeitoon::datatypes::DTString"> bar-migardaanad
              * @return vector<"zeitoon::datatypes::DTString">
              */
-            DSPermissionsList listPermissions();
+            DSPermissionsList listPermissions(std::string serviceName="");
 
             /** listi az kolle userGroup-haaye mojood dar database raa be soorat e yek vector<"zeitoon::datatypes::DTString"> barmigardanad
              * @return vector<"zeitoon::datatypes::DTString">
@@ -192,6 +192,8 @@ namespace zeitoon {
             void removeUsergroupPermission(int usergroupID, int permissionID, int state = 0);
 
             DSUsergroupPermissionList listUsergroupPermissions(int usergroupID);
+
+            void removeServicePermissions(std::string serviceName);
 
             /**
             * bool isOnline returns user stats

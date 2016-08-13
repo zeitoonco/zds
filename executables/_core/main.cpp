@@ -84,10 +84,10 @@ int main(int argc, char *argv[]) {
 	if (!logger.isTerminalLog()) {
 		cout << "\nZeitoon Server _Core Service\n";
 	}
-		cout << "\nValid commands: (installinfo[if]|install[ins]|enable[enb]|disable[dsb]|uninstall[uin]) $service\n";
-		//cout << "                hello $service\n";
-		cout << "                ls lscmd lsevent lshook\n";
-		//cout << "Started Listening on port 5458\n";
+	cout << "\nValid commands: (installinfo[if]|install[ins]|enable[enb]|disable[dsb]|uninstall[uin]) $service\n";
+	//cout << "                hello $service\n";
+	cout << "                ls lscmd lsevent lshook\n";
+	//cout << "Started Listening on port 5458\n";
 
 	logger.log("Core", "Started Listening on port " + coreConfig.listenPort.getValue(),
 	           zeitoon::utility::LogLevel::note);//Iwas here
@@ -107,6 +107,9 @@ int main(int argc, char *argv[]) {
 				ExtensionProfile *se = inputExt();
 				if (se != NULL) if (!r->getInstallInfo(se))
 					cerr << "\n##InstallInfo '" + se->serviceInfo.name.getValue() + "' failed.";
+			} else if (streq(cmd,"upgrade")) {
+				ExtensionProfile *se= inputExt();
+				r->upgradeService(se);
 			} else if (streq(cmd, "install") || streq(cmd, "ins")) {
 				ExtensionProfile *se = inputExt();
 				if (se != NULL) if (!r->installService(se))
@@ -123,7 +126,12 @@ int main(int argc, char *argv[]) {
 				ExtensionProfile *se = inputExt();
 				if (se != NULL) if (!r->uninstallService(se))
 					cerr << "\n##uninstall '" + r->extManager[p1]->serviceInfo.name.getValue() + "' failed.";
-			} else if (cmd == "ls") {
+			} else if (streq(cmd, "forceuns") || streq(cmd, "fu")) {
+				ExtensionProfile *se = inputExt();
+				if (se != NULL) if (!r->forceUninstallService(se))
+					cerr << "\n##Force uninstall '" + r->extManager[p1]->serviceInfo.name.getValue() + "' failed.";
+			}
+			else if (cmd == "ls") {
 				printListOfServices(r);
 			} else if (cmd == "lscmd") {
 				printListOfCommands(r);
@@ -154,7 +162,7 @@ void printListOfServices(Router *r) {
 		<< Strings::padRight(to_string((int) (r->extManager[i]->state)), 6)
 		<< Strings::padRight(to_string(r->extManager[i]->netClientId), 5)
 		<< Strings::padRight(r->extManager[i]->installID, 12)
-		<< Strings::padRight(to_string(r->extManager[i]->CEPermissionsRegistered), 4)
+		<< Strings::padRight(to_string((int)r->extManager[i]->CEPermissionsRegistered), 4)
 		<< Strings::padRight(to_string(r->extManager[i]->requirementsSatisfied), 4)
 		<< Strings::padRight(to_string(r->extManager[i]->serviceInfo.serviceType.getValue()), 4) << endl;
 	}

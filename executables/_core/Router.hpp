@@ -69,7 +69,9 @@ public:
 	void disableIfReqNotSatisfied();
 	bool enableService(ExtensionProfile *exte);
 	bool installService(ExtensionProfile *exte);
+	void upgradeService(ExtensionProfile *ext);
 	bool getInstallInfo(ExtensionProfile *exte);
+	bool forceUninstallService(ExtensionProfile *ext);
 	bool uninstallService(ExtensionProfile *exte);
 	bool disableService(ExtensionProfile *exte);
 	void ping(ExtensionProfile *exte);

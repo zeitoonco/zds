@@ -18,8 +18,10 @@
 #include <datatypes/DTTableString.hpp>
 #include <utility/jsonParser.hpp>
 #include <library/mediator/CommunicationHandlerInterface.hpp>
+#include <executables/UserManagement/DTStructs.hpp>
 #include "utility/DTStructs.hpp"
 #include "coreutility.hpp"
+#include "executables/UserManagement/DTStructs.hpp"
 
 #define helloPacket "{\"type\" : \"internal\" , \"node\" : \"hello\"}"
 
@@ -195,25 +197,42 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 			lNote("Got Install Info from '" + std::to_string(netid) + ">" + ext->serviceInfo.name.getValue() +
 			      ": " + data);
 			ext->serviceInfo.fromString(idata);
+			/*if (ext->state == ExtensionProfile::extensionState::upgrading) {
+				lNote("Service " + ext->serviceInfo.name.getValue() + " is upgrading.");
+				ext->state = ExtensionProfile::extensionState::installed;
+			}*/
 			extManager.save();
 		} else if (type == "callback" && streq(node, "onInstall")) { //response from onInstall(success confirm)
 			//todo:check success field! is it really a success?
-			ext->state = ExtensionProfile::extensionState::installed;
-			vector<ExtensionProfile *> elist = extManager.getByServiceType(
-					datatypes::EnmServiceType::UserManager);
-			if (elist.size() > 0 && elist[0]->isRunning()) { //UM avail
-				registerServiceCEPermissions(
-						ext);//fixme: seems that it happens twise, if um is running and we install a service
-				ext->CEPermissionsRegistered = true;
-			} else {
-				ext->CEPermissionsRegistered = false;
+			if (((JVariable &) packet["success"]).toBoolean()) {
+				ext->state = ExtensionProfile::extensionState::installed;
+				extManager.save();
+				vector<ExtensionProfile *> elist = extManager.getByServiceType(
+						datatypes::EnmServiceType::UserManager);
+				if (elist.size() > 0 && elist[0]->isRunning()) { //UM avail
+					/*TODO ELSE{ PLACE A METHOD TO STORE CEP IF UM IS UNAVAILABLE  AND  REG CEP WHEN UM
+					 * COMES ONLINE*/
+					registerServiceCEPermissions(
+							ext);//fixme: seems that it happens twise, if um is running and we install a service
+					//ext->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
+				} else {
+					ext->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
+				}
+				lNote("Service "+ext->serviceInfo.name.value()+" installed.");
+				string dt = "{\"name\":\"" + ext->serviceInfo.name.value() + "\"}";
+				comm.fireEvent(eventInfo::onServiceInstall(), dt, "_core");
+			}else{
+				ext->state = ExtensionProfile::extensionState::notInstalled;
+				ext->installID = "";
 			}
+
 			extManager.save();
-			string dt = "{\"name\":\"" + ext->serviceInfo.name.value() + "\"}";
-			comm.fireEvent(eventInfo::onServiceInstall(), dt, "_core");
+
 		} else if (type == "callback" && streq(node, "onEnable")) {
 			if (((JVariable &) packet["data"]["success"]).toBoolean()) {
 				ext->state = ExtensionProfile::extensionState::enabled;
+				if (ext->CEPermissionsRegistered < ExtensionProfile::cepState::registered)
+					registerCEP();
 				string dt = "{\"name\":\"" + ext->serviceInfo.name.value() + "\"}";
 				comm.fireEvent(eventInfo::onServiceEnable(), dt, "_core");
 				this->enableIfReqSatisfied();
@@ -230,8 +249,10 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 				else if (type == "fire")
 					comm.fireEvent(node, idata, ext->serviceInfo.name.getValue());
 				else if (type == "callback") {
-					std::string success = packet["success"].getValue();
-					comm.callCallback(id, idata, ext->serviceInfo.name.getValue(), success);
+					if (id.size() > 0) {
+						std::string success = packet["success"].getValue();
+						comm.callCallback(id, idata, ext->serviceInfo.name.getValue(), success);
+					}
 				}
 			} catch (exceptionEx &ex) {
 				lError("Err on Packet Received. " + std::string(ex.what()));
@@ -296,7 +317,7 @@ void Router::sendMessage(string extension, string source, string node, string &d
 			msg.add("id", id);
 		if (session.length() > 0)
 			msg.add("session", session);
-		if (msgT==MessageTypes::MTCallback && success.size() > 0)
+		if (msgT == MessageTypes::MTCallback && success.size() > 0)
 			msg.add("success", success);
 		if (data.length() > 0)
 			msg.addIgnored("data", data);
@@ -394,49 +415,58 @@ void Router::registerCore() {
 }
 
 void Router::registerCEP() {
+
 	for (int i = 0; i < extManager.size(); i++)
 		if (extManager[i]->state >= ExtensionProfile::extensionState::installed &&
-		    !extManager[i]->CEPermissionsRegistered) {
+		    extManager[i]->CEPermissionsRegistered != ExtensionProfile::cepState::registered) {
 			registerServiceCEPermissions(extManager[i]);
 		}
 	extManager.save();
 }
 
 void Router::registerServiceCEPermissions(ExtensionProfile *ext) {//WE have UM
-	// PN: [serviceName].commands|events.[name]
+	// PN: [serviceName].commands|events.[name]//if cep ==0 cep; if >
 	vector<ExtensionProfile *> elist = extManager.getByServiceType(datatypes::EnmServiceType::UserManager);
 	if (elist.size() > 0 && elist[0]->isRunning()) { //UM avail
 		//get parent permisssions
-		string pckt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\",\"title\":\"" +
-		              ext->serviceInfo.name2.getValue() + "\",\"description\":\"Service " +
-		              ext->serviceInfo.name.getValue() + " Permissions\",\"parentID\":0}";
-		datatypes::DSInteger idSrvs, idc, ide;
-		idSrvs.fromString(comm.callCommandSync("userman.registerPermission", pckt, "_core", "REG1"));
-		//commands and events group
-		pckt = "{\"name\":\"" + ext->serviceInfo.name.getValue() +
-		       ".commands\",\"title\":\"commands permissions\",\"description\":\"Permissions for running commands of service\",\"parentID\":" +
-		       to_string(idSrvs.value.getValue()) + "}";
-		idc.fromString(comm.callCommandSync("userman.registerPermission", pckt, "_core", "REG2"));
-		pckt = "{\"name\":\"" + ext->serviceInfo.name.getValue() +
-		       ".events\",\"title\":\"events permissions\",\"description\":\"Permissions for hooking to events of service\",\"parentID\":" +
-		       to_string(idSrvs.value.getValue()) + "}";
-		ide.fromString(comm.callCommandSync("userman.registerPermission", pckt, "_core", "REG3"));
-		for (int ic = 0; ic < ext->serviceInfo.commands.length(); ic++) {
-			datatypes::DSInstallInfo::DSCommandDetail *c = ext->serviceInfo.commands[ic];
-			pckt = "{\"name\":\"" + c->name.getValue() + "\",\"title\":\"" + c->name.getValue() +
-			       "\",\"description\":\"...\",\"parentID\":" + to_string(idc.value.getValue()) + "}";
-			comm.callCommandSync("userman.registerPermission", pckt, "_core", c->name.getValue());
+		if (ext->CEPermissionsRegistered == ExtensionProfile::cepState::upgrading) {
+			this->upgradeService(ext);
+		} else {
+
+			string pckt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\",\"title\":\"" +
+			              ext->serviceInfo.name2.getValue() + "\",\"description\":\"Service " +
+			              ext->serviceInfo.name.getValue() + " Permissions\",\"parentID\":0}";
+			datatypes::DSInteger idSrvs, idc, ide;
+			idSrvs.fromString(
+					comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name, "REG1"));
+			//commands and events group
+
+			pckt = "{\"name\":\"" + ext->serviceInfo.name.getValue() +
+			       ".commands\",\"title\":\"commands permissions\",\"description\":\"Permissions for running commands of service\",\"parentID\":" +
+			       to_string(idSrvs.value.getValue()) + "}";
+			idc.fromString(comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name, "REG2"));
+			pckt = "{\"name\":\"" + ext->serviceInfo.name.getValue() +
+			       ".events\",\"title\":\"events permissions\",\"description\":\"Permissions for hooking to events of service\",\"parentID\":" +
+			       to_string(idSrvs.value.getValue()) + "}";
+			ide.fromString(comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name, "REG3"));
+			for (int ic = 0; ic < ext->serviceInfo.commands.length(); ic++) {
+				datatypes::DSInstallInfo::DSCommandDetail *c = ext->serviceInfo.commands[ic];
+				pckt = "{\"name\":\"" + c->name.getValue() + "\",\"title\":\"" + c->name.getValue() +
+				       "\",\"description\":\"...\",\"parentID\":" + to_string(idc.value.getValue()) + "}";
+				comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name, c->name.getValue());
+			}
+			for (int ie = 0; ie < ext->serviceInfo.events.length(); ie++) {
+				datatypes::DSInstallInfo::DSEventDetail *e = ext->serviceInfo.events[ie];
+				pckt = "{\"name\":\"" + e->name.getValue() + "\",\"title\":\"" + e->name.getValue() +
+				       "\",\"description\":\"...\",\"parentID\":" + to_string(ide.value.getValue()) + "}";
+				comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name, e->name.getValue());
+			}
+			ext->CEPermissionsRegistered = ExtensionProfile::cepState::registered;
 		}
-		for (int ie = 0; ie < ext->serviceInfo.events.length(); ie++) {
-			datatypes::DSInstallInfo::DSEventDetail *e = ext->serviceInfo.events[ie];
-			pckt = "{\"name\":\"" + e->name.getValue() + "\",\"title\":\"" + e->name.getValue() +
-			       "\",\"description\":\"...\",\"parentID\":" + to_string(ide.value.getValue()) + "}";
-			comm.callCommandSync("userman.registerPermission", pckt, "_core", e->name.getValue());
-		}
-		ext->CEPermissionsRegistered = true;
 	} else {
 		EXTresourceNotAvailable("UM extension is not available");
 	}
+	lNote("CEP registered for "+ext->serviceInfo.name.getValue());
 }
 
 bool Router::checkCoreRequirements() { //we need UM if we r gonna check permission of commands
@@ -448,9 +478,23 @@ bool Router::checkCoreRequirements() { //we need UM if we r gonna check permissi
 }
 
 bool Router::enableService(ExtensionProfile *ext) {///-1
+/*	if (!ext->CEPermissionsRegistered)
+		upgradeService(ext);*/
+	/*TODO:
+	 * Uninstall all services
+	 * Remove ZDS DB
+	 * ReInstall one by one/
+	 * Watch for changes in DB
+	 * Watch for _core CEP reg
+	 * Why CEP for _core & PG & UM is 0?
+	 * These services try to reg CEP befor UM is enabled,
+	 * Look for CEP registeration of _core and note when it regs its CEPs*/
+	/*if (ext->state == ExtensionProfile::extensionState::enabled)
+		return true;*/
 	if (!ext || ext->state < ExtensionProfile::extensionState::installed)
 		return false;
 	ext->requirementsSatisfied = extManager.isReqSatisfied(ext->serviceInfo.enableRequirements);
+
 	if (!ext->requirementsSatisfied) {
 		ext->requirementsSatisfied = false;
 		ext->state = ExtensionProfile::extensionState::enabled;
@@ -482,28 +526,216 @@ bool Router::installService(ExtensionProfile *ext) {
 	return true;
 }
 
+void Router::upgradeService(ExtensionProfile *ext) {
+	//todo: if um upgrade manualyy here!
+	if (ext->state < ExtensionProfile::extensionState::installed) {
+		lWarnig("Not upgrading. Please install the service first");
+		return;
+	}
+	datatypes::DSInstallInfo siClone("", "", 0, 0, datatypes::EnmServiceType::other);
+	siClone.fromString(ext->serviceInfo.toString(true));
+	int smpID = 0, cmID = 0, evID = 0, rem = 0, ad = 0;
+	zeitoon::datatypes::DSString tempStr;
+	tempStr.value = siClone.name.getValue();
+	string dummy = tempStr.toString(true);
+	zeitoon::usermanagement::DSPermissionsList temp;
+
+	temp.fromString(comm.callCommandSync("userman.listPermissions", dummy, "_core", "#REQ"));
+
+/*	bool has;
+	for (int cmit = 0; cmit < siClone.commands.length(); cmit++) {
+		has = false;
+		for (int cit = 0; cit < temp.permissionsList.length(); cit++) {
+			if (temp.permissionsList[cit]->name.getValue() == siClone.commands[cmit]->name.getValue()) {
+				has = true;
+				break;
+			}
+		}
+		if (has) {
+			lWarnig("Upgrade aborted. no change in service permissions.");
+			return;
+		}
+	}
+	if (not has)
+		for (int eit = 0; eit < siClone.events.length(); eit++) {
+			has = false;
+			for (int cit = 0; cit < temp.permissionsList.length(); cit++) {
+				if (temp.permissionsList[cit]->name.getValue() == siClone.events[eit]->name.getValue()) {
+					has = true;
+					break;
+				}
+			}
+			if (has) {
+				lWarnig("Upgrade aborted. no change in service permissions.");
+				return;
+			}
+		}*/
+
+	std::map<std::string, int> pNames;
+	for (int iter = 0; iter < temp.permissionsList.length(); iter++) {
+		pNames[temp.permissionsList[iter]->name.getValue()] = temp.permissionsList[iter]->permissiosnID.getValue();
+	}
+
+	std::string exName = siClone.name.getValue();
+
+	if (temp.permissionsList.length() < 1)
+		return;
+	for (int piter = 0; piter < temp.permissionsList.length(); piter++) {
+		bool flag = false;
+		for (int iter = 0; iter < siClone.commands.length(); iter++) {
+			if (siClone.commands[iter]->name.getValue() == temp.permissionsList[piter]->name.getValue()) {
+				siClone.commands.removeAt(iter);
+				temp.permissionsList.removeAt(piter);
+				iter--;
+				piter--;
+				flag = true;
+				break;
+			}
+		}
+		if (flag)
+			continue;
+		for (int iter = 0; iter < siClone.events.length(); iter++) {
+			if (siClone.events[iter]->name.getValue() == temp.permissionsList[piter]->name.getValue()) {
+				siClone.events.removeAt(iter);
+				temp.permissionsList.removeAt(piter);
+				iter--;
+				piter--;
+				flag = true;
+				break;
+			}
+		}
+		if (flag)
+			continue;
+		if (temp.permissionsList[piter]->name.getValue() == exName) {
+			temp.permissionsList.removeAt(piter);
+			piter--;
+			continue;
+		}
+		if (temp.permissionsList[piter]->name.getValue() == exName + ".commands") {
+			temp.permissionsList.removeAt(piter);
+			piter--;
+			continue;
+		}
+		if (temp.permissionsList[piter]->name.getValue() == exName + ".events") {
+			temp.permissionsList.removeAt(piter);
+			piter--;
+			continue;
+
+
+		}
+
+
+	}
+/*	for (int iter = 0; iter < siClone.commands.length(); iter++) {
+		for (int oter = 0; oter < ext->oldServiceInfo.commands.length(); oter++) {
+			if (siClone.commands[iter]->name.getValue() == ext->oldServiceInfo.commands[oter]->name.getValue()) {
+				ext->oldServiceInfo.commands.removeAt(oter);
+				siClone.commands.removeAt(iter);
+				iter--;
+				oter--;
+				break;
+			}
+		}
+	}
+	for (int iter = 0; iter < siClone.events.length(); iter++) {
+		for (int oter = 0; oter < ext->oldServiceInfo.events.length(); oter++) {
+			if (siClone.events[iter]->name.getValue() == ext->oldServiceInfo.events[oter]->name.getValue()) {
+				ext->oldServiceInfo.events.removeAt(oter);
+				siClone.events.removeAt(iter);
+				iter--;
+				oter--;
+				break;
+			}
+		}*//*TODO: shoudl not modify service info, nex time it will be emptyB*//*
+	}*/
+	cmID = pNames.at(exName + ".commands");
+	evID = pNames.at(exName + ".events");
+
+	std::cerr << "Removals:" <<
+	(temp.permissionsList.length() > 1 ? "\n" + temp.permissionsList.toString(1) : "  None") << "\n";
+	std::cerr << "Additions:\n\tCommands:" <<
+	(siClone.commands.length() > 1 ? "\n" + siClone.commands.toString(1) : "  None") << "\n";
+	std::cerr << "\tEvents:" << (siClone.events.length() > 1 ? "\n" + siClone.events.toString(1) : "  None") << "\n";
+	int ID = 0;
+	for (size_t iter = 0; iter < temp.permissionsList.length(); iter++) {
+		zeitoon::datatypes::DSInteger tempI;
+		tempI.value = pNames.at(temp.permissionsList[iter]->name.getValue());
+		string pckt = tempI.toString(true);
+		comm.callCommandSync("userman.removePermission", pckt, "_core", "servUpgrd" + std::to_string(++ID));
+		rem++;
+	}
+	/*for (size_t iter = 0; iter < ext->oldServiceInfo.events.length(); iter++) {
+		zeitoon::datatypes::DSInteger tempI;
+		tempI.value = pNames.at(ext->oldServiceInfo.events[iter]->name.getValue());
+		string pckt = tempI.toString(true);
+		comm.callCommandSync("userman.removePermission", pckt, "_core", "servUpgrd" + iter);
+		rem++;
+	}*/
+	for (size_t iter = 0; iter < siClone.commands.length(); iter++) {
+		auto cm = siClone.commands[iter];
+		zeitoon::usermanagement::DSRegPermission tempI(cm->name.getValue(), cm->name.getValue(), "...", cmID);
+		string pckt = tempI.toString(true);
+		comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name.getValue(),
+		                     "servUpgrd" + std::to_string(++ID));
+		ad++;
+	}
+	for (size_t iter = 0; iter < siClone.events.length(); iter++) {
+		auto ev = siClone.events[iter];
+		zeitoon::usermanagement::DSRegPermission tempI(ev->name.getValue(), ev->name.getValue(), "...", evID);
+		string pckt = tempI.toString(true);
+		comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name.getValue(),
+		                     "servUpgrd" + std::to_string(++ID));
+		ad++;
+	}
+	ext->oldServiceInfo.clear();
+	lDebug("Database updated\n\tAddition: " + std::to_string(ad) + "  Removal: " + std::to_string(rem) +
+	       "\nUpgrade completed.");
+
+	ext->CEPermissionsRegistered = ExtensionProfile::cepState::registered;
+}
+
 bool Router::getInstallInfo(ExtensionProfile *ext) {
 	string t;
 	sendMessage(ext->serviceInfo.name, "_core", "getinstallInfo", t, MessageTypes::MTCall, "INSTALLID");
 	return true;
 }
 
+bool Router::forceUninstallService(ExtensionProfile *ext) {
+	if (!ext)
+		return false;
+	if (ext->isConnected()) {
+		//Todo: kick service
+	}
+	std::string serName =ext->serviceInfo.name.getValue();//todo :whole thing doesnt do shit.
+	string dt = "{\"name\":\"" + serName + "\"}";
+	comm.cleanup(ext);
+	extManager.remove(ext);
+	extManager.save();
+	this->disableIfReqNotSatisfied();
+	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
+	std::string t;
+	lWarnig("FORCE-UNINSTALL for service "+serName+" compeleted");
+	return true;
+}
+
 bool Router::uninstallService(ExtensionProfile *ext) {
 	if (!ext || ext->state < ExtensionProfile::extensionState::installed)
 		return false;
-	if (ext->state == ExtensionProfile::extensionState::enabled)
-		disableService(ext);
-	if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager) {
-		for (int i = 0; i < extManager.size(); i++)
-			extManager[i]->CEPermissionsRegistered = false;
-		extManager.save();
-	}
 	string t;
 	sendMessage(ext->serviceInfo.name, "_core", "onuninstall", t, MessageTypes::MTCall, "");
 	ext->state = ExtensionProfile::extensionState::notInstalled;
 	ext->installID = "";
+	ext->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
 	extManager.save();
 	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
+	if (ext->state == ExtensionProfile::extensionState::enabled)
+		disableService(ext);
+	if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager) {
+		for (int i = 0; i < extManager.size(); i++)
+			extManager[i]->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
+		extManager.save();
+	}/*todo clear up extention --cep =notreged*/
+
 	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
 	//todo:cleanup UM,PGDB
 	return true;
@@ -516,9 +748,9 @@ bool Router::disableService(ExtensionProfile *ext) {
 	sendMessage(ext->serviceInfo.name, "_core", "ondisable", t, MessageTypes::MTCall, "");
 	ext->state = ExtensionProfile::extensionState::installed;
 	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
-	comm.fireEvent(eventInfo::onServiceDisable(), dt, "_core");
 	comm.cleanup(ext);
 	extManager.save();
+	comm.fireEvent(eventInfo::onServiceDisable(), dt, "_core");
 	this->disableIfReqNotSatisfied();
 	return true;
 }
@@ -580,13 +812,13 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 			      to_string((int) e->state) + "}";
 		}
 		dt += "]}";
-		comm.callCallback(id, dt, "_core","true");//ddd
+		comm.callCallback(id, dt, "_core", "true");//ddd
 	} else if (streq(node, "_core.getServiceInfo")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
 		if (ext != NULL) {
 			string dt = ext->serviceInfo.toString();
-			comm.callCallback(id, dt, "_core","true");
+			comm.callCallback(id, dt, "_core", "true");
 		} else
 			EXTinvalidName("No service with name '" + sname + "' exist.");
 	} else if (streq(node, "_core.installService")) {

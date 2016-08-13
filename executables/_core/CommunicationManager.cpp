@@ -119,6 +119,7 @@ namespace zeitoon {
                         HookProfile &hook = hookList.at(hookId);
                         lock.unlock();
                         sendFunc(hook.extension, from, hook.eventName, data, MessageTypes::MTFire, "", "", "");
+                        lock.lock();
                     } catch (...) {
                         //todo: log fire fail
                         lError("LOG:Firing hook failed. " + eventName + ">" + hookId);

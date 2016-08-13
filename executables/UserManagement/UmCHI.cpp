@@ -79,7 +79,7 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			regResult.value = userMngrInterface.registerPermission(permissionInfo.name.value(),
 			                                                       permissionInfo.title.getValue(),
 			                                                       permissionInfo.description.getValue(),
-			                                                       permissionInfo.parentID.getValue());
+			                                                       permissionInfo.parentID.getValue(),from);
 			resultStr = regResult.toString(true);
 		} else if (!Strings::compare(node, commandInfo::updatePermission(), false)) {
 			DSUpdatePermission updateInfo(data);
@@ -116,7 +116,9 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			DSUserList usrListByGrp = userMngrInterface.listUsersByGroup(groupID.value.getValue());
 			resultStr = usrListByGrp.toString(true);
 		} else if (!Strings::compare(node, commandInfo::listPermissions(), false)) {
-			DSPermissionsList permsList = userMngrInterface.listPermissions();
+			DSString temp;
+			temp.fromString(data);
+			DSPermissionsList permsList = userMngrInterface.listPermissions((temp.value.getValue()));
 			resultStr = permsList.toString(true);
 		} else if (!Strings::compare(node, commandInfo::listUsergroups(), false)) {
 			DSUserGroupsList usrGrpList = userMngrInterface.listUsergroups();
@@ -178,22 +180,29 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			resultStr = tempList.toString(true);
 		}
 
+
 	} catch (exceptionEx &errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo.what());
 		lError("node: " + node + " id: " + id + " errMsg:" + errorInfo.what());
+		id = "";
 	} catch (exception &errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo.what());
 		lError("node: " + node + " id: " + id + " errMsg:" + errorInfo.what());
+		id = "";
 	}
 	return true;
 }
 
-void UmCHI::onCallback(string node, string data, string id, string from,  std::string success) {
+void UmCHI::onCallback(string node, string data, string id, string from, std::string success) {
 
 }
 
 void UmCHI::onEvent(string node, string data, string from) {
-
+	JStruct temp(data);
+	if (streq(node, zeitoon::_core::eventInfo::onServiceUninstall())) {
+		std::string tempStr = temp["name"].getValue();
+		userMngrInterface.removeServicePermissions(tempStr);
+	}
 }
 
 void UmCHI::onInstall(string id) {
@@ -467,7 +476,6 @@ void UmCHI::setInstallInfo() {
 			                                   DSInteger::getStructVersion(),
 			                                   DSUserContactList::getStructName(),
 			                                   DSUserContactList::getStructVersion()), true);
-
 
 //--------set available events info
 

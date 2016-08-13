@@ -286,10 +286,10 @@ namespace zeitoon {
                 fprintf(stderr, "error on_client_write");
                 return;
             }
-            delete[] tempCL->dataTransmiter.bufw->base;
-            delete[] tempCL->dataTransmiter.bufw;
+            delete tempCL->dataTransmiter.bufw->base;
+            delete tempCL->dataTransmiter.bufw;
             tempCL->dataTransmiter.send_is_busy = false;
-            delete[] req;
+            delete req;
             tempCL->dataTransmiter.bufw = NULL;
         }
 
@@ -333,7 +333,7 @@ namespace zeitoon {
             try {
                 while (!stopSendt) {
                     if (this->send_is_busy || this->pendingBuffs.size() == 0) {
-                        std::this_thread::sleep_for(chrono::microseconds(100));
+                        std::this_thread::sleep_for(chrono::microseconds(25));
                         continue;
                     }
 

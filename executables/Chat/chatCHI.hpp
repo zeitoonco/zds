@@ -25,9 +25,9 @@ namespace zeitoon {
                 setInstallInfo();
             }
 
-            void onCommand(string node, string data, string id, string from);
+            bool onCommand(string node, string data, string id, string from, std::string &resultStr);
 
-            void onCallback(string node, string data, string id, string from);
+            void onCallback(string node, string data, string id, string from, string success);
 
             void onEvent(string node, string data, string from);
 

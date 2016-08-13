@@ -137,7 +137,7 @@ extensionList.erase(excpp);*/
 			sql << "insert into services(name,version,installid,state,CEPReg,data) values('" <<
 			e->serviceInfo.name.getValue()
 			<< "'," << e->serviceInfo.serviceVersion.getValue() << ",'" << e->installID << "'," << (int) e->state <<
-			"," << (e->CEPermissionsRegistered ? 1 : 0) << ",'" << e->serviceInfo.toString() << "');\n";
+			"," << (e->CEPermissionsRegistered == ExtensionProfile::cepState::registered ? 1 : 0) << ",'" << e->serviceInfo.toString() << "');\n";
 		}
 		sql << "END;";
 		db->execute(sql.str());
@@ -150,7 +150,7 @@ extensionList.erase(excpp);*/
 			ExtensionProfile *e = new ExtensionProfile(dt.fieldValue(c, 5),
 			                                           (ExtensionProfile::extensionState) stoi(dt.fieldValue(c, 3)));
 			e->installID = dt.fieldValue(c, 2);
-			e->CEPermissionsRegistered = stoi(dt.fieldValue(c, 4));
+			e->CEPermissionsRegistered = ExtensionProfile::cepState(stoi(dt.fieldValue(c, 4)));
 			add(e);
 		}
 	}

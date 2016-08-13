@@ -303,13 +303,15 @@ UMUserInfo UMCore::getUserInfo(int ID) {
 	}
 }
 
-int UMCore::registerPermission(std::string name, std::string title, std::string desc, int parent) {
+int UMCore::registerPermission(std::string name, std::string title, std::string desc, int parent, const std::string &from) {
 	std::string permissionID = "";
 	try {
 		permissionID = singleFieldQuerySync(
 				"insert into permission( id, parentid, name, title, description) values(default, " +
 				(parent == -1 ? string("NULL") : std::to_string(parent)) + ", '" + name + "', '" + title
-				+ "', '" + desc + "') RETURNING id");
+				+ "', '" + desc + "')  RETURNING id");
+		if (permissionID.size() > 0)
+			executeSync("INSERT INTO servicepermission (service, permissionid) VALUES ('"+from+"',"+permissionID+")");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to register permission[" + name + "(" + title + ")" + desc + "] in database",
 		            errorInfo);
@@ -321,7 +323,6 @@ int UMCore::registerPermission(std::string name, std::string title, std::string 
 	lNote("Permission[" + name + ", ID:" + permissionID + "] registered.");
 	this->sessionManager.permissionCacheUpdate(std::stoi(permissionID));//add to permissionCache
 	return std::stoi(permissionID);
-
 }
 
 void UMCore::updatePermission(int permissionID, std::string name, std::string title, std::string desc,
@@ -358,7 +359,7 @@ void UMCore::removePermission(int permissionID) {
 		EXTDBErrorI("Unable to remove permission[ID: " + std::to_string(permissionID) + "] from database.",
 		            errorInfo);
 	}
-
+	sessionManager.permissionCacheUpdate(permissionID);
 	umCHI->sm.communication.runEvent(eventInfo::permissionRemoved(),
 	                                 zeitoon::usermanagement::DSUpdatePermission(permissionID, "", "", "",
 	                                                                             -2).toString(
@@ -484,11 +485,17 @@ DSUserList UMCore::listUsersByGroup(
 	return allUsersOfSpecificGroup;
 }
 
-DSPermissionsList UMCore::listPermissions() {
+DSPermissionsList UMCore::listPermissions(std::string serviceName) {
+	/*Receive service name as a string only from core
+	 * node listPermission still has no data*/
 	DSPermissionsList allPermissions;
 	zeitoon::datatypes::DTTableString result("");
+	std::string addQuery="";
+	if (serviceName.size() > 0){
+		addQuery = "WHERE id IN (SELECT permissionid FROM servicepermission WHERE service= '"+serviceName+"')";
+	}
 	try {
-		result = querySync("select id,parentid,name,title,description from permission order by id");
+		result = querySync("select id,parentid,name,title,description from permission "+addQuery+" order by id");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch  permission names from database", errorInfo);
 
@@ -837,9 +844,10 @@ void UMCore::addUsergroupPermission(int usergroupID, int permissionID, int state
 		int a = executeSync(
 				"insert into grouppermission(permissionid,groupid,state) values(" +
 				std::to_string(permissionID) + ", " + std::to_string(usergroupID) +
-						", " + std::to_string(state) + ") ON CONFLICT(permissionid, groupid) DO UPDATE SET state=" + std::to_string(state));
+				", " + std::to_string(state) + ") ON CONFLICT(permissionid, groupid) DO UPDATE SET state=" +
+				std::to_string(state));
 		if (a != 1)
-		EXTDBError("INSERT FAILED");
+			EXTDBError("INSERT FAILED");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to add the permission for the user", errorInfo);
 	}
@@ -897,6 +905,20 @@ DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
 	}
 	return list;
 }
+
+
+
+void UMCore::removeServicePermissions(std::string serviceName) {
+	std::string quer =
+			"DELETE FROM permission WHERE id IN (SELECT permissionid FROM servicepermission WHERE service= '" +
+			serviceName + "') RETURNING id";
+	auto res = querySync(quer);
+	//todo: incomplete & trial
+	for (size_t iter = 0 ; iter < res.rowCount(); iter++){
+		sessionManager.permissionCacheUpdate(res.fieldValueInt(iter,0));
+	}
+}
+
 
 std::string UMCore::getNameAndType() {
 	return "UMCore";

@@ -100,6 +100,7 @@ private:
 	 * @return bool .Agar extension sabt shode baashad, 1 (TRUE) barmigardaanad;
 	 *
 	 */
+	void dropConnection(std::string extensionName);
 	bool checkIfExtensionRegistered(std::string extension);
 
 	/**getNameAndType() in function mas'ool e jam-aavari etela'aat baraye estefaade dar hangaam throw kardan e

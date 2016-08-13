@@ -21,7 +21,7 @@ ALTER TABLE "UserManagement".permission
 
 CREATE TABLE if not exists "UserManagement".users
 (
-  id serial NOT NULL,
+ id serial NOT NULL,
   username character varying(32),
   password character varying(255),
   name character varying(255),
@@ -39,7 +39,7 @@ ALTER TABLE "UserManagement".users
 
 CREATE TABLE if not exists "UserManagement".groups
 (
-  id serial NOT NULL,
+   id serial NOT NULL,
   title character varying(64),
   parentid integer,
   description character varying(4096) DEFAULT NULL::character varying,
@@ -57,7 +57,7 @@ ALTER TABLE "UserManagement".groups
 
 CREATE TABLE if not exists "UserManagement".grouppermission
 (
-  permissionid integer NOT NULL,
+    permissionid integer NOT NULL,
   groupid integer NOT NULL,
   state integer DEFAULT 0,
   CONSTRAINT grouppermission_pkey PRIMARY KEY (permissionid, groupid),
@@ -76,14 +76,13 @@ ALTER TABLE "UserManagement".grouppermission
 
 CREATE TABLE if not exists "UserManagement".servicepermission
 (
-  id serial NOT NULL,
+   id serial NOT NULL,
   service character varying(64),
   permissionid integer,
   CONSTRAINT servicepermission_pkey PRIMARY KEY (id),
   CONSTRAINT servicepermission_permissionid_fkey FOREIGN KEY (permissionid)
       REFERENCES "UserManagement".permission (id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE RESTRICT
-)
+      ON UPDATE CASCADE ON DELETE CASCADE
 WITH (
   OIDS=FALSE
 );
@@ -102,6 +101,7 @@ CREATE TABLE if not exists "UserManagement".usergroup
   CONSTRAINT usergroup_userid_fkey FOREIGN KEY (userid)
       REFERENCES "UserManagement".users (id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT
+
 )
 WITH (
   OIDS=FALSE
@@ -113,7 +113,7 @@ ALTER TABLE "UserManagement".usergroup
 
 CREATE TABLE if not exists "UserManagement".userpermission
 (
-  userid integer NOT NULL,
+ userid integer NOT NULL,
   permissionid integer NOT NULL,
   state integer DEFAULT 0,
   CONSTRAINT userpermission_pkey PRIMARY KEY (userid, permissionid),

@@ -16,7 +16,6 @@ bool GuiCHI::onCommand(string node, string data, string id, string from, std::st
 
 
 void GuiCHI::onCallback(string node, string data, string id, string from, std::string success) {
-
 	lDebug("Callback ID:" + id + " Node: " + node + " received from: " + from + ". Data: " + data + " success: " +
 	       success);
 	guiCore.callBackReceived(node, id, data,success);

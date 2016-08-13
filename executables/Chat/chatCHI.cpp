@@ -12,7 +12,7 @@ namespace zeitoon {
     namespace chat {
 
 
-    void ChatCHI::onCommand(string node, string data, string id, string from) {
+    bool ChatCHI::onCommand(string node, string data, string id, string from, std::string &resultStr) {
         try {
         if (!Strings::compare(node, CommandInfo::newMessage(), false)) {
             DSNewMessage input(data);
@@ -20,7 +20,7 @@ namespace zeitoon {
             result.value = chatCore.newMessage(input.userID.getValue(), input.sessionID.getValue(),
                                                input.msg.getValue(),
                                                (EnumMsgType::msgType) input.type.getValue());
-            sm.communication.runCallback(node, result.toString(true), id);
+            resultStr =result.toString(true);
         }
 
         else if (!Strings::compare(node, CommandInfo::removeMessage(), false)) {
@@ -36,7 +36,7 @@ namespace zeitoon {
             temp.fromString(data);
             DSCheckMessages result;
             result.fromString((chatCore.checkNewMessages(temp.value.getValue())).toString());
-            sm.communication.runCallback(node, result.toString(true), id);
+            resultStr =result.toString(true);
         }
 
 
@@ -47,7 +47,7 @@ namespace zeitoon {
                                                         (EnumGetMsgType::getMsgType) temp.type.getValue(),
                                                         temp.from.getValue(),
                                                         temp.to.getValue());
-            sm.communication.runCallback(node, result.toString(true), id);
+            resultStr = result.toString(true);
         }
         else if (!Strings::compare(node, CommandInfo::messagesSeen(), false)) {
             DSSeen temp(data);
@@ -62,7 +62,7 @@ namespace zeitoon {
             temp.fromString(data);
 
             DSChatUserData result = chatCore.getUserData(temp.value.getValue());
-            sm.communication.runCallback(node, result.toString(true), id);
+            resultStr = result.toString(true);
         }
         else if (!Strings::compare(node, CommandInfo::changeUserState(), false)) {
             DSChangeUserState temp(data);
@@ -81,7 +81,7 @@ namespace zeitoon {
             DSListUserID *list= new DSListUserID(data);
             //list.fromString(data);
             result.value = chatCore.newSession(list);
-            sm.communication.runCallback(node, result.toString(true), id);
+            resultStr = result.toString(true);
             delete list;
         }
         /*else if (!Strings::compare(node, CommandInfo::addUserToSession(), false)) {
@@ -101,19 +101,19 @@ namespace zeitoon {
             temp.fromString(data);
             DSSessionList result = chatCore.listSessions(
                     temp.value.getValue());//see @ajl: if we "DSSessionList result; result=..." raises segmentation fault. WHY????
-            sm.communication.runCallback(node, result.toString(true), id);
+            resultStr =result.toString(true);
         }
         else if (!Strings::compare(node, CommandInfo::getSession(), false)) {
             DSInteger temp;
             temp.fromString(data);
             DSSession result;
-            sm.communication.runCallback(node, (chatCore.getSession(temp.value.getValue())).toString(true), id);
+            resultStr = chatCore.getSession(temp.value.getValue()).toString(true);
         }
         else if (!Strings::compare(node, CommandInfo::SessionUserList(), false)) {
             DSInteger temp;
             temp.fromString(data);
             zeitoon::usermanagement::DSUserList result = chatCore.SessionUserList(temp.value.getValue());
-            sm.communication.runCallback(node, result.toString(true), id);
+            resultStr = result.toString(true);
         }
         /*else if (!Strings::compare(node, CommandInfo::removeSession(), false)) {
             DSInteger temp;//todo: remove if not needed anymore
@@ -127,7 +127,7 @@ namespace zeitoon {
     }
     }
 
-        void ChatCHI::onCallback(string node, string data, string id, string from) {
+        void ChatCHI::onCallback(string node, string data, string id, string from, string success) {
 
         }
 
@@ -340,15 +340,16 @@ namespace zeitoon {
                                                      DSAddUserSession::getStructVersion()), true);
             insInfo.events.add(
                     new DSInstallInfo::DSEventDetail(EventInfo::sessionUserRemoved(), DSAddUserSession::getStructName(),
-                                                     DSAddUserSession::getStructVersion()), true);
+                                                     DSAddUserSession::getStructVersion()), true);//
             insInfo.events.add(
                     new DSInstallInfo::DSEventDetail(EventInfo::sessionLeaderChanged(),
                                                      DSAddUserSession::getStructName(),
-                                                     DSAddUserSession::getStructVersion()), true);
+                                                     DSAddUserSession::getStructVersion()), true);//
             insInfo.events.add(
                     new DSInstallInfo::DSEventDetail(EventInfo::userStateChanged(), DSChangeUserState::getStructName(),
-                                                     DSChangeUserState::getStructVersion()), true);
+                                                     DSChangeUserState::getStructVersion()), true);//
 
+            //-----------HOOKS
             insInfo.hooks.add(new DSInstallInfo::DSHookDetail(EventInfo::newMessageReceived(), "", 0), true);
         }
 

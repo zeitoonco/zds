@@ -157,7 +157,7 @@ public:
 				} else {
 					std::string tempResult = "";
 					bool success = this->onCommand(node, data, id, from, tempResult);
-					if (id.size()>0)
+					if (id.size()>0 & success)
 						this->sm.communication.runCallback(node, tempResult, id, success);
 				}
 			}

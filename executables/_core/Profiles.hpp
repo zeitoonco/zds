@@ -85,7 +85,7 @@ public:
 	datatypes::DSInstallInfo serviceInfo;
 private:
 	ExtensionProfile(extensionState sstate, ssize_t netid) :
-			serviceInfo("", "", 0, 0, datatypes::EnmServiceType::other), oldServiceInfo("", "", 0, 0, datatypes::EnmServiceType::other) {
+			serviceInfo("", "", 0, 0, datatypes::EnmServiceType::other){
 		netClientId = netid;
 		state = sstate;
 		requirementsSatisfied = false;

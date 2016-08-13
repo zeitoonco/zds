@@ -687,7 +687,6 @@ void Router::upgradeService(ExtensionProfile *ext) {
 		                     "servUpgrd" + std::to_string(++ID));
 		ad++;
 	}
-	ext->oldServiceInfo.clear();
 	lDebug("Database updated\n\tAddition: " + std::to_string(ad) + "  Removal: " + std::to_string(rem) +
 	       "\nUpgrade completed.");
 

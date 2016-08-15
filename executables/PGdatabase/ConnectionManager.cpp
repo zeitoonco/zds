@@ -14,7 +14,7 @@ using namespace zeitoon::utility;
 #define CREATE_DATABASE "CREATE DATABASE "
 #define CREATE_SCHEMA_FOR_EXTENSIONS "CREATE SCHEMA __local"
 #define CREATE_EXTENSIONS_INFO_TABLE "CREATE TABLE __local.extension(  id serial NOT NULL,  name text, username text,  password text,  schema text,  blocked boolean,  CONSTRAINT extension_pkey PRIMARY KEY (id),  CONSTRAINT extension_name_key UNIQUE (name),  CONSTRAINT extension_password_key UNIQUE (password),  CONSTRAINT extension_schema_key UNIQUE (schema),  CONSTRAINT extension_username_key UNIQUE (username))"
-
+#define CREATE_EXTENSIONS_FOR_HSTORE "BEGIN; CREATE SCHEMA _extensions AUTHORIZATION postgres; GRANT ALL ON SCHEMA _extensions TO postgres; GRANT USAGE ON SCHEMA _extensions TO public;CREATE EXTENSION hstore  SCHEMA _extensions VERSION \"1.3\"; END;"
 namespace zeitoon {
 namespace pgdatabase {
 
@@ -181,6 +181,7 @@ void ConnectionManager::createDatabase(std::string userName, std::string passWor
 		adminConnection.connect(userName, passWord, host, port, dbname);
 		adminConnection.execute(CREATE_SCHEMA_FOR_EXTENSIONS);
 		adminConnection.execute(CREATE_EXTENSIONS_INFO_TABLE);
+		adminConnection.execute(CREATE_EXTENSIONS_FOR_HSTORE);
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Admin createDatabase Failed", errorInfo);
 	}

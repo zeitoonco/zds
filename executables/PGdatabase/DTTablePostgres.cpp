@@ -79,8 +79,9 @@ ColumnDataType::columnDataType DTTablePostgres::columnDataType(int columnNumber)
 		EXTinvalidParameterI("Unable to fetch OID", err);
 	}
 	std::map<Oid, int>::iterator iter = mapPgCustomType.find(columnOid);
-	if (iter == mapPgCustomType.end()) {
-		EXTdataTypeMismatch("Data type not found");
+	if (iter == mapPgCustomType.end()) {//todo:: to be reviewed by inf
+		ColumnDataType::columnDataType::UNKNOWN;
+		//EXTdataTypeMismatch("Data type not found");
 	}
 	return (ColumnDataType::columnDataType) iter->second;
 }

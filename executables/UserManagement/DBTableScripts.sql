@@ -83,6 +83,7 @@ CREATE TABLE if not exists "UserManagement".servicepermission
   CONSTRAINT servicepermission_permissionid_fkey FOREIGN KEY (permissionid)
       REFERENCES "UserManagement".permission (id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE CASCADE
+      )
 WITH (
   OIDS=FALSE
 );

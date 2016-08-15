@@ -23,7 +23,7 @@ public:
 
 
 	enum columnDataType {
-		TEXT, INTEGER, FLOAT, BINARY, BOOLEAN, DATE, UNKNOWN, __MAX
+		TEXT, INTEGER, FLOAT, BINARY, BOOLEAN, DATE, HSTORE, UNKNOWN, __MAX
 	};
 	static std::string enumArray[__MAX];
 

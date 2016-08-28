@@ -9,11 +9,12 @@
 #include"ConnectionManager.hpp"
 #include <utility/exceptions.hpp>
 #include "utility/logger.hpp"
+
 using namespace zeitoon::utility;
 
-#define CREATE_DATABASE "CREATE DATABASE "
+#define CREATE_DATABASE "CREATE DATABASE "//place an "if not exists"
 #define CREATE_SCHEMA_FOR_EXTENSIONS "CREATE SCHEMA __local"
-#define CREATE_EXTENSIONS_INFO_TABLE "CREATE TABLE __local.extension(  id serial NOT NULL,  name text, username text,  password text,  schema text,  blocked boolean,  CONSTRAINT extension_pkey PRIMARY KEY (id),  CONSTRAINT extension_name_key UNIQUE (name),  CONSTRAINT extension_password_key UNIQUE (password),  CONSTRAINT extension_schema_key UNIQUE (schema),  CONSTRAINT extension_username_key UNIQUE (username))"
+#define CREATE_EXTENSIONS_INFO_TABLE "CREATE TABLE __local.extension(  id serial NOT NULL,  name text NOT NULL, username text NOT NULL,  password text NOT NULL,  schema text NOT NULL,  blocked boolean NOT NULL,  CONSTRAINT extension_pkey PRIMARY KEY (id),  CONSTRAINT extension_name_key UNIQUE (name),  CONSTRAINT extension_password_key UNIQUE (password),  CONSTRAINT extension_schema_key UNIQUE (schema),  CONSTRAINT extension_username_key UNIQUE (username))"
 #define CREATE_EXTENSIONS_FOR_HSTORE "BEGIN; CREATE SCHEMA _extensions AUTHORIZATION postgres; GRANT ALL ON SCHEMA _extensions TO postgres; GRANT USAGE ON SCHEMA _extensions TO public;CREATE EXTENSION hstore  SCHEMA _extensions VERSION \"1.3\"; END;"
 namespace zeitoon {
 namespace pgdatabase {
@@ -26,9 +27,11 @@ ConnectionManager::ConnectionManager(std::string adminUserName, std::string admi
 	host = adminHost;
 	port = adminPort;
 	dbname = adminDbname;
+	adminUsr = adminUserName;
+	adminPw = adminPassWord;
+
 	try {
 		adminConnection.connect(adminUserName, adminPassWord, adminHost, adminPort, adminDbname);
-
 	} catch (exceptionEx &errorInfo) {
 		if (!adminConnection.isConnected())
 			adminConnection.connect(adminUserName, adminPassWord, adminHost, adminPort, "");
@@ -42,7 +45,7 @@ ConnectionManager::ConnectionManager(std::string adminUserName, std::string admi
 			EXTconnectionErrorI("Admin Connection Failed", errorInfo);
 		}
 	}
-	if (adminConnection.isConnected() == false) {
+	if (!adminConnection.isConnected()) {
 		EXTconnectionError("Admin Connection Failed");
 	}
 	if (adminConnection.isConnected())
@@ -51,9 +54,9 @@ ConnectionManager::ConnectionManager(std::string adminUserName, std::string admi
 
 ConnectionManager::~ConnectionManager() {
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
-	std::map<std::string, Connection>::iterator iter;
+	std::map<std::string, Connection *>::iterator iter;
 	for (iter = connectionList.begin(); iter != connectionList.end(); iter++) {
-		iter->second.disconnect();
+		iter->second->disconnect();
 	}
 	connectionList.clear();
 	adminConnection.disconnect();
@@ -62,7 +65,7 @@ ConnectionManager::~ConnectionManager() {
 int ConnectionManager::execute(std::string extension, std::string sql) {
 	int returnAmount = 0;
 	try {
-		if (checkIfExtensionRegistered(extension) != true) {
+		if (!checkIfExtensionRegistered(extension)) {
 			registerNewExtension(extension);
 		}
 		if (connectionList.find(extension) == connectionList.end()) {
@@ -73,7 +76,7 @@ int ConnectionManager::execute(std::string extension, std::string sql) {
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
-		returnAmount = connectionList.at(extension).execute(sql);
+		returnAmount = connectionList.at(extension)->execute(sql);
 
 	} catch (exceptionEx &errorInfo_ConMgr) {
 		EXTDBErrorI("SQL Execution Error: ", errorInfo_ConMgr);
@@ -83,7 +86,7 @@ int ConnectionManager::execute(std::string extension, std::string sql) {
 
 DTTablePostgres ConnectionManager::query(std::string extension, std::string sql) {
 	try {
-		if (checkIfExtensionRegistered(extension) != true) {
+		if (!checkIfExtensionRegistered(extension)) {
 			registerNewExtension(extension);
 		}
 		if (connectionList.find(extension) == connectionList.end()) {
@@ -94,7 +97,7 @@ DTTablePostgres ConnectionManager::query(std::string extension, std::string sql)
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
-		return this->connectionList.at(extension).query(sql);
+		return this->connectionList.at(extension)->query(sql);
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("SQL Query Error: ", errorInfo);
 	}
@@ -104,7 +107,7 @@ DTTablePostgres ConnectionManager::query(std::string extension, std::string sql)
 std::string ConnectionManager::singleFieldQuery(std::string extension, std::string sql) {
 	std::string val = "";
 	try {
-		if (checkIfExtensionRegistered(extension) != true) {
+		if (!checkIfExtensionRegistered(extension)) {
 			registerNewExtension(extension);
 		}
 		if (connectionList.find(extension) == connectionList.end()) {
@@ -115,7 +118,7 @@ std::string ConnectionManager::singleFieldQuery(std::string extension, std::stri
 	}
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	try {
-		val = connectionList.at(extension).getValue(sql);
+		val = connectionList.at(extension)->getValue(sql);
 		return val;
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("SQL SingleFieldQuery Error: ", errorInfo);
@@ -144,25 +147,33 @@ void ConnectionManager::registerNewExtension(std::string extensionName) {
 		EXTDBErrorI("Register new extension FAILED", errorInfo);
 	}
 	pgMediator->sm.communication.runEvent("database.newUser", "{\"value\":\"" + extensionName + "\"}");
-	lNote("New extension added. Name: "+extensionName);
+	lNote("New extension added. Name: " + extensionName);
 	//##Event Fired
 }
 
 void ConnectionManager::connectionMaker(std::string extensionName) {
+	if (this->blockCons)
+		EXTconnectionError("all service DB connections are blocked.. PG may be disabled");
 	std::lock_guard<std::mutex> connectionListGuard(mapGuard);
 	auto insertResult = this->connectionList.insert(
-			std::pair<string, Connection>(extensionName, Connection(extensionName, extensionName, host, port, dbname)));
+			std::pair<string, Connection *>(extensionName,
+			                                new Connection(extensionName, extensionName, host, port, dbname)));
 	if (!insertResult.second)//false if not successfully inserted into the map
 		EXTDBError("Create Connection for \'" + extensionName + "\' FAILED");
 
 	pgMediator->sm.communication.runEvent("database.userLogin", "{\"value\":\"" + extensionName + "\"}");
-	lNote("Extension logged in. Name: "+extensionName);
+	lNote("Extension logged in. Name: " + extensionName);
 	//##Event Fired
 }
 
 
 void ConnectionManager::dropConnection(std::string extensionName) {
-this->connectionList.erase(extensionName);
+	auto temp = this->connectionList.find(extensionName);
+	if (temp != connectionList.end()) {
+		temp->second->disconnect();
+		delete temp->second;
+	}
+	this->connectionList.erase(extensionName);
 }
 
 
@@ -176,7 +187,7 @@ std::string ConnectionManager::getNameAndType() {
 
 void ConnectionManager::createDatabase(std::string userName, std::string passWord, int port, std::string host) {
 	try {
-		adminConnection.execute(CREATE_DATABASE + dbname);
+		adminConnection.execute(CREATE_DATABASE  "\"" + dbname + "\"");
 		adminConnection.disconnect();
 		adminConnection.connect(userName, passWord, host, port, dbname);
 		adminConnection.execute(CREATE_SCHEMA_FOR_EXTENSIONS);
@@ -185,25 +196,56 @@ void ConnectionManager::createDatabase(std::string userName, std::string passWor
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Admin createDatabase Failed", errorInfo);
 	}
-	lNote("Admin Role,Schema,Tables created. Name: "+userName);
+	lNote("Admin Role,Schema,Tables created. Name: " + userName);
 
 }
 
 void pgdatabase::ConnectionManager::removeExtension(std::string serviceName) {
 	try {
-		lWarnig("Removing DB schema for user: " + serviceName + " .... " );
+		lWarnig("Removing DB schema for user: " + serviceName + " .... ");
 		int a = adminConnection.execute("DROP SCHEMA IF EXISTS \"" + serviceName + "\" CASCADE");
 		lWarnig("Removing service name from DB for user: " + serviceName + " .... ");
 		int b = adminConnection.execute("DELETE FROM __local.extension WHERE name = '" + serviceName + "'");
-		lWarnig("Removing role "+ serviceName + " ....  ");
+		lWarnig("Removing role " + serviceName + " ....  ");
 		int c = adminConnection.execute("DROP ROLE IF EXISTS \"" + serviceName + "\"");
-		lWarnig("terminating DB connection for "+serviceName);
+		lWarnig("terminating DB connection for " + serviceName);
 		this->dropConnection(serviceName);
-		lNote("Done");
-
+		lNote(serviceName+"'s Database connection terminated");
 	} catch (zeitoon::utility::exceptionEx &err) {
 		EXTDBErrorI("Removing Extention FAILED", err);
 	}
 }
+
+void ConnectionManager::removeDB() {
+	std::vector<std::string> names;
+	for (auto iter:this->connectionList) {
+		names.push_back(iter.first);
+	}
+	for(auto &i:names)
+		this->removeExtension(i);
+
+	adminConnection.disconnect();
+	lWarnig("Admin disconnected");
+	adminConnection.connect(adminUsr, adminPw, host, port, "");
+	if (adminConnection.isConnected())
+		adminConnection.execute("SELECT pg_terminate_backend(pg_stat_activity.pid)"
+				                        " FROM pg_stat_activity"
+				                        " WHERE pg_stat_activity.datname = '" + this->dbname + "'"
+				                        " AND usename !='" + adminUsr + "'");
+
+	this->adminConnection.execute("DROP DATABASE IF EXISTS \"" + this->dbname + "\"");
+	lWarnig("Database completely removed");
+}
+
+
+void ConnectionManager::blockDBConnections() {
+	this->blockCons = true;
+}
+
+void ConnectionManager::allowDBConnections() {
+	this->blockCons = false;
+}
+
+
 }
 }

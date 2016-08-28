@@ -27,9 +27,13 @@ ExtensionProfile *inputExt() {
 	cin >> inp;
 	try {
 		int id = stoi(inp);
-		if (id > 0 && id < r->extManager.size())
+		if (id >= 0 && id < r->extManager.size()) {
+			if (r->extManager[id]->serviceInfo.serviceType.getValue() == zeitoon::datatypes::EnmServiceType::Core) {
+				cerr << "Core is inaccessible\n";
+				return NULL;
+			}
 			return r->extManager[id];
-		else
+		} else
 			cerr << "\n!! Invalid service ID.";
 		return NULL;
 	} catch (...) {
@@ -94,7 +98,7 @@ int main(int argc, char *argv[]) {
 
 
 	string cmd;
-	int p1;
+	int p1 = -1;
 	while (cmd != "q") {
 		cout << "\nCMD:\n";
 		cin >> cmd;
@@ -107,9 +111,10 @@ int main(int argc, char *argv[]) {
 				ExtensionProfile *se = inputExt();
 				if (se != NULL) if (!r->getInstallInfo(se))
 					cerr << "\n##InstallInfo '" + se->serviceInfo.name.getValue() + "' failed.";
-			} else if (streq(cmd,"upgrade")) {
-				ExtensionProfile *se= inputExt();
-				r->upgradeService(se);
+			} else if (streq(cmd, "upgrade")) {
+				ExtensionProfile *se = inputExt();
+				if (se != NULL)
+					r->upgradeService(se);
 			} else if (streq(cmd, "install") || streq(cmd, "ins")) {
 				ExtensionProfile *se = inputExt();
 				if (se != NULL) if (!r->installService(se))
@@ -162,7 +167,7 @@ void printListOfServices(Router *r) {
 		<< Strings::padRight(to_string((int) (r->extManager[i]->state)), 6)
 		<< Strings::padRight(to_string(r->extManager[i]->netClientId), 5)
 		<< Strings::padRight(r->extManager[i]->installID, 12)
-		<< Strings::padRight(to_string((int)r->extManager[i]->CEPermissionsRegistered), 4)
+		<< Strings::padRight(to_string((int) r->extManager[i]->CEPermissionsRegistered), 4)
 		<< Strings::padRight(to_string(r->extManager[i]->requirementsSatisfied), 4)
 		<< Strings::padRight(to_string(r->extManager[i]->serviceInfo.serviceType.getValue()), 4) << endl;
 	}

@@ -43,6 +43,9 @@ void GuiCHI::onDisable() {
 void GuiCHI::onUninstall() {
 	GUIConfiguration.serviceID = "";
 	GUIConfiguration.save();
+	lNote("Service uninstalled");
+	sm.disconnect();
+	lNote("Network connection closed");
 }
 
 void GuiCHI::onConnect() {

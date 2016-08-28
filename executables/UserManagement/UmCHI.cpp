@@ -201,6 +201,8 @@ void UmCHI::onEvent(string node, string data, string from) {
 	JStruct temp(data);
 	if (streq(node, zeitoon::_core::eventInfo::onServiceUninstall())) {
 		std::string tempStr = temp["name"].getValue();
+/*		if (streq("PGDatabase", tempStr) || streq(this->getServiceName(), tempStr) )
+			return;*/
 		userMngrInterface.removeServicePermissions(tempStr);
 	}
 }
@@ -267,7 +269,9 @@ void UmCHI::onDisable() {
 void UmCHI::onUninstall() {//fixme: remove db things
 	UMconfig.serviceID = "";
 	UMconfig.save();
-	lWarnig("Service Uninstalled");
+	lNote("Service uninstalled");
+	sm.disconnect();
+	lNote("Network connection closed");
 }
 
 void UmCHI::onConnect() {
@@ -642,7 +646,6 @@ void UmCHI::setInstallInfo() {
 					zeitoon::usermanagement::DSUserPermission::getStructName(),
 					zeitoon::usermanagement::DSUserPermission::getStructVersion()),
 			true);
-	//----------------TODO: temporary to be checked by ajl
 	insInfo.datatypes.add(
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(
 					zeitoon::usermanagement::DSAddContact::getStructName(),

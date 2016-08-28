@@ -61,9 +61,12 @@ void PGmediator::onEvent(string node, string data, string from) {
 		JStruct temp(data);
 		if (!Strings::compare(node, zeitoon::_core::eventInfo::onServiceUninstall(), false)) {
 			std::string d = temp["name"].getValue();
+			if (streq(d,this->getServiceName()))
+				return;
 			conMgr.removeExtension(d);
 		}
-	} catch (zeitoon::utility::exceptionEx &err) {
+
+		} catch (zeitoon::utility::exceptionEx &err) {
 		lError("onEvent err:  node: " + node + " from: " + from + " errMsg:" + err.what());
 	}
 }
@@ -75,6 +78,9 @@ void PGmediator::onInstall(string id) {
 }
 
 void PGmediator::onEnable() {
+	conMgr.allowDBConnections();
+	lWarnig("allowed all other service DB connections");
+
 //--------register cmds
 	std::string temp = "";
 	size_t length = insInfo.commands.length();
@@ -105,14 +111,18 @@ void PGmediator::onEnable() {
 }
 
 void PGmediator::onDisable() {
+	conMgr.blockDBConnections();
+	lWarnig("blocked all other service DB connections");
 	lWarnig("Service disabled");
 }
 
 void PGmediator::onUninstall() { //fixme: remove db things
 	PGconfiguration.serviceID = "";
 	PGconfiguration.save();
+	conMgr.removeDB();
 	lWarnig("Service Uninstalled");
-
+	sm.disconnect();
+	lNote("Network connection closed");
 }
 
 void PGmediator::onConnect() {

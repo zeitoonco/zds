@@ -50,13 +50,16 @@ public:
 	}
 
 	ExtensionProfile *operator[](size_t index) {
+		if (index > (extensionList.size() -1) or index < 0)
+			EXToutOfRange("Index does not exist in extension List");
 		return extensionList[index];
 	}
 
 	ExtensionProfile *operator[](string name) {
-		for (int i = 0; i < extensionList.size(); i++)
+		for (int i = 0; i < extensionList.size(); i++) {
 			if (streq(extensionList[i]->serviceInfo.name.getValue(), name))
 				return extensionList[i];
+		}
 		return NULL;
 	}
 

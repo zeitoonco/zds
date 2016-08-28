@@ -26,6 +26,7 @@ namespace pgdatabase {
 class PGmediator;
 
 class ConnectionManager {
+	bool blockCons = true;
 	PGmediator *pgMediator;
 public:
 	/**ConnectionManager() constructor e class
@@ -76,6 +77,9 @@ public:
 	std::string singleFieldQuery(std::string extension, std::string sql);
 
 	void removeExtension(std::string serviceName);
+	void removeDB();
+	void blockDBConnections();
+	void allowDBConnections();
 
 private:
 	/**registerNewExtension() sabt e extension e jadid .
@@ -109,7 +113,8 @@ private:
 	 */
 	std::string getNameAndType();
 
-	std::string host, dbname;
+	std::string host, dbname, adminPw, adminUsr;
+
 	/** dar constructor meeghdaar migirad va bad be onvaan e
 		 *parametr e moshtarek baraye connection e har extension estefaade mishavafd */
 
@@ -122,7 +127,7 @@ private:
 	std::mutex mapGuard;
 	/** baraye lock kardan e map e connectionList  dar hangaam e estefaade az map*/
 
-	std::map<std::string, Connection> connectionList; //list connection haye mojood baraaye extension haye mokhtalef. dar void connectionMaker() meghdaar migirad
+	std::map<std::string, Connection*> connectionList; //list connection haye mojood baraaye extension haye mokhtalef. dar void connectionMaker() meghdaar migirad
 
 	void createDatabase(std::string userName, std::string passWord, int port, std::string host);
 };

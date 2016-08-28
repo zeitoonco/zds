@@ -84,7 +84,7 @@ void Connection::disconnect() {
 	if (not isConnected()) {
 		return;
 	}
-	conn = nullptr;
+//	conn = nullptr;
 	PQfinish(conn);
 
 }

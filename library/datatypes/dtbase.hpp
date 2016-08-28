@@ -45,9 +45,9 @@ public:
 	 * @param text stringi ke meghdare moteghaeir dar aan ast.
 	 * @param type nahve zakhire shodane meghdar ra dar string neshan midahad(json, xml, raw...)
 	 */
-	DTBase(string name, string text) : DTBase(name) {
-		this->fromString(text);
-	}
+/*	DTBase(string name, string text) : DTBase(name) {
+
+	}*/
 
 	/**
 	 * distructor DTBase.

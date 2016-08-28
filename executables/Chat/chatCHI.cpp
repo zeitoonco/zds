@@ -196,7 +196,9 @@ namespace zeitoon {
         void ChatCHI::onUninstall() {
             Chatconfig.serviceID = "";
             Chatconfig.save();
-            lWarnig("Service Uninstalled");
+            lNote("Service installed");
+            sm.disconnect();
+            lNote("Network connection closed");
         }
 
         void ChatCHI::onConnect() {

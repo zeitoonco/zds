@@ -23,7 +23,7 @@ public:
 
 
 	enum columnDataType {
-		TEXT, INTEGER, FLOAT, BINARY, BOOLEAN, DATE, HSTORE, UNKNOWN, __MAX
+		TEXT, INTEGER, FLOAT, BINARY, BOOLEAN, DATE, UNKNOWN, __MAX
 	};
 	static std::string enumArray[__MAX];
 
@@ -40,7 +40,7 @@ public:
 
 	}
 
-	DTTable(std::string name, std::string text) : DTBase(name, text) {
+	DTTable(std::string name, std::string text) : DTBase(name/*, text*/) {
 
 	}
 

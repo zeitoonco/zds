@@ -75,6 +75,7 @@ public:
 	bool uninstallService(ExtensionProfile *exte);
 	bool disableService(ExtensionProfile *exte);
 	void ping(ExtensionProfile *exte);
+	void kickService(ExtensionProfile *ex);
 	inline string getNameAndType() {
 		return "Router";
 	}

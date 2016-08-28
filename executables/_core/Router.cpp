@@ -218,10 +218,10 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 				} else {
 					ext->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
 				}
-				lNote("Service "+ext->serviceInfo.name.value()+" installed.");
+				lNote("Service " + ext->serviceInfo.name.value() + " installed.");
 				string dt = "{\"name\":\"" + ext->serviceInfo.name.value() + "\"}";
 				comm.fireEvent(eventInfo::onServiceInstall(), dt, "_core");
-			}else{
+			} else {
 				ext->state = ExtensionProfile::extensionState::notInstalled;
 				ext->installID = "";
 			}
@@ -322,6 +322,7 @@ void Router::sendMessage(string extension, string source, string node, string &d
 		if (data.length() > 0)
 			msg.addIgnored("data", data);
 		string msgs = msg.toString();
+
 		this->sendPacket(msgs, extManager[extension]);
 	}
 }
@@ -466,7 +467,7 @@ void Router::registerServiceCEPermissions(ExtensionProfile *ext) {//WE have UM
 	} else {
 		EXTresourceNotAvailable("UM extension is not available");
 	}
-	lNote("CEP registered for "+ext->serviceInfo.name.getValue());
+	lNote("CEP registered for " + ext->serviceInfo.name.getValue());
 }
 
 bool Router::checkCoreRequirements() { //we need UM if we r gonna check permission of commands
@@ -623,8 +624,6 @@ void Router::upgradeService(ExtensionProfile *ext) {
 
 
 		}
-
-
 	}
 /*	for (int iter = 0; iter < siClone.commands.length(); iter++) {
 		for (int oter = 0; oter < ext->oldServiceInfo.commands.length(); oter++) {
@@ -703,53 +702,80 @@ bool Router::forceUninstallService(ExtensionProfile *ext) {
 	if (!ext)
 		return false;
 	if (ext->isConnected()) {
-		//Todo: kick service
+		std::string t;
+		sendMessage(ext->serviceInfo.name, "_core", "onuninstall", t, MessageTypes::MTCall, "");
+		this->kickService(ext);
 	}
-	std::string serName =ext->serviceInfo.name.getValue();//todo :whole thing doesnt do shit.
+	std::string serName = ext->serviceInfo.name.getValue();
 	string dt = "{\"name\":\"" + serName + "\"}";
 	comm.cleanup(ext);
 	extManager.remove(ext);
 	extManager.save();
 	this->disableIfReqNotSatisfied();
 	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
-	std::string t;
-	lWarnig("FORCE-UNINSTALL for service "+serName+" compeleted");
+	lWarnig("FORCE-UNINSTALL for service " + serName + " compeleted");
 	return true;
 }
 
 bool Router::uninstallService(ExtensionProfile *ext) {
+	/*
+	 * -1 call service's onUninstall node
+	 * -2 clean service's serviceInfo
+	 * -3 fire event
+	 * THERE ARE TWO GENERAL EXCEPTIONS:
+	 * 1- if it is a Usermanager service:
+	 *      all installed services will have their (CEP = notRegistered)
+	 * 2- if it is a Database:
+	 *      same as UserManager condition + that it will remove all
+	 *      services and call their onUninstall node.
+	 *      TODO: review @ajl
+	 */
 	if (!ext || ext->state < ExtensionProfile::extensionState::installed)
 		return false;
 	string t;
+	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
+
+	if (ext->state == ExtensionProfile::extensionState::enabled)
+		disableService(ext);
+
 	sendMessage(ext->serviceInfo.name, "_core", "onuninstall", t, MessageTypes::MTCall, "");
+	bool eventFired = false;
+	bool serviceIsDB = (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::Database);
+	if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager || serviceIsDB) {
+		comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");//causes bug when some other service need the event
+		eventFired = true;
+		for (int i = 0; i < extManager.size(); i++) {
+			extManager[i]->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
+			if (serviceIsDB) {
+				sendMessage(extManager[i]->serviceInfo.name, "_core", "onuninstall", t, MessageTypes::MTCall, "");
+				extManager[i]->installID = "";
+				extManager[i]->state = ExtensionProfile::extensionState::notInstalled;
+			}
+		}
+	}
+
 	ext->state = ExtensionProfile::extensionState::notInstalled;
 	ext->installID = "";
 	ext->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
 	extManager.save();
-	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
-	if (ext->state == ExtensionProfile::extensionState::enabled)
-		disableService(ext);
-	if (ext->serviceInfo.serviceType.getValue() == datatypes::EnmServiceType::UserManager) {
-		for (int i = 0; i < extManager.size(); i++)
-			extManager[i]->CEPermissionsRegistered = ExtensionProfile::cepState::notRegistered;
-		extManager.save();
-	}/*todo clear up extention --cep =notreged*/
 
-	comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");
-	//todo:cleanup UM,PGDB
+	if (not eventFired)
+		comm.fireEvent(eventInfo::onServiceUninstall(), dt, "_core");//causes bug when some other service need the event
+
 	return true;
 }
 
 bool Router::disableService(ExtensionProfile *ext) {
 	if (!ext || ext->state != ExtensionProfile::extensionState::enabled)
 		return false;
+	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
+	comm.fireEvent(eventInfo::onServiceDisable(), dt, "_core");
+
 	string t;
 	sendMessage(ext->serviceInfo.name, "_core", "ondisable", t, MessageTypes::MTCall, "");
 	ext->state = ExtensionProfile::extensionState::installed;
-	string dt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\"}";
 	comm.cleanup(ext);
 	extManager.save();
-	comm.fireEvent(eventInfo::onServiceDisable(), dt, "_core");
 	this->disableIfReqNotSatisfied();
 	return true;
 }
@@ -851,10 +877,7 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 	} else if (streq(node, "_core.kickService")) {
 		string sname = jdata["name"].getValue();
 		ExtensionProfile *ext = extManager[sname];
-		if (ext != NULL && ext->isConnected()) {
-			net.clients[ext->netClientId]->stop();
-		} else
-			EXTinvalidName("No service with name '" + sname + "' exist.");
+		this->kickService(ext);
 	} else if (streq(node, "_core.pingService")) {
 		//todo: later
 	} else if (streq(node, "error")) {
@@ -862,6 +885,13 @@ void Router::callCommandLocal(string node, string &data, string from, string id,
 		if (jdata.contains("id"))
 			comm.callCallbackError(data, from);
 	}
+}
+
+void Router::kickService(ExtensionProfile *ext) {
+	if (ext != NULL && ext->isConnected()) {
+		net.clients[ext->netClientId]->stop();
+	} else
+		EXTinvalidName("Kick Failed. No such extension found");
 }
 
 

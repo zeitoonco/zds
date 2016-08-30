@@ -168,6 +168,7 @@ bool UMCore::checkPermission(int sessionID, int permissionID) {
 				EXTunknownException("checkPermission Failed. permission state");
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {
+		lFatal("UM CK PERM: "+std::string(err.what()));
 		EXTcheckPermissionFailI("Check Permission Failed", err);
 	} catch (exception &err) {
 		EXTcheckPermissionFail(string("Unknown Error  ") + err.what());

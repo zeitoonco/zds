@@ -34,6 +34,7 @@ class GUICore {
 	int listenPort;
 	std::map<int, clientData *> clients;    //clientID, string event name
 	std::map<string, int> cmdClients; //cmdID->clientID
+	std::map<std::string, int> concurrentSessions;
 
 public:
 	GUICore(int WSListenPort, GuiCHI *PTR);

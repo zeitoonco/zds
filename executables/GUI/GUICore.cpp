@@ -75,6 +75,7 @@ void GUICore::WSNewClient(int ID) {
 }
 
 void GUICore::WSClientDisconnect(int ID) {
+
 	vector<string> rem;
 	for (std::map<string, int>::iterator it = cmdClients.begin(); it != cmdClients.end(); it++) {
 		if (it->second == ID)
@@ -83,8 +84,15 @@ void GUICore::WSClientDisconnect(int ID) {
 	for (string cid:rem)
 		cmdClients.erase(cid);
 	if (clients[ID]->sessionID.length() > 0) {
-		guiCHI->sm.communication.runCommand(usermanagement::commandInfo::logout(),
-		                                    "{\"value\":" + clients[ID]->sessionID + "}", "", clients[ID]->sessionID);
+		auto conCurrSessionList = concurrentSessions.find(clients[ID]->sessionID);
+		if (conCurrSessionList != concurrentSessions.end())
+			conCurrSessionList->second--;
+		if (conCurrSessionList->second < 1) {
+			guiCHI->sm.communication.runCommand(usermanagement::commandInfo::logout(),
+			                                    "{\"value\":" + clients[ID]->sessionID + "}", "",
+			                                    clients[ID]->sessionID);
+			concurrentSessions.erase(conCurrSessionList);
+		}
 	}
 	clientData *cd = clients[ID];
 	clients.erase(ID);
@@ -111,7 +119,7 @@ void GUICore::callFromClient(std::string CmdName, std::string cmdID, int clientI
 	cmdClients[cmdID] = clientID;
 }
 
-void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data,std::string success) {
+void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data, std::string success) {
 	if (cmdClients.count(cmdID) == 0) {
 		lError("Invalid Callback CommandID. CmdID: " + cmdID + " node: " + node + "  Data: " + data);
 		return;
@@ -121,14 +129,19 @@ void GUICore::callBackReceived(std::string node, std::string cmdID, std::string 
 	Jtemp.add("type", "callback");
 	Jtemp.add("node", node);
 	Jtemp.add("id", cmdID);
-	if ( data.size() > 0)
+	if (data.size() > 0)
 		Jtemp.add("data", data);//todo: clear all cb's after connection closed
-	if ( success.size() > 0)
+	if (success.size() > 0)
 		Jtemp.add("success", success);
 	if (streq(node, usermanagement::commandInfo::login())) {
 		JStruct dt(data);
 		if (streq(dt["result"].getValue(), "ok"))
 			clients[clientID]->sessionID = dt["sessionID"].getValue();
+		auto temp = concurrentSessions.find(dt["sessionID"].getValue());
+		if (temp != concurrentSessions.end())
+			temp->second++;
+		else
+			concurrentSessions[dt["sessionID"].getValue()] = 1;
 	}
 	WS.send(WS.ConHdlFinder(clientID), Jtemp.toString());
 	cmdClients.erase(cmdID);

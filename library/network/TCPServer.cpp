@@ -13,7 +13,7 @@ namespace zeitoon {
     namespace utility {
 
 
-        TCPServer::TCPServer(int port) : clients(this) {
+        TCPServer::TCPServer(int port) : clients(this), transmiter(this){
             if (port != -1)
                 _port = port;
             int r;
@@ -22,7 +22,6 @@ namespace zeitoon {
             uvEXT(r, "uv_loop_init failed")
             r = uv_tcp_init(&loop, &server);
             uvEXT(r, "uv_tcp_init failed")
-            this->dataProcThreadMaker(4);
             flushTimer.data = this;//remove no need for CB to have access
             uv_timer_init(&loop, &flushTimer);
             uv_timer_start(&flushTimer, &keepAliveTimerCB, 500, 5000);
@@ -50,9 +49,10 @@ namespace zeitoon {
             r = uv_listen((uv_stream_t *) &server, DEFAULT_BACKLOG, TCPServer::on_new_connection);
             uvEXT(r, "listen failed(uv_listen)");
             listenTrd = new std::thread(&TCPServer::_listen, this);
-            this->mainTimer.data = this;
+            transmiter.startTransmission();
+            /*this->mainTimer.data = this;
             uv_timer_init(&loop, &mainTimer);
-            uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 300);
+            uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 300);*/
         }
 
         void TCPServer::_listen() {
@@ -142,22 +142,28 @@ namespace zeitoon {
                         uint32_t *size = (uint32_t *) (buf->base + ci + 2);
                         ci += 6;
                         if ((ci + *size) <= (nread)) {//its whole
-                            c->_buff = std::string(buf->base + ci, *size);
-                            c->_packetReceived();
+                            c->_parent->transmiter.rxBuff = std::string(buf->base + ci, *size);
+                          //  c->_packetReceived();
+                            c->_parent->transmiter.receivedDataQ.push(std::make_pair(c->_id, c->_parent->transmiter.rxBuff));
+                            logger.log(c->_parent->getNameAndType(),"TCP-R. ID: " + std::to_string(c->_id) + "  " + c->_parent->transmiter.rxBuff, LogLevel::debug);
+                            c->_parent->transmiter.rxBuff = "";
+                            c->_parent->transmiter._lastPacketLen = 0;
                             ci += *size;
                         } else {//part of packet
-                            c->_lastPacketLen = *size;
-                            c->_buff = std::string(buf->base + ci, (size_t) (nread - ci));
+                            c->_parent->transmiter._lastPacketLen = *size;
+                            c->_parent->transmiter.rxBuff = std::string(buf->base + ci, (size_t) (nread - ci));
                             ci = nread; //fin.
                         }
-                    } else if (ci == 0 && c->_lastPacketLen > 0) {  //Next part of last packet
-                        size_t rem = (c->_lastPacketLen - c->_buff.size());
+                    } else if (ci == 0 && c->_parent->transmiter._lastPacketLen > 0) {  //Next part of last packet
+                        size_t rem = (c->_parent->transmiter._lastPacketLen -  c->_parent->transmiter.rxBuff.size());
                         if ((rem) <= nread) { // packet complated
-                            c->_buff += std::string(buf->base, rem);
-                            c->_packetReceived();
+                            c->_parent->transmiter.rxBuff += std::string(buf->base, rem);
+                            c->_parent->transmiter.receivedDataQ.push(std::make_pair(c->_id, c->_parent->transmiter.rxBuff));
+                            logger.log(c->_parent->getNameAndType(),"TCP-R. ID: " + std::to_string(c->_id) + "  " + c->_parent->transmiter.rxBuff, LogLevel::debug);
+                            // c->_packetReceived();
                             ci += rem;
                         } else {//another part
-                            c->_buff += std::string(buf->base, (size_t) (nread));
+                            c->_parent->transmiter.rxBuff += std::string(buf->base, (size_t) (nread));
                             ci = nread; //fin.
                         }
                     }   //else? rubbish!
@@ -169,7 +175,7 @@ namespace zeitoon {
         }
 
         void TCPServer::send(size_t clientId, std::string msg) {
-            clients[clientId]->send(msg);
+            transmiter.pendingBuffs.push(std::make_pair(clientId,msg));
         }
 
         void TCPServer::clientCollection::client::send(std::string data) {
@@ -226,65 +232,9 @@ namespace zeitoon {
                 listenTrd->join();
         }
 
-        void TCPServer::dataProcThreadMgrTimer(uv_timer_t *handle) {
-            TCPServer *c = (TCPServer *) handle->data;
-            uv_timer_t sc = c->mainTimer;
-            if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
-                c->dataProcThreadMaker(1);
-                c->check2 = 0;
-            } else if (c->dataQ_Pushes > c->dataQ_Pops) {
-                if (c->check2 == 5) {
-                    c->dataProcThreadMaker(1);
-                    c->check2 = 0;
-                } else if (c->dataQ_Pops > c->dataQ_Pushes && c->dataThreadPool.size() > 4) {
-                    c->dataThreadPool.erase(c->dataThreadPool.begin() + 4);
-                } else {
-                    c->check2++;
-                }
-            } else {
-                c->check2 = 0;
-            }
-            c->lastDataQSize = c->receivedDataQ.size();
-            c->dataQ_Pushes = 0;
-            c->dataQ_Pops = 0;
 
-        }
 
-        void TCPServer::dataProcThreadMaker(int numberOfThreads) {
-            for (int i = 0; i < numberOfThreads; i++) {
-                std::thread *temp = new std::thread(&TCPServer::dataProcessor, this);
-                dataThreadPool.push_back(temp);
-            }
 
-        }
-
-        void TCPServer::freeThreadPool() {
-            stopDataProcess = true;
-            this_thread::sleep_for(chrono::milliseconds(500));
-            for (auto i = 0; i < dataThreadPool.size(); i++) {
-                dataThreadPool[i]->detach();
-                delete dataThreadPool[i];
-            }
-        }
-
-        void TCPServer::dataProcessor() {
-            std::unique_lock<std::mutex> lck(mtx);
-            lck.unlock();
-            while (not stopDataProcess) {
-                lck.lock();
-                if (receivedDataQ.size() > 0) {
-                    receivedData temp = this->receivedDataQ.front();
-                    this->receivedDataQ.pop();
-                    this->dataQ_Pops++;
-                    lck.unlock();
-                    _safeCaller(temp.clientID, temp.data);
-                } else {
-                    lck.unlock();
-                    std::this_thread::sleep_for(std::chrono::microseconds(100));
-                }
-
-            }
-        }
 
     }//zeitoon
 }//utility

@@ -433,11 +433,12 @@ void Router::registerServiceCEPermissions(ExtensionProfile *ext) {//WE have UM
 		if (ext->CEPermissionsRegistered == ExtensionProfile::cepState::upgrading) {
 			this->upgradeService(ext);
 		} else {
-
+			std::chrono::system_clock::time_point time_ii = std::chrono::system_clock::now();
 			string pckt = "{\"name\":\"" + ext->serviceInfo.name.getValue() + "\",\"title\":\"" +
 			              ext->serviceInfo.name2.getValue() + "\",\"description\":\"Service " +
 			              ext->serviceInfo.name.getValue() + " Permissions\",\"parentID\":0}";
 			datatypes::DSInteger idSrvs, idc, ide;
+
 			idSrvs.fromString(
 					comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name, "REG1"));
 			//commands and events group
@@ -463,11 +464,14 @@ void Router::registerServiceCEPermissions(ExtensionProfile *ext) {//WE have UM
 				comm.callCommandSync("userman.registerPermission", pckt, ext->serviceInfo.name, e->name.getValue());
 			}
 			ext->CEPermissionsRegistered = ExtensionProfile::cepState::registered;
-		}
+			lDebug("CEP REG Duration:  " + std::to_string(chrono::duration_cast<chrono::milliseconds>(
+					std::chrono::system_clock::now() - time_ii).count()) +
+			       " milliseconds.");}
 	} else {
 		EXTresourceNotAvailable("UM extension is not available");
 	}
 	lNote("CEP registered for " + ext->serviceInfo.name.getValue());
+
 }
 
 bool Router::checkCoreRequirements() { //we need UM if we r gonna check permission of commands

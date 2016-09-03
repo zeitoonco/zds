@@ -68,23 +68,21 @@ public:
 	typedef std::function<void(std::string)> onMessageDLG;
 	typedef std::function<void(void)> onConnectDLG;
 
-	class DataTransmiter {
+	class Transmiter {
 		TCPClient *parentClass;
 		std::mutex mtx;
 
 	public:
 
-		bool send_is_busy = false; // remove in case of multithreading
 		int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
 		bool __stopDataProcess = true;
 
-		uv_buf_t *bufw;
 		uv_timer_t receiveTimer;
 		std::queue<std::string> pendingBuffs;
 		std::queue<std::string> receivedDataQ;
 		std::vector<std::thread *> dataThreadPool;
 
-		DataTransmiter(zeitoon::utility::TCPClient *iparentClass) : parentClass(iparentClass) {
+		Transmiter(zeitoon::utility::TCPClient *iparentClass) : parentClass(iparentClass) {
 
 		}
 
@@ -99,7 +97,6 @@ public:
 		}
 
 		void startReceiveProcess() {
-			bufw = NULL;
 			receiveTimer.data = this;
 			uv_timer_init(&parentClass->loop, &receiveTimer);
 			this->dataProcThreadMaker(4);//swap if error
@@ -107,6 +104,7 @@ public:
 			uv_timer_start(&receiveTimer, dataProcThreadMgrTimer, 0, 500);
 		}
 
+	private:
 		void stopReceiveProcess() {
 			uv_timer_stop(&this->receiveTimer);
 			while (this->receivedDataQ.size() > 0)//wait for dataProcessor to finish off
@@ -117,13 +115,15 @@ public:
 
 		void stopSendProcess() {
 			stopSendt = true;
+			this->pendingBuffs.empty();
 			sendt->join();
 			delete sendt;
+			lDebug("TCP send process terminated");
 		}
 
 		void startSendProcess() {
 			stopSendt = false;
-			sendt = new std::thread(&DataTransmiter::sendProcessor, this);
+			sendt = new std::thread(&Transmiter::txProcessor, this);
 		}
 
 
@@ -132,7 +132,6 @@ public:
 		}
 
 
-	private:
 		std::thread *sendt;
 		bool stopSendt = false;
 
@@ -140,11 +139,11 @@ public:
 
 		void freeThreadPool();
 
-		void sendProcessor();
+		void txProcessor();
 
 		static void dataProcThreadMgrTimer(uv_timer_t *handle);
 
-		void dataProcessor();
+		void rxProcessor();
 
 
 	};
@@ -155,12 +154,6 @@ public:
 
 	static void keepAliveTimerCB(uv_timer_t *handle) {
 		logger.flush();
-		/*  TCPClient *c = (TCPClient *) handle->data;
-		  std::cerr << "KEEP ALIVE EVENT\nConnected: " << c->isConnected() << "\nReceiver:  " <<
-		  (not c->dataTransmiter.__stopDataProcess) << "\nReceiveQ size: " <<
-		  c->dataTransmiter.receivedDataQ.size() << "\n";
-*/
-
 	}
 
 
@@ -217,7 +210,7 @@ public:
 	std::string defaultReconnInterval();
 
 private:
-	DataTransmiter dataTransmiter;
+	Transmiter dataTransmiter;
 	uv_timer_t Rtimer_req;
 
 

@@ -21,7 +21,8 @@ typedef unsigned int uint;
 
 namespace zeitoon {
 namespace utility {
-
+#define TCPCLIENTSLEEPTIME 1000
+#define TCPSERVERSLEEPTIME 500
 #define streq(a, b) (zeitoon::utility::Strings::compare(a,b,false)==0)
 
 class JSONUtility {

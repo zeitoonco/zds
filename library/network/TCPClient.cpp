@@ -162,7 +162,7 @@ void TCPClient::Transmiter::rxProcessor() {
 			this->parentClass->_safeCaller(temp);
 		} else {
 			lck.unlock();
-			std::this_thread::sleep_for(std::chrono::microseconds(100));
+			std::this_thread::sleep_for(std::chrono::microseconds(TCPCLIENTSLEEPTIME));
 		}
 	}
 }
@@ -285,8 +285,9 @@ void TCPClient::on_client_write(uv_write_t *req, int status) {
 		return;
 	}
 
-	char *buffer = (char *) req->data;
-	free(buffer);
+	uv_buf_t *bufw= (uv_buf_t *) req->data;
+	free(bufw->base);
+	free(bufw);
 	free(req);
 }
 
@@ -330,7 +331,7 @@ void TCPClient::Transmiter::txProcessor() {
 	try {
 		while (!stopSendt) {
 			if (/*this->send_is_busy ||*/ this->pendingBuffs.size() == 0) {
-				std::this_thread::sleep_for(chrono::microseconds(25));
+				std::this_thread::sleep_for(std::chrono::microseconds(TCPCLIENTSLEEPTIME));
 				continue;
 			}
 
@@ -392,7 +393,8 @@ void TCPClient::Transmiter::dataProcThreadMgrTimer(uv_timer_t *handle) {
 			c->check2++;
 		}
 	} else if (c->dataQ_Pops > c->dataQ_Pushes &&
-	           c->dataThreadPool.size() > 4) {
+	           c->dataThreadPool.size() > 4) {//todo  this section needs too be ewviewd
+
 		c->dataThreadPool.erase(c->dataThreadPool.begin() + 4);
 	} else {
 		c->check2 = 0;

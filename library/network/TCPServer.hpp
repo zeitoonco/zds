@@ -262,7 +262,7 @@ private:
 					this->UVsnd(temp.first, temp.second);
 				} else {
 					lck.unlock();
-					std::this_thread::sleep_for(std::chrono::microseconds(1));
+					std::this_thread::sleep_for(std::chrono::microseconds(TCPSERVERSLEEPTIME));
 				}
 			}
 		}
@@ -282,7 +282,7 @@ private:
 					this->parentClass->_safeCaller(temp.first, temp.second);
 				} else {
 					lck.unlock();
-					std::this_thread::sleep_for(std::chrono::microseconds(1));
+					std::this_thread::sleep_for(std::chrono::microseconds(TCPSERVERSLEEPTIME));
 				}
 			}
 		}

@@ -192,7 +192,7 @@ namespace zeitoon {
             buff[0] = 12;
             buff[1] = 26;
             memcpy(buff + 2, (void *) (&size), 4);
-            write_req->data = (void *) bufw->base;
+            write_req->data = (void *) bufw;
 
             int r = uv_write(write_req, (uv_stream_t *) this->_client, bufw, 1, TCPServer::on_client_write);
             logger.log("TCPServer", "TCP-S. ID: " + std::to_string(this->_id) + " : " + data, LogLevel::debug);
@@ -211,7 +211,8 @@ namespace zeitoon {
                 //todo:uv_close((uv_handle_t *) &tcps, NULL);
                 return;
             }
-            char *buffer = (char *) req->data;
+            uv_buf_t *buffer = (uv_buf_t *) req->data;
+            free(buffer->base);
             free(buffer);
             free(req);
         }

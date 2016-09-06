@@ -150,7 +150,7 @@ void TCPClient::Transmiter::dataProcThreadMaker(int numberOfThreads) {
 }
 
 void TCPClient::Transmiter::rxProcessor() {
-	std::unique_lock<std::mutex> lck(mtx);
+	std::unique_lock<std::mutex> lck(rxMtx);
 	lck.unlock();
 	while (not __stopDataProcess) {
 		lck.lock();
@@ -334,6 +334,7 @@ void TCPClient::Transmiter::txProcessor() {
 				std::this_thread::sleep_for(std::chrono::microseconds(TCPCLIENTSLEEPTIME));
 				continue;
 			}
+
 
 
 			//this->send_is_busy = true;

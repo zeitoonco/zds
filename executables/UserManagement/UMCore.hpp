@@ -148,6 +148,8 @@ namespace zeitoon {
             /** listi az kolle userGroup-haaye mojood dar database raa be soorat e yek vector<"zeitoon::datatypes::DTString"> barmigardanad
              * @return vector<"zeitoon::datatypes::DTString">
              */
+            DSUserGroupsList listGroups(int userID);
+
             DSUserGroupsList listUsergroups();
 
             /** executeSync() baa daryaaft e string e haaviye "SQL" be soorat e Synchronize tedaad e tupple haay e ta'sir gerefte az farmaan
@@ -200,8 +202,11 @@ namespace zeitoon {
              **/
             bool isOnline(int userID);
 
-            void loadCaches();
+            void setUserAvatar(std::string img, int userID);
+            DSUserAvatar getUserAvatar(int userID);
 
+            void loadCaches();
+            int getUserIDUsingSessionID(int sessionID);
         private:
             /*
              typedef  void (UMCore::*BPTR) (std::string);

@@ -70,7 +70,7 @@ public:
 
 	class Transmiter {
 		TCPClient *parentClass;
-		std::mutex mtx;
+		std::mutex rxMtx, txMtx;
 
 	public:
 
@@ -116,7 +116,8 @@ public:
 		void stopSendProcess() {
 			stopSendt = true;
 			this->pendingBuffs.empty();
-			sendt->join();
+			if (sendt->joinable())
+				sendt->join();
 			delete sendt;
 			lDebug("TCP send process terminated");
 		}

@@ -79,7 +79,7 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			regResult.value = userMngrInterface.registerPermission(permissionInfo.name.value(),
 			                                                       permissionInfo.title.getValue(),
 			                                                       permissionInfo.description.getValue(),
-			                                                       permissionInfo.parentID.getValue(),from);
+			                                                       permissionInfo.parentID.getValue(), from);
 			resultStr = regResult.toString(true);
 		} else if (!Strings::compare(node, commandInfo::updatePermission(), false)) {
 			DSUpdatePermission updateInfo(data);
@@ -178,6 +178,42 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			DSUserContactList tempList;
 			tempList.fromString(userMngrInterface.listContacts(temp.value.value()).toString());
 			resultStr = tempList.toString(true);
+		} else if (!Strings::compare(node, commandInfo::listGroups(), false)) {
+			DSInteger temp;
+			temp.fromString(data);
+			DSUserGroupsList tempList;
+			tempList.fromString(userMngrInterface.listGroups(temp.value.value()).toString());
+			resultStr = tempList.toString(true);
+
+		} else if (!Strings::compare(node, commandInfo::setUserAvatar(), false)) {
+			JStruct tempData(data);
+			int userID;
+			std::string img;
+			if (tempData.contains("userID"))
+				userID = std::stoi(tempData["userID"].getValue());
+			else if (tempData.contains("sessionId"))
+				userID = userMngrInterface.getUserIDUsingSessionID(std::stoi(tempData["sessionId"].getValue()));
+			else
+				EXTdataTypeMismatch("not field for 'userID' or 'sessionID'");
+			if (!tempData.contains("image"))
+				EXTdataTypeMismatch("not field called image");
+			img = tempData["image"].getValue();
+			userMngrInterface.setUserAvatar(img, userID);
+
+		} else if (!Strings::compare(node, commandInfo::getUserAvatar(), false)) {
+			JStruct tempData(data);
+			int userID;
+			if (tempData.contains("userID"))
+				userID = std::stoi(tempData["userID"].getValue());
+			else if (tempData.contains("sessionId"))
+				userID = userMngrInterface.getUserIDUsingSessionID(std::stoi(tempData["sessionId"].getValue()));
+			else
+				EXTdataTypeMismatch("not field for 'userID' or 'sessionID'");
+		DSUserAvatar tempAvatar;
+			tempAvatar.fromString(userMngrInterface.getUserAvatar(userID).toString());
+			resultStr = tempAvatar.toString(true);
+
+
 		}
 
 
@@ -480,6 +516,24 @@ void UmCHI::setInstallInfo() {
 			                                   DSInteger::getStructVersion(),
 			                                   DSUserContactList::getStructName(),
 			                                   DSUserContactList::getStructVersion()), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::setUserAvatar(),
+			                                   DSUserAvatar::getStructName(),
+			                                   DSUserAvatar::getStructVersion(),
+			                                   "", 0), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::getUserAvatar(),
+			                                   DSInteger::getStructName(),
+			                                   DSInteger::getStructVersion(),
+			                                   DSUserAvatar::getStructName(),
+			                                   DSUserAvatar::getStructVersion()), true);
+
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::listGroups(),
+			                                   DSInteger::getStructName(),
+			                                   DSInteger::getStructVersion(),
+			                                   DSUserGroupsList::getStructName(),
+			                                   DSUserGroupsList::getStructVersion()), true);
 
 //--------set available events info
 
@@ -665,6 +719,11 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(
 					zeitoon::usermanagement::DSUserContactInfo::getStructName(),
 					zeitoon::usermanagement::DSUserContactInfo::getStructVersion()),
+			true);
+	insInfo.datatypes.add(
+			new DSInstallInfo::DSInstallInfoDatatypesDetail(
+					zeitoon::usermanagement::DSUserAvatar::getStructName(),
+					zeitoon::usermanagement::DSUserAvatar::getStructVersion()),
 			true);
 	///------------set available hooks
 

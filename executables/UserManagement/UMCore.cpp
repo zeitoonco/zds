@@ -7,6 +7,7 @@
 #include <utility/exceptions.hpp>
 #include <cryptopp/sha.h>
 #include <cryptopp/hex.h>
+#include <cryptopp/base64.h>
 #include <executables/UserManagement/UMCore.hpp>
 #include "executables/UserManagement/UmCHI.hpp"
 #include "executables/UserManagement/DTStructs.hpp"
@@ -168,7 +169,7 @@ bool UMCore::checkPermission(int sessionID, int permissionID) {
 				EXTunknownException("checkPermission Failed. permission state");
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {
-		lFatal("UM CK PERM: "+std::string(err.what()));
+		lFatal("UM CK PERM: " + std::string(err.what()));
 		EXTcheckPermissionFailI("Check Permission Failed", err);
 	} catch (exception &err) {
 		EXTcheckPermissionFail(string("Unknown Error  ") + err.what());
@@ -199,12 +200,16 @@ void UMCore::loadCaches() {
 	}
 }
 
+int UMCore::getUserIDUsingSessionID(int sessionID) {
+	return sessionManager.getUserIDBySession(sessionID);
+}
+
 
 int UMCore::addUser(std::string username, std::string password,
                     std::string name) { //regs a new user in database
 ///----Reg a new user in Database:
-	if (username.size() < 3)
-		EXTinvalidParameter("Username must be atleast 3 characters");
+	if (username.size() < 3 || password.size() == 0 || name.size() == 0)
+		EXTinvalidParameter("Invalid parameters provided.");
 	if (username.find(" ") != username.npos)//todo @ ajl, shall we have any constraint on userName or password?
 		EXTinvalidParameter("UserName cannot contain space character");
 	std::string command = "INSERT INTO users (id, username, password, name, banned, banreason, avatar) VALUES"
@@ -304,7 +309,8 @@ UMUserInfo UMCore::getUserInfo(int ID) {
 	}
 }
 
-int UMCore::registerPermission(std::string name, std::string title, std::string desc, int parent, const std::string &from) {
+int UMCore::registerPermission(std::string name, std::string title, std::string desc, int parent,
+                               const std::string &from) {
 	std::string permissionID = "";
 	try {
 		permissionID = singleFieldQuerySync(
@@ -312,7 +318,8 @@ int UMCore::registerPermission(std::string name, std::string title, std::string 
 				(parent == -1 ? string("NULL") : std::to_string(parent)) + ", '" + name + "', '" + title
 				+ "', '" + desc + "')  RETURNING id");
 		if (permissionID.size() > 0)
-			executeSync("INSERT INTO servicepermission (service, permissionid) VALUES ('"+from+"',"+permissionID+")");
+			executeSync("INSERT INTO servicepermission (service, permissionid) VALUES ('" + from + "'," + permissionID +
+			            ")");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to register permission[" + name + "(" + title + ")" + desc + "] in database",
 		            errorInfo);
@@ -491,12 +498,12 @@ DSPermissionsList UMCore::listPermissions(std::string serviceName) {
 	 * node listPermission still has no data*/
 	DSPermissionsList allPermissions;
 	zeitoon::datatypes::DTTableString result("");
-	std::string addQuery="";
-	if (serviceName.size() > 0){
-		addQuery = "WHERE id IN (SELECT permissionid FROM servicepermission WHERE service= '"+serviceName+"')";
+	std::string addQuery = "";
+	if (serviceName.size() > 0) {
+		addQuery = "WHERE id IN (SELECT permissionid FROM servicepermission WHERE service= '" + serviceName + "')";
 	}
 	try {
-		result = querySync("select id,parentid,name,title,description from permission "+addQuery+" order by id");
+		result = querySync("select id,parentid,name,title,description from permission " + addQuery + " order by id");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch  permission names from database", errorInfo);
 
@@ -510,6 +517,31 @@ DSPermissionsList UMCore::listPermissions(std::string serviceName) {
 				                                                          result.fieldValue(i, 1))), true);
 	}
 	return allPermissions;
+}
+
+DSUserGroupsList UMCore::listGroups(int userID) {
+	DSUserGroupsList allGroups;
+	zeitoon::datatypes::DTTableString result("");
+	/*todo @ Ajl: CANNOT make the list using the existing cache.
+	 *  Class usergroupInfo does not have "title" and "desc" field
+	 **/
+
+	try {
+		result = querySync(
+				"select id,title,parentid,description from groups where id=(select groupid from usergroup where userid=" +
+				std::to_string(userID)+")");
+	} catch (exceptionEx &errorInfo) {
+		EXTDBErrorI("Unable to fetch usergroups data from database", errorInfo);
+	}
+	for (size_t i = 0; i < result.rowCount(); i++) {
+		allGroups.userGrpsList.add(new DSUpdateUsrGrp(stoi(result.fieldValue(i, 0)),
+		                                              result.fieldValue(i, 1),
+		                                              result.fieldIsNull(i, 2) ? -1 : stoi(
+				                                              result.fieldValue(i, 2)),
+		                                              result.fieldValue(i, 3)), true);
+	}
+
+	return allGroups;
 }
 
 DSUserGroupsList UMCore::listUsergroups() {
@@ -614,7 +646,7 @@ std::string UMCore::hashingProccess(
 		std::string STRING) {        //pw+(random salt saved to DB)
 	CryptoPP::SHA256 sha1;
 	std::string hashedVal = "";
-	std::string salt = "L+8D fk.3#|";
+	std::string salt = "L+8D fk.3#|";//todo review salt
 	STRING += salt;
 	CryptoPP::StringSource(STRING, true, new CryptoPP::HashFilter(sha1, new CryptoPP::HexEncoder(
 			new CryptoPP::StringSink(hashedVal))));
@@ -908,15 +940,14 @@ DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
 }
 
 
-
 void UMCore::removeServicePermissions(std::string serviceName) {
 	std::string quer =
 			"DELETE FROM permission WHERE id IN (SELECT permissionid FROM servicepermission WHERE service= '" +
 			serviceName + "') RETURNING id";
 	auto res = querySync(quer);
 	//todo: incomplete & trial
-	for (size_t iter = 0 ; iter < res.rowCount(); iter++){
-		sessionManager.permissionCacheUpdate(res.fieldValueInt(iter,0));
+	for (size_t iter = 0; iter < res.rowCount(); iter++) {
+		sessionManager.permissionCacheUpdate(res.fieldValueInt(iter, 0));
 	}
 }
 
@@ -954,6 +985,40 @@ bool UMCore::isOnline(int userID) {//if sessionID = -1 ==> user is offline
 	} catch (zeitoon::utility::exceptionEx err) {
 	}
 	return false;
+}
+
+DSUserAvatar UMCore::getUserAvatar(int userID) {
+
+	try {
+		std::string tempR = this->singleFieldQuerySync("SELECT avatar FROM users WHERE id=" + std::to_string(userID));
+		string encoded;
+		auto strSink = new CryptoPP::StringSink(encoded);
+		auto Base64Enc = new CryptoPP::Base64Encoder(strSink, false);
+		CryptoPP::StringSource ss(tempR, true, Base64Enc);
+		delete strSink, Base64Enc;
+		DSUserAvatar tempDSUA(encoded,userID);
+
+		return tempDSUA;
+	} catch (...) {
+		std::cerr << "AVATAR GET ERR, DBG NEEDED!\n";
+	}
+}
+
+void UMCore::setUserAvatar(std::string img, int userID) {
+	string decoded;
+	auto strSink = new CryptoPP::StringSink(decoded);
+	auto Base64Enc = new CryptoPP::Base64Decoder(strSink);// Base64Decoder
+	CryptoPP::StringSource ss(img, true, Base64Enc); // StringSource
+
+	try {
+		int a = executeSync("UPDATE users SET avatar='" + decoded + "' WHERE id=" + std::to_string(userID));
+		if (a < 1) {
+			EXTDBError("setUserAvatar Failed" + std::to_string(userID));
+		}
+	} catch (...) {
+		std::cerr << "AVATAR SET ERR, DBG NEEDED!\n";
+	}
+
 }
 
 

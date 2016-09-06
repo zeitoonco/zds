@@ -107,7 +107,7 @@ public:
 
 	static std::string addUsergroupPermission() { return "userman.addUsergroupPermission"; }
 
-	static std::string removeUsergroupPermission() { return "userman.removeUsergroupPermission"; }
+	static std::string removeUsergroupPermission() { return "ulistGroupsserman.removeUsergroupPermission"; }
 
 	static std::string listUsergroupPermissions() { return "userman.listUsergroupPermissions"; }
 
@@ -118,6 +118,12 @@ public:
 	static std::string modifyContact() { return "userman.modifyContact"; }
 
 	static std::string listContacts() { return "userman.listContacts"; }
+
+	static std::string setUserAvatar() { return "userman.setUserAvatar"; }
+
+	static std::string getUserAvatar() { return "userman.getUserAvatar"; }
+
+	static std::string listGroups() { return "userman.listGroups"; }
 
 };
 

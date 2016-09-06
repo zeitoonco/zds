@@ -845,6 +845,28 @@ public:
 		list.push_back(&permissionName);
 	}
 };
+class DSUserAvatar : public DTStruct {
+public:
+	DTString image = {"image"};
+	DTInteger<> userID ={"userID"};
+
+	static std::string getStructName() {
+		return "DSUserAvatar";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSUserAvatar() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&image);
+		list.push_back(&userID);
+	}
+	DSUserAvatar(std::string img, int usrID):DSUserAvatar(){
+			this->image = img;
+		this->userID = usrID;
+	}
+};
 
 
 } //namespace: zeitoon

@@ -16,8 +16,6 @@ CREATE TABLE if not exists "UserManagement".permission
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".permission
-  OWNER TO "UserManagement";
 
 CREATE TABLE if not exists "UserManagement".users
 (
@@ -27,15 +25,13 @@ CREATE TABLE if not exists "UserManagement".users
   name character varying(255),
   banned boolean DEFAULT false,
   banreason character varying(255) DEFAULT NULL::character varying,
-  avatar character varying(255) DEFAULT NULL::character varying,
+  avatar text DEFAULT NULL,
   CONSTRAINT users_pkey PRIMARY KEY (id),
   CONSTRAINT users_username_key UNIQUE (username)
 )
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".users
-  OWNER TO "UserManagement";
 
 CREATE TABLE if not exists "UserManagement".groups
 (
@@ -51,8 +47,6 @@ CREATE TABLE if not exists "UserManagement".groups
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".groups
-  OWNER TO "UserManagement";
 
 
 CREATE TABLE if not exists "UserManagement".grouppermission
@@ -71,8 +65,6 @@ CREATE TABLE if not exists "UserManagement".grouppermission
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".grouppermission
-  OWNER TO "UserManagement";
 
 CREATE TABLE if not exists "UserManagement".servicepermission
 (
@@ -87,8 +79,6 @@ CREATE TABLE if not exists "UserManagement".servicepermission
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".servicepermission
-  OWNER TO "UserManagement";
 
 
 CREATE TABLE if not exists "UserManagement".usergroup
@@ -107,8 +97,6 @@ CREATE TABLE if not exists "UserManagement".usergroup
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".usergroup
-  OWNER TO "UserManagement";
 
 
 
@@ -128,8 +116,6 @@ CREATE TABLE if not exists "UserManagement".userpermission
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".userpermission
-  OWNER TO "UserManagement";
 
 
 CREATE TABLE if not exists "UserManagement".contacts
@@ -148,8 +134,6 @@ CREATE TABLE if not exists "UserManagement".contacts
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE "UserManagement".contacts
-  OWNER TO "UserManagement";
 
 INSERT INTO permission(id,parentid,name,title) select 0, NULL,'_masterPermission','Permissions' WHERE NOT EXISTS (SELECT id FROM permission WHERE id=0);
 

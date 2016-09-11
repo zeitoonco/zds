@@ -130,7 +130,7 @@ namespace zeitoon {
             /** listUsers(), tamami e userhaaye mojood dar database raa be soorat e yek vector e "zeitoon::datatypes::DTString" baaz migardaanad
              * @return vector<"zeitoon::datatypes::DTString"> users
              */
-            DSUserList listUsers();
+            DSUserList listUsers(bool listAllUsers, DSUserIDs IDs={});
 
             /** listUsersByGroup(), baa daryaft e id yek group, list e naam e tamamiye
              * user-haaye e ozv e aan group raa be soorate vector<"zeitoon::datatypes::DTString"> barmigardaanad

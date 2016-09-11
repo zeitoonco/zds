@@ -448,11 +448,17 @@ void UMCore::removeUsergroup(int usergroupID) {
 	sessionManager.updateUsergroupCache(usergroupID);//todo:check if this works properly
 }
 
-DSUserList UMCore::listUsers() {
+DSUserList UMCore::listUsers(bool listAllUsers, DSUserIDs IDs) {
 	DSUserList allUsers;
+	std::string strPatch = "";
+	if (not listAllUsers) {
+		strPatch = "WHERE id IN (";
+		for (int i = 0; i <IDs.idlist.length(); i++)
+			strPatch += std::to_string(IDs.idlist[i]->getValue()) + (i == (IDs.idlist.length() - 1) ? ")" : ",");
+	}
 	zeitoon::datatypes::DTTableString result("");
 	try {
-		result = this->querySync("select id,username,name,banned,banreason from users order by id");
+		result = this->querySync("select id,username,name,banned,banreason from users"+strPatch+" order by id");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch all usernames from database", errorInfo);
 	}
@@ -529,7 +535,7 @@ DSUserGroupsList UMCore::listGroups(int userID) {
 	try {
 		result = querySync(
 				"select id,title,parentid,description from groups where id=(select groupid from usergroup where userid=" +
-				std::to_string(userID)+")");
+				std::to_string(userID) + ")");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch usergroups data from database", errorInfo);
 	}
@@ -991,27 +997,28 @@ DSUserAvatar UMCore::getUserAvatar(int userID) {
 
 	try {
 		std::string tempR = this->singleFieldQuerySync("SELECT avatar FROM users WHERE id=" + std::to_string(userID));
-		string encoded;
+		/*string encoded;
 		auto strSink = new CryptoPP::StringSink(encoded);
 		auto Base64Enc = new CryptoPP::Base64Encoder(strSink, false);
-		CryptoPP::StringSource ss(tempR, true, Base64Enc);
-		delete strSink, Base64Enc;
-		DSUserAvatar tempDSUA(encoded,userID);
-
+		CryptoPP::StringSource ss(tempR, true, Base64Enc);*/
+	//	delete strSink, Base64Enc; //TODO IMPORTANT, deletation causes seg fault! to be revised
+		DSUserAvatar tempDSUA(tempR, userID);
+		std::cerr<< "IMG: \n"<<tempDSUA.toString()<<"\n";
 		return tempDSUA;
+
 	} catch (...) {
-		std::cerr << "AVATAR GET ERR, DBG NEEDED!\n";
+		lError("AVATAR GET ERROR, DEBUG NEEDED!");
 	}
 }
 
 void UMCore::setUserAvatar(std::string img, int userID) {
-	string decoded;
+	/*string decoded;
 	auto strSink = new CryptoPP::StringSink(decoded);
 	auto Base64Enc = new CryptoPP::Base64Decoder(strSink);// Base64Decoder
-	CryptoPP::StringSource ss(img, true, Base64Enc); // StringSource
+	CryptoPP::StringSource ss(img, true, Base64Enc); // StringSource*/
 
 	try {
-		int a = executeSync("UPDATE users SET avatar='" + decoded + "' WHERE id=" + std::to_string(userID));
+		int a = executeSync("UPDATE users SET avatar='" + img + "' WHERE id=" + std::to_string(userID));
 		if (a < 1) {
 			EXTDBError("setUserAvatar Failed" + std::to_string(userID));
 		}

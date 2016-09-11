@@ -108,8 +108,18 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			usrGrpID.fromString(data);
 			userMngrInterface.removeUsergroup(usrGrpID.value.getValue());
 		} else if (!Strings::compare(node, commandInfo::listUsers(), false)) {
-			DSUserList usersList = userMngrInterface.listUsers();
-			resultStr = usersList.toString(true);
+			DSUserIDs temp;
+
+			if (data.size() > 0) {
+				if (JStruct(data).contains("list")) {
+					temp.fromString(data);
+					DSUserList usersList = userMngrInterface.listUsers(false, temp);
+					resultStr = usersList.toString(true);
+				}
+			} else {
+				DSUserList usersList = userMngrInterface.listUsers(true);
+				resultStr = usersList.toString(true);
+			}
 		} else if (!Strings::compare(node, commandInfo::listUsersByGroup(), false)) {
 			DSInteger groupID;
 			groupID.fromString(data);
@@ -199,7 +209,6 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 				EXTdataTypeMismatch("not field called image");
 			img = tempData["image"].getValue();
 			userMngrInterface.setUserAvatar(img, userID);
-
 		} else if (!Strings::compare(node, commandInfo::getUserAvatar(), false)) {
 			JStruct tempData(data);
 			int userID;
@@ -209,11 +218,10 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 				userID = userMngrInterface.getUserIDUsingSessionID(std::stoi(tempData["sessionId"].getValue()));
 			else
 				EXTdataTypeMismatch("not field for 'userID' or 'sessionID'");
-		DSUserAvatar tempAvatar;
+			DSUserAvatar tempAvatar;
 			tempAvatar.fromString(userMngrInterface.getUserAvatar(userID).toString());
 			resultStr = tempAvatar.toString(true);
-
-
+			std::cerr << "UMCHI IMG\n" << resultStr << "\n";
 		}
 
 

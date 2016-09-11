@@ -868,6 +868,23 @@ public:
 	}
 };
 
+class DSUserIDs : public DTStruct {
+public:
+	DTSet<DTInteger<int>> idlist ={"idlist"};
+
+	static std::string getStructName() {
+		return "DSUserIDs";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSUserIDs() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&idlist);
+	}
+};
+
 
 } //namespace: zeitoon
 } //namespace: datatypes

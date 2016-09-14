@@ -559,7 +559,7 @@ public:
         return ("{\"type\" : \"callback\" , \"node\" : \"" + node + "\" " +
                 (id.length() > 0 ? ", \"id\" : \"" + id + "\" " : "") +
                 (from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
-                (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+                (data.length() > 0 ? ", \"data\" : " + JSONUtility::encodeString(data) + " " : "") +
                 ", \"success\" : " +(success ? "true": "false") +
                 "}");
     }
@@ -567,13 +567,13 @@ public:
     static string makeEvent(string node, string from, string data) {
         return ("{\"type\" : \"fire\" , \"node\" : \"" + node + "\" " +
                 (from.length() > 0 ? ", \"from\" : \"" + from + "\" " : "") +
-                (data.length() > 0 ? ", \"data\" : " + data + " " : "") +
+                (data.length() > 0 ? ", \"data\" : " + JSONUtility::encodeString(data) + " " : "") +
                 "}");
     }
 
     static string makeError(string node, string id, string desc) {
         return ("{\"type\" : \"call\" , \"node\" : \"error\" , \"data\" : {\"node\" : \"" +
-                node + "\" , \"id\" : \"" + id + "\" , \"description\" : \"" + desc + "\"} }");
+                node + "\" , \"id\" : \"" + id + "\" , \"description\" : \"" + JSONUtility::encodeString(desc) + "\"} }");
     }
 };
 

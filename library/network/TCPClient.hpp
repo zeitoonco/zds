@@ -15,6 +15,8 @@
 #include <mutex>
 #include <library/utility/logger.hpp>
 
+extern bool send_is_busy;
+
 namespace zeitoon {
 namespace utility {
 
@@ -64,90 +66,30 @@ public: //to be removed
 
 
 class TCPClient {
+	uv_idle_t txHandler;
+	uv_timer_t rxTimer;
+	uv_idle_t txTimer;
+
 public:
 	typedef std::function<void(std::string)> onMessageDLG;
 	typedef std::function<void(void)> onConnectDLG;
+	long long int tt=0,xt=0;
+	void startTXThread();
+	std::thread txThread;
+	std::vector<std::thread *> txThreadList;
+	std::mutex rxMtx, txMtx;
+	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
+	bool __stopDataProcess = true;
+	bool stopSendt = false;
+		int testRX =0, testTX =0;
+	std::queue<std::string> pendingBuffs;
+	std::queue<std::string> receivedDataQ;
 
-	class Transmiter {
-		TCPClient *parentClass;
-		std::mutex rxMtx, txMtx;
+	static void on_client_write(uv_write_t *req, int status);
 
-	public:
-
-		int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
-		bool __stopDataProcess = true;
-
-		uv_timer_t receiveTimer;
-		std::queue<std::string> pendingBuffs;
-		std::queue<std::string> receivedDataQ;
-		std::vector<std::thread *> dataThreadPool;
-
-		Transmiter(zeitoon::utility::TCPClient *iparentClass) : parentClass(iparentClass) {
-
-		}
-
-		void startTransmissionProcess() {
-			this->startReceiveProcess();
-			this->startSendProcess();
-		}
-
-		void stopTransmissionProcess() {
-			this->stopSendProcess();
-			this->stopReceiveProcess();
-		}
-
-		void startReceiveProcess() {
-			receiveTimer.data = this;
-			uv_timer_init(&parentClass->loop, &receiveTimer);
-			this->dataProcThreadMaker(4);//swap if error
-			__stopDataProcess = false;
-			uv_timer_start(&receiveTimer, dataProcThreadMgrTimer, 0, 500);
-		}
-
-	private:
-		void stopReceiveProcess() {
-			uv_timer_stop(&this->receiveTimer);
-			while (this->receivedDataQ.size() > 0)//wait for dataProcessor to finish off
-				std::this_thread::sleep_for(std::chrono::milliseconds(200));
-			__stopDataProcess = true;//stop fetching from the receivedDataQ
-			freeThreadPool();
-		}
-
-		void stopSendProcess() {
-			stopSendt = true;
-			this->pendingBuffs.empty();
-			if (sendt->joinable())
-				sendt->join();
-			delete sendt;
-			lDebug("TCP send process terminated");
-		}
-
-		void startSendProcess() {
-			stopSendt = false;
-			sendt = new std::thread(&Transmiter::txProcessor, this);
-		}
-
-
-		std::string getNameAndType() {
-			return "TCPClient::dataTransmiter";
-		}
-
-
-		std::thread *sendt;
-		bool stopSendt = false;
-
-		void dataProcThreadMaker(int numberOfThreads = 4);
-
-		void freeThreadPool();
+	void rxProcessor();
 
 		void txProcessor();
-
-		static void dataProcThreadMgrTimer(uv_timer_t *handle);
-
-		void rxProcessor();
-
-
-	};
 
 	~TCPClient();
 
@@ -157,6 +99,11 @@ public:
 		logger.flush();
 	}
 
+	std::vector<std::thread *> dataThreadPool;
+
+	static void rxThreadMgr(uv_timer_t *handle);
+
+	void rxThradMaker(int numberOfThreads);
 
 	TCPClient(std::string ip, int port);
 
@@ -211,7 +158,6 @@ public:
 	std::string defaultReconnInterval();
 
 private:
-	Transmiter dataTransmiter;
 	uv_timer_t Rtimer_req;
 
 
@@ -221,7 +167,9 @@ private:
 
 	zeitoon::utility::ReconnectConfig reconnectOptions;
 	uv_timer_t mainTimer;
+
 	uv_loop_t loop;
+
 	uv_tcp_t client;
 	sockaddr *addr;
 	std::thread listenTrd;
@@ -245,7 +193,6 @@ private:
 
 	static void on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf);
 
-	static void on_client_write(uv_write_t *req, int status);
 
 	void _safeCaller(std::string data);
 

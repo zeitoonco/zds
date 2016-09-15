@@ -255,7 +255,6 @@ void UmCHI::onInstall(string id) {
 	string cpath = FileSystemUtility::getAppPath();
 	//Addressing the file and checking Database tables
 	string temp = cpath + "DBTableScripts.sql";
-	std::cout << temp << endl;
 	std::ifstream t(temp);
 	std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 	int res;

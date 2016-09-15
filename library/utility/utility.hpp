@@ -21,7 +21,7 @@ typedef unsigned int uint;
 
 namespace zeitoon {
 namespace utility {
-#define TCPCLIENTSLEEPTIME 1000
+#define TCPCLIENTSLEEPTIME 155
 #define TCPSERVERSLEEPTIME 100
 #define streq(a, b) (zeitoon::utility::Strings::compare(a,b,false)==0)
 
@@ -31,7 +31,6 @@ protected:
     const static char specialChars[specialCharsLen][2];
 
 public:
-
     /**getEndOfString()
      *
      * stringi ke migirad, '"' aval e string ra rad mikonad va makan e '"' badi ke neshan dahane ye payane

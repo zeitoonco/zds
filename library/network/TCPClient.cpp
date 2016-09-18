@@ -22,10 +22,6 @@ TCPClient::~TCPClient() {
 }
 
 
-
-
-
-
 static void waiter(uv_idle_t *hdl) {
 	std::this_thread::sleep_for(std::chrono::microseconds(350));
 }
@@ -44,6 +40,7 @@ static void TX(uv_idle_t *hdl) {
 }
 
 TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLen(0) {
+	threadCounter = 0;
 	int r;
 	r = uv_loop_init(&loop);
 	this->Rtimer_req.data = this;
@@ -194,6 +191,11 @@ void TCPClient::rxProcessor() {
 			this->_safeCaller(temp);
 		} else {
 			rxMtx.unlock();
+			if (this->reduceRXthread) {
+				reduceRXthread = false;
+				threadCounter--;
+				return;
+			}
 			std::this_thread::sleep_for(std::chrono::microseconds(TCPCLIENTSLEEPTIME));
 		}
 	}
@@ -317,7 +319,7 @@ void TCPClient::_packetReceived() {
 
 	if (this->_onMessage != NULL) {
 		while (not rxMtx.try_lock())
-			std::this_thread::sleep_for(std::chrono::microseconds (1));
+			std::this_thread::sleep_for(std::chrono::microseconds(1));
 		receivedDataQ.push(this->_buff);
 		this->dataQ_Pushes++;
 		rxMtx.unlock();
@@ -398,26 +400,30 @@ void TCPClient::rxThradMaker(int numberOfThreads) {
 	for (int i = 0; i < numberOfThreads; i++) {
 	}
 	std::thread *temp = new std::thread(&zeitoon::utility::TCPClient::rxProcessor, this);
-	dataThreadPool.push_back(temp);
+	this->threadCounter++;
+	temp->detach();
 }
 
 void TCPClient::rxThreadMgr(uv_timer_t *handle) {
+
 	TCPClient *c = (TCPClient *) handle->data;
-	std::cout<< "Number of RX threads: "+std::to_string(c->dataThreadPool.size())<<" #"<<std::endl;
 	if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
 		c->rxThradMaker(1);
-		c->check2 = 0;
+		c->counter = 0;
 	} else if (c->dataQ_Pushes > c->dataQ_Pops) {
 
 		c->rxThradMaker(1);
-
-	} else if (c->dataQ_Pops > c->dataQ_Pushes &&
-	           c->dataThreadPool.size() > 4) {//todo  this section needs too be ewviewd
-
-		c->dataThreadPool.erase(c->dataThreadPool.begin() + 4);
-	} else {
-		c->check2 = 0;
+		c->counter = 0;
+	} else if ((c->dataQ_Pops > c->dataQ_Pushes or
+	            c->receivedDataQ.size() == 0) and c->threadCounter > 1 and
+	           c->counter <= 3) {//todo  this section needs too be ewviewd
+		c->counter++;
+	} else if (c->counter >= 3) {
+		if (not c->reduceRXthread)
+			c->reduceRXthread = true;
+		c->counter = 0;
 	}
+
 	c->lastDataQSize = c->receivedDataQ.size();
 	c->dataQ_Pushes = 0;
 	c->dataQ_Pops = 0;

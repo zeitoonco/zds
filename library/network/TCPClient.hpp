@@ -14,6 +14,7 @@
 #include <queue>
 #include <mutex>
 #include <library/utility/logger.hpp>
+#include <atomic>
 
 extern bool send_is_busy;
 
@@ -71,17 +72,22 @@ class TCPClient {
 	uv_idle_t txTimer;
 
 public:
+	std::atomic<int> threadCounter;
+	short counter=0;
+	bool reduceRXthread = false;
 	typedef std::function<void(std::string)> onMessageDLG;
 	typedef std::function<void(void)> onConnectDLG;
-	long long int tt=0,xt=0;
+	long long int tt = 0, xt = 0;
+
 	void startTXThread();
+
 	std::thread txThread;
 	std::vector<std::thread *> txThreadList;
 	std::mutex rxMtx, txMtx;
-	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0, check2 = 0;
+	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0;
 	bool __stopDataProcess = true;
 	bool stopSendt = false;
-		int testRX =0, testTX =0;
+	int testRX = 0, testTX = 0;
 	std::queue<std::string> pendingBuffs;
 	std::queue<std::string> receivedDataQ;
 
@@ -89,7 +95,7 @@ public:
 
 	void rxProcessor();
 
-		void txProcessor();
+	void txProcessor();
 
 	~TCPClient();
 

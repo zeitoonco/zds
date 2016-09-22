@@ -15,6 +15,7 @@
 #include <mutex>
 #include <library/utility/logger.hpp>
 #include <atomic>
+#include <condition_variable>
 
 extern bool send_is_busy;
 
@@ -69,11 +70,11 @@ public: //to be removed
 class TCPClient {
 	uv_idle_t txHandler;
 	uv_timer_t rxTimer;
-	uv_idle_t txTimer;
+	uv_timer_t txTimer;
 
 public:
 	std::atomic<int> threadCounter;
-	short counter=0;
+	short counter = 0;
 	bool reduceRXthread = false;
 	typedef std::function<void(std::string)> onMessageDLG;
 	typedef std::function<void(void)> onConnectDLG;
@@ -85,11 +86,24 @@ public:
 	std::vector<std::thread *> txThreadList;
 	std::mutex rxMtx, txMtx;
 	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0;
+	//SEND
+	int txDataQ_Pops = 0, txDataQ_Pushes = 0, txlastDataQSize = 0, txThreadCounter = 0;
+	short txCounter = 0;
+	std::atomic<bool> txReady;
+	std::atomic<bool> txRemoveThread;
+	std::condition_variable txNotification;
+
+	void txThreadMaker(int threadsNumber);
+
+	//
 	bool __stopDataProcess = true;
 	bool stopSendt = false;
+	std::atomic<bool> received;
+
 	int testRX = 0, testTX = 0;
 	std::queue<std::string> pendingBuffs;
 	std::queue<std::string> receivedDataQ;
+	std::condition_variable readNotification;
 
 	static void on_client_write(uv_write_t *req, int status);
 
@@ -107,7 +121,7 @@ public:
 
 	std::vector<std::thread *> dataThreadPool;
 
-	static void rxThreadMgr(uv_timer_t *handle);
+	/*static*/ void rxThreadMgr(/*uv_timer_t *handle*/);
 
 	void rxThradMaker(int numberOfThreads);
 
@@ -199,7 +213,8 @@ private:
 
 	static void on_client_read(uv_stream_t *_client, ssize_t nread, const uv_buf_t *buf);
 
-
+	static void TX(uv_timer_t *handle);
+	void txThreadMgr();
 	void _safeCaller(std::string data);
 
 	void _packetReceived();

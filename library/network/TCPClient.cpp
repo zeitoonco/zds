@@ -8,7 +8,7 @@
 #include "utility/logger.hpp"
 
 bool send_is_busy = false;
-
+std::condition_variable sendNotify;
 namespace zeitoon {
 namespace utility {
 
@@ -21,13 +21,62 @@ TCPClient::~TCPClient() {
 		uv_loop_close(&loop);
 }
 
+void TCPClient::txThreadMgr() {
+	std::cout << "TX THREADS: " << txThreadCounter << "\n\n\n\n" << std::endl;
+	if (txDataQ_Pops == 0 && txlastDataQSize > 0) {
+		txThreadMaker(1);
+		txCounter = 0;
+	} else if (txDataQ_Pushes > txDataQ_Pops) {
 
-static void waiter(uv_idle_t *hdl) {
-	std::this_thread::sleep_for(std::chrono::microseconds(350));
+		txThreadMaker(1);
+		txCounter = 0;
+	} else if ((txDataQ_Pops > txDataQ_Pushes or
+	            pendingBuffs.size() == 0) and txThreadCounter > 1 and
+	           txCounter <= 3) {//todo  this section needs too be ewviewd
+		txCounter++;
+	} else if (txCounter >= 3) {
+		if (not txRemoveThread) {
+			txRemoveThread = true;
+			txNotification.notify_one();
+			txCounter = 0;
+		}
+	}
+
+	txlastDataQSize = pendingBuffs.size();
+	txDataQ_Pops = 0;
+	txDataQ_Pushes = 0;
+
 }
 
-static void TX(uv_idle_t *hdl) {
-	TCPClient *temp = (TCPClient *) hdl->data;
+
+/*
+void TCPClient::TX(uv_timer_t *handle) {
+	TCPClient *c = (TCPClient *) handle->data;
+	std::cout << "TX THREADS: " << c->txThreadCounter<<"\n\n\n\n" << std::endl;
+	if (c->txDataQ_Pops == 0 && c->txlastDataQSize > 0) {
+		c->txThreadMaker(1);
+		c->txCounter = 0;
+	} else if (c->txDataQ_Pushes > c->txDataQ_Pops) {
+
+		c->txThreadMaker(1);
+		c->txCounter = 0;
+	} else if ((c->txDataQ_Pops > c->txDataQ_Pushes or
+	            c->pendingBuffs.size() == 0) and c->txThreadCounter > 1 and
+	           c->txCounter <= 3) {//todo  this section needs too be ewviewd
+		c->txCounter++;
+	} else if (c->txCounter >= 3) {
+		if (not c->txRemoveThread) {
+			c->txRemoveThread = true;
+			c->txNotification.notify_one();
+			c->txCounter = 0;
+		}
+	}
+
+	c->txlastDataQSize = c->pendingBuffs.size();
+	c->txDataQ_Pops = 0;
+	c->txDataQ_Pushes = 0;
+
+*//*	TCPClient *temp = (TCPClient *) hdl->data;
 
 	if (temp->pendingBuffs.size() == 0)
 		return;
@@ -36,11 +85,15 @@ static void TX(uv_idle_t *hdl) {
 		return;
 
 	send_is_busy = true;
-	temp->txProcessor();
-}
+	temp->txProcessor();*//*
+}*/
 
 TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLen(0) {
 	threadCounter = 0;
+	txReady = false;
+	received = false;
+	txReady = 0;
+	txRemoveThread = false;
 	int r;
 	r = uv_loop_init(&loop);
 	this->Rtimer_req.data = this;
@@ -49,19 +102,27 @@ TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLe
 	mainTimer.data = this;//remove no need for CB to have access
 	uv_timer_init(&loop, &mainTimer);
 	uv_timer_start(&mainTimer, &keepAliveTimerCB, 500, 5000);
-	uv_idle_init(&loop, &txTimer);
+/*
+	uv_timer_init(&loop, &txTimer);
+	txTimer.data = this;
+
+	uv_timer_start(&txTimer, &TX, 500, 500);
+*/
+
+	/*uv_idle_init(&loop, &txTimer);
 	txTimer.data = this;
 
 	uv_idle_start(&txTimer, &TX);
 	uv_idle_init(&loop, &txHandler);
 
-	uv_idle_start(&txHandler, &waiter);
-	uv_timer_init(&loop, &rxTimer);
+	uv_idle_start(&txHandler, &waiter);*/
+	/*uv_timer_init(&loop, &rxTimer);
 	rxTimer.data = this;
 
 	uv_timer_start(&rxTimer, &rxThreadMgr, 500, 500);
-
+*/
 	listenTrd = std::thread(&TCPClient::runLoop, this);
+
 }
 
 
@@ -181,23 +242,27 @@ void TCPClient::rxProcessor() {
 	//std::cerr << "RX" + std::to_string(xt++) + "\n";
 
 	while (not __stopDataProcess) {
-		while (not rxMtx.try_lock())
-			std::this_thread::sleep_for(chrono::microseconds(1));
-		if (receivedDataQ.size() > 0) {
-			std::string temp = this->receivedDataQ.front();
-			this->receivedDataQ.pop();
-			this->dataQ_Pops++;
-			rxMtx.unlock();
-			this->_safeCaller(temp);
-		} else {
-			rxMtx.unlock();
-			if (this->reduceRXthread) {
+		std::unique_lock<std::mutex> LOCKK(rxMtx);
+		while (not received) {
+			this->readNotification.wait(LOCKK);
+			if (this->reduceRXthread & not received) {
 				reduceRXthread = false;
 				threadCounter--;
+				LOCKK.unlock();
 				return;
 			}
-			std::this_thread::sleep_for(std::chrono::microseconds(TCPCLIENTSLEEPTIME));
 		}
+
+		if (receivedDataQ.size() == 0) {
+			received = false;
+			continue;
+		}
+		std::string temp = this->receivedDataQ.front();
+		this->receivedDataQ.pop();
+		this->dataQ_Pops++;
+		LOCKK.unlock();
+		this->_safeCaller(temp);
+
 	}
 }
 
@@ -229,6 +294,14 @@ void TCPClient::on_connect(uv_connect_t *req, int status) {
 		if (c->_onConnect != NULL)
 			c->_onConnect();
 		c->__stopDataProcess = false;
+		std::thread *threadManager = new std::thread([&]{
+			while (not c->__stopDataProcess) {
+				c->txThreadMgr();
+				c->rxThreadMgr();
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+			}
+		});
+		threadManager->detach();
 		uv_read_start((uv_stream_t *) &c->client, TCPClient::alloc_buffer, TCPClient::on_client_read);
 	}
 }
@@ -290,24 +363,28 @@ void TCPClient::send(std::string data) {//todo:to be tested with valgrind for po
 	if (not _connected)
 		EXTnetworkFailure("SEND FAILED, NO CONNECTION");
 	//FIXME: when disconnected, what happens to the buffer?? data would be transmited via newly established con*
-	while (not txMtx.try_lock())
-		std::this_thread::sleep_for(std::chrono::microseconds(1));
+	std::unique_lock<std::mutex> LOKK(txMtx);
+	txReady = false;
 	this->pendingBuffs.push(data);
-	txMtx.unlock();
+	this->txDataQ_Pushes++;
+	txReady = true;
+	LOKK.unlock();
+	txNotification.notify_one();
 }
 
 void TCPClient::on_client_write(uv_write_t *req, int status) {
+
 	if (status != 0) {
 		fprintf(stderr, "error on_client_write");
 		return;
 	}
-
+	send_is_busy = false;
+	sendNotify.notify_one();
 
 	uv_buf_t *bufw = (uv_buf_t *) req->data;
 	free(bufw->base);
 	free(bufw);
 	free(req);
-	send_is_busy = false;
 
 }
 
@@ -318,11 +395,19 @@ void TCPClient::_packetReceived() {
 	lDebug("TCP-R: " + this->_buff);
 
 	if (this->_onMessage != NULL) {
-		while (not rxMtx.try_lock())
-			std::this_thread::sleep_for(std::chrono::microseconds(1));
+		/*while (not rxMtx.try_lock())
+			std::this_thread::sleep_for(std::chrono::microseconds(1));*/
+		/* std::unique_lock<std::mutex> lock(g_lock);
+   g_done = true;
+   std::notify_all_at_thread_exit(g_signal, std::move(lock));*/
+		std::unique_lock<std::mutex> LOKK(rxMtx);
 		receivedDataQ.push(this->_buff);
 		this->dataQ_Pushes++;
-		rxMtx.unlock();
+		received = true;
+		//LOKK.unlock();
+		readNotification.notify_one();
+		//std::notify_all_at_thread_exit(readNotification, std::move(LOKK));
+		//rxMtx.unlock();
 	}
 	this->_buff = "";
 	this->_lastPacketLen = 0;
@@ -354,79 +439,120 @@ void TCPClient::reconnTimerCB(uv_timer_t *handle) {
 void TCPClient::txProcessor() {
 	try {
 		std::string data;
-		while (not this->txMtx.try_lock())
-			std::this_thread::sleep_for(std::chrono::microseconds(1));
-		data = this->pendingBuffs.front();
-		this->pendingBuffs.pop();
-		txMtx.unlock();
+		while (not __stopDataProcess) {
 
-		uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
+			std::unique_lock<std::mutex> LOCKK(txMtx);
 
-		uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));
+			while ((not txReady)/* and send_is_busy*/)
+				this->txNotification.wait(LOCKK);
 
-		uint8_t *buff = (uint8_t *) malloc(data.size() + 6);
+			data = this->pendingBuffs.front();
+			this->pendingBuffs.pop();
+			this->txDataQ_Pops++;
+			if (pendingBuffs.size() == 0)
+				txReady = false;
+/*			if (this->txRemoveThread) {
+				txRemoveThread = false;
+				txThreadCounter--;
+				txReady--;
+				LOCKK.unlock();
+				return;
+			}*/
 
 
-		uint32_t size = (uint32_t) data.size();
-		bufw->base = (char *) buff;
-		bufw->len = data.size() + 6;
-		memcpy(buff + 6, data.c_str(), data.size());
-		buff[0] = 12;
-		buff[1] = 26;
-		memcpy(buff + 2, (void *) (&size), 4);
-		write_req->data = (void *) bufw;
 
-		int r = uv_write(write_req, (uv_stream_t *) &this->client, bufw, 1,
-		                 TCPClient::on_client_write);
-		logger.log("TCPClient", "TCP-S: " + data, LogLevel::debug);
 
-		if (r != 0) {
-			//this->send_is_busy = false;
-			EXTnetworkFailureO(
-					"Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) +
-					"]: " +
-					uv_strerror(r),
-					this->getNameAndType());
+
+
+
+
+			uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
+
+			uv_buf_t *bufw = (uv_buf_t *) malloc(sizeof(uv_buf_t));
+
+			uint8_t *buff = (uint8_t *) malloc(data.size() + 6);
+
+
+			uint32_t size = (uint32_t) data.size();
+			bufw->base = (char *) buff;
+			bufw->len = data.size() + 6;
+			memcpy(buff + 6, data.c_str(), data.size());
+			buff[0] = 12;
+			buff[1] = 26;
+			memcpy(buff + 2, (void *) (&size), 4);
+			write_req->data = (void *) bufw;
+			while (send_is_busy)
+				std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+			send_is_busy = false;
+			int r = uv_write(write_req, (uv_stream_t *) &this->client, bufw, 1,
+			                 TCPClient::on_client_write);
+
+			logger.log("TCPClient", "TCP-S: " + data, LogLevel::debug);
+
+			if (r != 0) {
+				LOCKK.unlock();
+
+				//this->send_is_busy = false;
+				EXTnetworkFailureO(
+						"Network uv_write failed" + std::string(uv_err_name(r)) + "[" + std::to_string(r) +
+						"]: " +
+						uv_strerror(r),
+						this->getNameAndType());
+			}
+			LOCKK.unlock();
+
+
 		}
-
-	} catch (exceptionEx ex) {
+	} catch (exceptionEx
+	         ex) {
 		lError("SendErr: " + ex.toString());
 	} catch (...) {
 		lError("SendErr: Unknown error...");
+	}
+
+
+}
+
+void TCPClient::txThreadMaker(int threadsNumber) {
+	for (int i = 0; i < threadsNumber; i++) {
+		std::thread *temp = new std::thread(&zeitoon::utility::TCPClient::txProcessor, this);
+		this->txThreadCounter++;
+		temp->detach();
 	}
 }
 
 void TCPClient::rxThradMaker(int numberOfThreads) {
 	for (int i = 0; i < numberOfThreads; i++) {
+		std::thread *temp = new std::thread(&zeitoon::utility::TCPClient::rxProcessor, this);
+		this->threadCounter++;
+		temp->detach();
 	}
-	std::thread *temp = new std::thread(&zeitoon::utility::TCPClient::rxProcessor, this);
-	this->threadCounter++;
-	temp->detach();
 }
 
-void TCPClient::rxThreadMgr(uv_timer_t *handle) {
+void TCPClient::rxThreadMgr(/*uv_timer_t *handle*/) {
+//TCPClient *c = (TCPClient *) handle->data;
+	std::cout << "RX THREADS: " << threadCounter << "\n\n\n\n" << std::endl;
+	if (dataQ_Pops == 0 && lastDataQSize > 0) {
+		rxThradMaker(1);
+		counter = 0;
+	} else if (dataQ_Pushes > dataQ_Pops) {
 
-	TCPClient *c = (TCPClient *) handle->data;
-	if (c->dataQ_Pops == 0 && c->lastDataQSize > 0) {
-		c->rxThradMaker(1);
-		c->counter = 0;
-	} else if (c->dataQ_Pushes > c->dataQ_Pops) {
-
-		c->rxThradMaker(1);
-		c->counter = 0;
-	} else if ((c->dataQ_Pops > c->dataQ_Pushes or
-	            c->receivedDataQ.size() == 0) and c->threadCounter > 1 and
-	           c->counter <= 3) {//todo  this section needs too be ewviewd
-		c->counter++;
-	} else if (c->counter >= 3) {
-		if (not c->reduceRXthread)
-			c->reduceRXthread = true;
-		c->counter = 0;
+		rxThradMaker(1);
+		counter = 0;
+	} else if ((dataQ_Pops > dataQ_Pushes or
+	            receivedDataQ.size() == 0) and threadCounter > 1 and
+	           counter <= 3) {//todo  this section needs too be ewviewd
+		counter++;
+	} else if (counter >= 3) {
+		if (not reduceRXthread)
+			reduceRXthread = true;
+		counter = 0;
+		readNotification.notify_one();
 	}
 
-	c->lastDataQSize = c->receivedDataQ.size();
-	c->dataQ_Pushes = 0;
-	c->dataQ_Pops = 0;
+	lastDataQSize = receivedDataQ.size();
+	dataQ_Pushes = 0;
+	dataQ_Pops = 0;
 }
 
 

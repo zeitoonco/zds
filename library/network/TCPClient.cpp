@@ -346,7 +346,6 @@ void TCPClient::_packetReceived() {
 
 
 void TCPClient::_safeCaller(std::string data) {
-	lDebug("reched SCaller");
 	try {
 		this->_onMessage(data);
 	} catch (exceptionEx &ex) {

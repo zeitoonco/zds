@@ -313,6 +313,7 @@ void TCPClient::send(std::string data) {//todo:to be tested with valgrind for po
 	txReady = true;
 	LOKK.unlock();
 	txNotification.notify_one();
+	lDebug("OUTBOX: "+data+"\nPendingBuffer: "+std::to_string(pendingBuffs.size()));
 }
 
 void TCPClient::on_client_write(uv_write_t *req, int status) {

@@ -482,7 +482,7 @@ void TCPServer::clientCollection::client::send(std::string data) {
 			                 free(req);
 		                 });
 
-		logger.log("TCPClient", "TCP-S: " + data, LogLevel::debug);
+		logger.log("TCPServer", "TCP-S ["+std::to_string(this->_id)+"]: " + data, LogLevel::debug);
 
 		if (r != 0) {
 

@@ -45,11 +45,7 @@ void TCPClient::txThreadMgr() {
 }
 
 TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLen(0) {
-	threadCounter = 0;
-	txReady = false;
-	received = false;
-	txReady = 0;
-	txRemoveThread = false;
+
 	int r;
 	r = uv_loop_init(&loop);
 	this->Rtimer_req.data = this;
@@ -189,7 +185,8 @@ void TCPClient::rxProcessor() {
 					if ((*iterator) == std::this_thread::get_id()) {
 						transnmissionThreadList.erase(iterator);
 						//delete (*iterator); todo: to be deleted and free memory
-						lDebug("Removing thread.. Number of Rx Acive threads:" + std::to_string(threadCounter));
+						lDebug("Removing thread.. Number of Rx Acive threads:" + std::to_string(threadCounter) +
+						       " DataQ: " + std::to_string(receivedDataQ.size()));
 						return;
 					}
 				threadCounter++;
@@ -232,6 +229,11 @@ void TCPClient::on_connect(uv_connect_t *req, int status) {
 			c->_onConnect();
 		c->__stopDataProcess = false;
 		std::thread *threadManager = new std::thread([c] {
+			c->threadCounter = 0;
+			c->txReady = false;
+			c->received = false;
+			c->txReady = 0;
+			c->txRemoveThread = false;
 			while (not c->__stopDataProcess) {//TODDO CHANGE TO THIS STOP SEND
 				c->txThreadMgr();
 				c->rxThreadMgr();

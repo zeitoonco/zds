@@ -228,12 +228,13 @@ void TCPClient::on_connect(uv_connect_t *req, int status) {
 		if (c->_onConnect != NULL)
 			c->_onConnect();
 		c->__stopDataProcess = false;
+		c->threadCounter = 0;
+		c->txReady = false;
+		c->received = false;
+		c->txReady = 0;
+		c->txRemoveThread = false;
 		std::thread *threadManager = new std::thread([c] {
-			c->threadCounter = 0;
-			c->txReady = false;
-			c->received = false;
-			c->txReady = 0;
-			c->txRemoveThread = false;
+
 			while (not c->__stopDataProcess) {//TODDO CHANGE TO THIS STOP SEND
 				c->txThreadMgr();
 				c->rxThreadMgr();

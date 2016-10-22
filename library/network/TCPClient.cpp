@@ -34,6 +34,7 @@ void TCPClient::txThreadMgr() {
 	} else if (txCounter >= 15) {
 		if ((not txRemoveThread) and (txThreadCounter > 1)) {
 			txRemoveThread = true;
+			txReady =true;
 			txNotification.notify_one();
 		}
 		txCounter = 0;
@@ -173,7 +174,7 @@ std::string TCPClient::defaultReconnInterval() {
 void TCPClient::rxProcessor() {
 	while (not __stopDataProcess) {
 		std::unique_lock<std::mutex> LOCKK(rxMtx);
-		while (not received) {
+		while (not received)
 			this->readNotification.wait(LOCKK);
 
 			if (reduceRXthread) {
@@ -192,7 +193,7 @@ void TCPClient::rxProcessor() {
 				threadCounter++;
 				continue;
 			}
-		}
+
 
 
 		if (receivedDataQ.size() == 0) {
@@ -375,7 +376,7 @@ void TCPClient::txProcessor() {
 
 			std::unique_lock<std::mutex> LOCKK(txMtx);
 
-			while ((not txReady)/* and send_is_busy*/) {
+			while ((not txReady)/* and send_is_busy*/)
 				this->txNotification.wait(LOCKK);
 				if (this->txRemoveThread) {
 					txRemoveThread = false;
@@ -394,7 +395,7 @@ void TCPClient::txProcessor() {
 					txThreadCounter++;
 					continue;
 				}
-			}
+
 			if (pendingBuffs.size() == 0) {
 				txReady = false;
 				LOCKK.unlock();
@@ -481,8 +482,9 @@ void TCPClient::rxThreadMgr(/*uv_timer_t *handle*/) {
 	} else if (counter >= 3) {
 		if (not reduceRXthread)
 			reduceRXthread = true;
-		counter = 0;
+		received = true;
 		readNotification.notify_one();
+		counter = 0;
 	}
 
 	lastDataQSize = receivedDataQ.size();

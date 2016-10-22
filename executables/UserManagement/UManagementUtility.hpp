@@ -107,7 +107,7 @@ public:
 
 	static std::string addUsergroupPermission() { return "userman.addUsergroupPermission"; }
 
-	static std::string removeUsergroupPermission() { return "ulistGroupsserman.removeUsergroupPermission"; }
+	static std::string removeUsergroupPermission() { return "userman.removeUsergroupPermission"; }
 
 	static std::string listUsergroupPermissions() { return "userman.listUsergroupPermissions"; }
 

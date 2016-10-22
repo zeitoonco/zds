@@ -22,7 +22,7 @@
 #include "utility/DTStructs.hpp"
 #include "coreutility.hpp"
 #include "executables/UserManagement/DTStructs.hpp"
-
+#include "exceptions.hpp"
 #define helloPacket "{\"type\" : \"internal\" , \"node\" : \"hello\"}"
 
 namespace zeitoon {
@@ -785,6 +785,8 @@ bool Router::disableService(ExtensionProfile *ext) {
 }
 
 void Router::ping(ExtensionProfile *exte) {
+	if (exte == NULL)
+		EXTPingFailure("Invalid service ID");
 	this->net.send(exte->netClientId,
 	               "{\"type\" : \"internal\" , \"node\" :\"ping\" "
 	               + (exte->installID.size() > 0 ? " , \"id\" : \"" + CommunicationUtility::getRandomID() + "\""

@@ -19,7 +19,7 @@ namespace usermanagement{
 class UMCore;
 
 class UMSessionManager {
-
+void clearCaches();
 public:
 	~UMSessionManager();
 	/**map sessionList, haaviye int e sessionID e makhsoos e har user va login information(UMSession)*/

@@ -217,7 +217,7 @@ namespace zeitoon {
              * struct userAllInfo{} baraye negah daari e info e marboot be login e useri mmibaashad ke hata yek baar password e khod
              * raa eshtebah mizanad,
              * @param vector<int> logAttemptTimes haavi e zaman e har eghdaam be login e  eshtebah mibaashad
-             * @param int numberOfAttempts yek counter baraye tedad e dafa'aat e login e eshtebah ast
+             * @param int numberOfAttempts yek rxThreadCounter baraye tedad e dafa'aat e login e eshtebah ast
              * @param int Bannedtime baraye sabt zaman e ban shodan e movaghat mibaashad
              * @param bool banned baraye moshakhas kardannn vaziat e ban e user ast
              */

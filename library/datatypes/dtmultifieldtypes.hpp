@@ -479,7 +479,7 @@ private:
 				ready = true;
 			}
 			if (ready) {
-				T *temp = new T("");
+				T *temp = new T("");//TODO where does this gets freed??by inf
 				try {
 					temp->fromString(parsed);
 				} catch (exceptionEx &ex) {

@@ -216,6 +216,10 @@ void CommunicationManager::callCallbackError(string &data, string from) {
 		//in sync list?
 		if (idList.find(id) != idList.end()) {
 			lock_guard<mutex> lg(MtxIdList);
+			idList[id]->set=true;
+			idList[id]->success = "False";
+			idList[id]->data = data;//TODO: CHECK --newlly added 30 sep
+
 			idList.erase(id);//todo:check mediator. does meditor erase cb on error?
 			EXTexceptionRedirect("Command failed.\n" + jdata["description"].getValue());
 		} else {            //else, send it

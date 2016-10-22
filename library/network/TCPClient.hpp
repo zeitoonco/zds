@@ -17,7 +17,6 @@
 #include <atomic>
 #include <condition_variable>
 
-extern bool send_is_busy;
 
 namespace zeitoon {
 namespace utility {
@@ -68,11 +67,11 @@ public: //to be removed
 
 
 class TCPClient {
-	uv_idle_t txHandler;
-	uv_timer_t rxTimer;
-	uv_timer_t txTimer;
+	std::vector<thread::id> transnmissionThreadList;
 
 public:
+	std::condition_variable sendNotify;
+
 	std::atomic<int> threadCounter;
 	short counter = 0;
 	bool reduceRXthread = false;
@@ -85,9 +84,8 @@ public:
 	std::thread txThread;
 	std::vector<std::thread *> txThreadList;
 	std::mutex rxMtx, txMtx;
-	int dataQ_Pops = 0, dataQ_Pushes = 0, lastDataQSize = 0;
-	//SEND
-	int txDataQ_Pops = 0, txDataQ_Pushes = 0, txlastDataQSize = 0, txThreadCounter = 0;
+	std::atomic<int> dataQ_Pops , dataQ_Pushes , lastDataQSize ;
+	std::atomic<int> txDataQ_Pops , txDataQ_Pushes , txlastDataQSize , txThreadCounter ;
 	short txCounter = 0;
 	std::atomic<bool> txReady;
 	std::atomic<bool> txRemoveThread;
@@ -96,11 +94,9 @@ public:
 	void txThreadMaker(int threadsNumber);
 
 	//
-	bool __stopDataProcess = true;
-	bool stopSendt = false;
+	std::atomic<bool> __stopDataProcess;
 	std::atomic<bool> received;
 
-	int testRX = 0, testTX = 0;
 	std::queue<std::string> pendingBuffs;
 	std::queue<std::string> receivedDataQ;
 	std::condition_variable readNotification;

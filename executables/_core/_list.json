@@ -4,6 +4,15 @@
     {
       "name": "exceptionRedirect",
       "title": "Exception received from service"
+    },
+    {
+      "name": "CMDSyncTimeOut",
+      "title": "Sync Command timed out - more than 3 milliseconds without no responce. "
+    }
+  ,
+    {
+      "name": "PingFailure",
+      "title": "PING FAILED"
     }
   ]
 }

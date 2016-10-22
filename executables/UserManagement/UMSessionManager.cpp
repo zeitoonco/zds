@@ -19,7 +19,7 @@ UMSessionManager::UMSessionManager(UMCore *instance) : coreInstance(instance) {
 }
 
 UMSessionManager::~UMSessionManager() {
-
+this->clearCaches();
 }
 
 int UMSessionManager::newSession(int userID, std::string uname) {
@@ -104,6 +104,15 @@ void UMSessionManager::userGroupCacheLoader() {//TODO: Should be called on enabl
 	}
 }
 
+void UMSessionManager::clearCaches() {
+	for (auto iter:permissionCache)
+		delete iter.second;
+	permissionCache.empty();
+	permissionNamesCache.empty();
+	usergroupCache.empty();
+}
+
+
 void UMSessionManager::permissionCacheLoader() {
 	try {//int ipermissionID, std::string iname, std::string ititle, std::string idescription, int iparentID
 		permissionNamesCache.clear();
@@ -117,12 +126,12 @@ void UMSessionManager::permissionCacheLoader() {
 			                                                  tempRes.fieldValue(i, 2),
 			                                                  tempRes.fieldValue(i, 3),
 			                                                  tempRes.fieldValueInt(i, 4, -1));
-			this->permissionNamesCache[tempRes.fieldValue(i, 1)] = new DSUpdatePermission(tempRes.fieldValueInt(i, 0),
+			this->permissionNamesCache[tempRes.fieldValue(i, 1)] = temp;/*new DSUpdatePermission(tempRes.fieldValueInt(i, 0),
 			                                                                              tempRes.fieldValue(i, 1),
 			                                                                              tempRes.fieldValue(i, 2),
 			                                                                              tempRes.fieldValue(i, 3),
 			                                                                              tempRes.fieldValueInt(i, 4,
-			                                                                                                    -1));
+			                                                                                                    -1));*/
 			this->permissionCache[temp->permissiosnID.getValue()] = temp;
 		}
 

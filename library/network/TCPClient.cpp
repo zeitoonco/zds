@@ -378,7 +378,7 @@ void TCPClient::txProcessor() {
 
 			std::unique_lock<std::mutex> LOCKK(txMtx);
 
-			while ((not txReady)/* and send_is_busy*/) {
+			while ((not txReady)) {
 				this->txNotification.wait(LOCKK);
 				if (this->txRemoveThread) {
 					txRemoveThread = false;
@@ -395,6 +395,8 @@ void TCPClient::txProcessor() {
 							return;
 						}
 					txThreadCounter++;
+					lDebug("TX Thread not found on the list, thus not removing it");
+
 					continue;
 				}
 			}

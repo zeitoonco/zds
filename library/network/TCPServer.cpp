@@ -17,7 +17,7 @@ int rxCounter = 0;
 bool reduceRXthread = false;
 std::thread *threadManager;
 bool __stopDataProcess = false;
-std::mutex rxMtx, txMtx, ggg ;
+std::mutex rxMtx, txMtx, ggg;
 std::string rxBuff;
 int rxDataQ_Pops = 0, rxDataQ_Pushes = 0, rxLastDataQSize = 0;
 //SEND
@@ -249,7 +249,7 @@ void TCPServer::rxThread() {
 		}
 
 
-	//	lDebug("rafter while loop RX");
+		//	lDebug("rafter while loop RX");
 
 		if (receivedDataQ.size() == 0) {
 			received = false;
@@ -376,7 +376,7 @@ void  TCPServer::txThreadMaker(int numberOfThreads) {
 }
 
 void TCPServer::txThreadMgr() {
-	if (txDataQ_Pops == 0 && txlastDataQSize > 0 or txThreadCounter <1) {
+	if (txDataQ_Pops == 0 && txlastDataQSize > 0 or txThreadCounter < 1) {
 		txThreadMaker(1);
 		txCounter = 0;
 	} else if (txDataQ_Pushes > txDataQ_Pops) {
@@ -433,9 +433,9 @@ void TCPServer::txThread() {
 		txDataQ_Pops++;
 		while (not uv_is_writable((uv_stream_t *) temp.first->_client))
 			this_thread::sleep_for(chrono::nanoseconds(5));
-		if (not temp.first->_isConnected)
-			EXTconnectionError("No connection for client");
-		temp.first->send(temp.second);
+		if (temp.first->_isConnected)
+			//EXTconnectionError("No connection for client");
+			temp.first->send(temp.second);
 		LOCKK.unlock();
 
 
@@ -482,7 +482,7 @@ void TCPServer::clientCollection::client::send(std::string data) {
 			                 free(req);
 		                 });
 
-		logger.log("TCPServer", "TCP-S ["+std::to_string(this->_id)+"]: " + data, LogLevel::debug);
+		logger.log("TCPServer", "TCP-S [" + std::to_string(this->_id) + "]: " + data, LogLevel::debug);
 
 		if (r != 0) {
 

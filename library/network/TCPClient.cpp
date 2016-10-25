@@ -20,7 +20,8 @@ TCPClient::~TCPClient() {
 }
 
 void TCPClient::txThreadMgr() {
-	//std::cout << "TX: " << txThreadCounter << std::endl;
+	std::cout << "TX: " << txThreadCounter << "  PENDING: " << pendingBuffs.size() << "  BUFFER: " <<
+	receivedDataQ.size() << std::endl;
 	if (txDataQ_Pops == 0 && txlastDataQSize > 0) {
 		txThreadMaker(1);
 		txCounter = 0;
@@ -34,7 +35,7 @@ void TCPClient::txThreadMgr() {
 	} else if (txCounter >= 15) {
 		if ((not txRemoveThread) and (txThreadCounter > 1)) {
 			txRemoveThread = true;
-			txReady =true;
+			txReady = true;
 			txNotification.notify_one();
 		}
 		txCounter = 0;
@@ -196,7 +197,6 @@ void TCPClient::rxProcessor() {
 		}
 
 
-
 		if (receivedDataQ.size() == 0) {
 			received = false;
 			LOCKK.unlock();
@@ -314,7 +314,7 @@ void TCPClient::send(std::string data) {//todo:to be tested with valgrind for po
 	txReady = true;
 	LOKK.unlock();
 	txNotification.notify_one();
-	lDebug("OUTBOX: "+data+"\nPendingBuffer: "+std::to_string(pendingBuffs.size()));
+	lDebug("OUTBOX: " + data + "\nPendingBuffer: " + std::to_string(pendingBuffs.size()));
 }
 
 void TCPClient::on_client_write(uv_write_t *req, int status) {
@@ -472,7 +472,7 @@ void TCPClient::rxThradMaker(int numberOfThreads) {
 
 void TCPClient::rxThreadMgr(/*uv_timer_t *handle*/) {
 //TCPClient *c = (TCPClient *) handle->data;
-	//std::cout << "RX THREADS: " << threadCounter << "   " << transnmissionThreadList.size() << std::endl;
+	std::cout << "RX: " << threadCounter << "   TTC:" << transnmissionThreadList.size() << std::endl;
 	if (dataQ_Pops == 0 && lastDataQSize > 0) {
 		rxThradMaker(1);
 		counter = 0;

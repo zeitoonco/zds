@@ -192,7 +192,7 @@ void TCPClient::rxProcessor() {
 						return;
 					}
 				threadCounter++;
-				continue;
+				break;
 			}
 		}
 
@@ -488,7 +488,7 @@ void TCPClient::rxThreadMgr(/*uv_timer_t *handle*/) {
 		if (not reduceRXthread)
 			reduceRXthread = true;
 		received = true;
-		readNotification.notify_one();
+		readNotification.notify_all();
 		counter = 0;
 	}
 

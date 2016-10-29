@@ -453,12 +453,12 @@ DSUserList UMCore::listUsers(bool listAllUsers, DSUserIDs IDs) {
 	std::string strPatch = "";
 	if (not listAllUsers) {
 		strPatch = "WHERE id IN (";
-		for (int i = 0; i <IDs.idlist.length(); i++)
+		for (int i = 0; i < IDs.idlist.length(); i++)
 			strPatch += std::to_string(IDs.idlist[i]->getValue()) + (i == (IDs.idlist.length() - 1) ? ")" : ",");
 	}
 	zeitoon::datatypes::DTTableString result("");
 	try {
-		result = this->querySync("select id,username,name,banned,banreason from users"+strPatch+" order by id");
+		result = this->querySync("select id,username,name,banned,banreason from users" + strPatch + " order by id");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch all usernames from database", errorInfo);
 	}
@@ -928,14 +928,17 @@ DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
 	zeitoon::datatypes::DTTableString result("");
 	try {
 		result = querySync(
-				"select permissionid,state from grouppermission where groupid=" + to_string(usergroupID));
+				"select permissionid, state, parentid, name, description from grouppermission "
+						"LEFT JOIN permission ON grouppermission.permissionid = permission.id where grouppermission.groupid=" + to_string(usergroupID));
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch  permission names from database", errorInfo);
 	}
 	try {
+
 		for (size_t i = 0; i < result.rowCount(); i++) {
 			list.permissionsList.add(
-					new DSPermissionState(stoi(result.fieldValue(i, 0)), stoi(result.fieldValue(i, 1))),
+					new DSPermissionInfo(stoi(result.fieldValue(i, 0)), stoi(result.fieldValue(i, 1)),
+					                      stoi(result.fieldValue(i, 2)), result.fieldValue(i, 3),result.fieldValue(i, 4)),
 					true);
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {
@@ -1001,9 +1004,9 @@ DSUserAvatar UMCore::getUserAvatar(int userID) {
 		auto strSink = new CryptoPP::StringSink(encoded);
 		auto Base64Enc = new CryptoPP::Base64Encoder(strSink, false);
 		CryptoPP::StringSource ss(tempR, true, Base64Enc);*/
-	//	delete strSink, Base64Enc; //TODO IMPORTANT, deletation causes seg fault! to be revised
+		//	delete strSink, Base64Enc; //TODO IMPORTANT, deletation causes seg fault! to be revised
 		DSUserAvatar tempDSUA(tempR, userID);
-		std::cerr<< "IMG: \n"<<tempDSUA.toString()<<"\n";
+		std::cerr << "IMG: \n" << tempDSUA.toString() << "\n";
 		return tempDSUA;
 
 	} catch (...) {

@@ -572,6 +572,8 @@ public:
 	}
 };
 
+
+
 class DSUsergroupPermission : public DTStruct {
 public:
 	DTInteger<int> usergroupID = {"usergroupID"};
@@ -603,9 +605,48 @@ public:
 	}
 };
 
+class DSPermissionInfo : public DTStruct {
+
+public:
+	DTInteger<int> id = {"id"};
+	DTInteger<int> state = {"state"};
+	DTInteger<int> parentid = {"parentid"};
+	DTString name = {"name"};
+	DTString desc = {"description"};
+
+
+	static std::string getStructName() {
+		return "DSPermissionInfo";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSPermissionInfo() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		this->list.push_back(&id);
+		this->list.push_back(&state);
+		this->list.push_back(&parentid);
+		this->list.push_back(&name);
+		this->list.push_back(&desc);
+	}
+
+	DSPermissionInfo(std::string data) : DSPermissionInfo() {
+		this->fromString(data);
+	}
+	DSPermissionInfo(int idIn, int stateIn, int parentidIn, std::string nameIn, std::string descIn)
+			: DSPermissionInfo() {
+		this->desc=descIn;
+		this->id= idIn;
+		this->state =stateIn;
+		this->parentid=parentidIn;
+		this->name=nameIn;
+	}
+};
+
 class DSUsergroupPermissionList : public DTStruct {
 public:
-	DTSet<DSPermissionState> permissionsList = {"listPermissions"};
+	DTSet<DSPermissionInfo> permissionsList = {"listPermissions"};
 
 	static std::string getStructName() {
 		return "DSUsergroupPermissionList";

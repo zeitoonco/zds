@@ -154,6 +154,7 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			DSUserPermissionList permsList = userMngrInterface.listUserPermissions(userID.value.value());
 			resultStr = permsList.toString(true);
 		} else if (!Strings::compare(node, commandInfo::addUsergroupPermission(), false)) {
+
 			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
 			userMngrInterface.addUsergroupPermission(regInfo.usergroupID.getValue(),
 			                                         regInfo.permissionID.getValue(),

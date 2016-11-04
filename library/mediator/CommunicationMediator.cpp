@@ -23,14 +23,16 @@ void CommunicationMediator::runCommand(string name, string data, string id, stri
 
 string CommunicationMediator::runCommandSync(string name, string data, string id, string session) {
 	//todo:throw error if id is empty
-	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data, session));
 	idData x = {"", false};
-	try {
-		lock_guard<mutex> lg(MtxIdList);
+	//try {
+	std::unique_lock<mutex> lg(MtxIdList);
 		idList[id] = &x;
-	} catch (std::exception ex) {
+	lg.unlock();
+	sm->send(CommunicationUtility::makeCommand(name, id, sm->owner->getServiceName(), data, session));
+
+	/*} catch (std::exception ex) {
 		EXTunknownExceptionI("unable to add to id-list");
-	}
+	}*/
 	while (!x.set) {
 		/*	if ((startTime - std::chrono::system_clock::now() > 5 ){
 				todo:put a timeout for commands
@@ -67,7 +69,7 @@ string CommunicationMediator::runCommandSync(string name, string data) {
 	return runCommandSync(name, data, utility::CommunicationUtility::getRandomID());
 }
 
-void CommunicationMediator::runCallback(string name, string data, string id,bool success) {
+void CommunicationMediator::runCallback(string name, string data, string id, bool success) {
 	sm->send(CommunicationUtility::makeCallback(name, id, sm->owner->getServiceName(), data, success));
 }
 
@@ -141,10 +143,13 @@ bool CommunicationMediator::dataReceive(string data) {
 		id = js["id"].getValue();
 		dt = js["data"].getValue();
 	} catch (exceptionEx &ex) {
+		lWarnig("CBID NOT FOUND. Err: " + std::string(ex.what()));
 		return false;
 	}
-	if (idList.find(id) == idList.end())
-		return false;
+	if (idList.find(id) == idList.end()) {
+		lWarnig("Callback ID not found");
+			return false;
+	}
 	lock_guard<mutex> lg(MtxIdList);
 	idData *x = idList[id];
 	x->data = dt;

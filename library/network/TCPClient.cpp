@@ -20,8 +20,7 @@ TCPClient::~TCPClient() {
 }
 
 void TCPClient::txThreadMgr() {
-	std::cout << "TX: " << txThreadCounter << "  PENDING: " << pendingBuffs.size() << "  BUFFER: " <<
-	receivedDataQ.size() << std::endl;
+
 	if (txDataQ_Pops == 0 && txlastDataQSize > 0) {
 		txThreadMaker(1);
 		txCounter = 0;
@@ -32,10 +31,10 @@ void TCPClient::txThreadMgr() {
 	} else if ((txDataQ_Pops > txDataQ_Pushes or
 	            pendingBuffs.size() == 0)) {//todo  this section needs too be ewviewd
 		txCounter++;
-	} else if (txCounter >= 15) {
-		if ((not txRemoveThread) and (txThreadCounter > 1)) {
+	}
+	if (txCounter > 3) {
+		if ((txThreadCounter > 1)) {
 			txRemoveThread = true;
-			txReady = true;
 			txNotification.notify_one();
 		}
 		txCounter = 0;
@@ -57,6 +56,18 @@ TCPClient::TCPClient() : addr(NULL), _connected(false), _buff(""), _lastPacketLe
 	uv_timer_init(&loop, &mainTimer);
 	uv_timer_start(&mainTimer, &keepAliveTimerCB, 500, 5000);
 	listenTrd = std::thread(&TCPClient::runLoop, this);
+	std::thread([this] {
+		txThreadCounter=0;
+		threadCounter=0;
+		while (true) {
+			std::cout << "TX: " << txThreadCounter << "  PENDING: " << pendingBuffs.size() << "  BUFFER: " <<
+			receivedDataQ.size() << std::endl;
+			std::cout << "RX: " << threadCounter << "   TTC:" << transnmissionThreadList.size() <<
+			"     Counter: " + std::to_string(counter) << std::endl;
+
+			std::this_thread::sleep_for(std::chrono::seconds(5));
+		}
+	}).detach();
 }
 
 
@@ -175,25 +186,24 @@ std::string TCPClient::defaultReconnInterval() {
 void TCPClient::rxProcessor() {
 	while (not __stopDataProcess) {
 		std::unique_lock<std::mutex> LOCKK(rxMtx);
-		while (not received) {
+		while (not (received || reduceRXthread))
 			this->readNotification.wait(LOCKK);
+		if (reduceRXthread and (!receivedDataQ.size())) {
+			reduceRXthread = false;
+			threadCounter--;
+			LOCKK.unlock();
+			for (std::vector<std::thread::id>::iterator iterator = transnmissionThreadList.begin();
+			     iterator != transnmissionThreadList.end(); iterator++)
+				if ((*iterator) == std::this_thread::get_id()) {
+					transnmissionThreadList.erase(iterator);
+					//delete (*iterator); todo: to be deleted and free memory
+					lDebug("Removing thread.. Number of Rx Acive threads:" + std::to_string(threadCounter) +
+					       " DataQ: " + std::to_string(receivedDataQ.size()));
+					return;
+				}
+			threadCounter++;
+			break;
 
-			if (reduceRXthread) {
-				reduceRXthread = false;
-				threadCounter--;
-				LOCKK.unlock();
-				for (std::vector<std::thread::id>::iterator iterator = transnmissionThreadList.begin();
-				     iterator != transnmissionThreadList.end(); iterator++)
-					if ((*iterator) == std::this_thread::get_id()) {
-						transnmissionThreadList.erase(iterator);
-						//delete (*iterator); todo: to be deleted and free memory
-						lDebug("Removing thread.. Number of Rx Acive threads:" + std::to_string(threadCounter) +
-						       " DataQ: " + std::to_string(receivedDataQ.size()));
-						return;
-					}
-				threadCounter++;
-				break;
-			}
 		}
 
 
@@ -202,6 +212,7 @@ void TCPClient::rxProcessor() {
 			LOCKK.unlock();
 			continue;
 		}
+
 		std::string temp = this->receivedDataQ.front();
 		this->receivedDataQ.pop();
 		this->dataQ_Pops++;
@@ -308,13 +319,12 @@ void TCPClient::send(std::string data) {//todo:to be tested with valgrind for po
 		EXTnetworkFailure("SEND FAILED, NO CONNECTION");
 	//FIXME: when disconnected, what happens to the buffer?? data would be transmited via newly established con*
 	std::unique_lock<std::mutex> LOKK(txMtx);
-	txReady = false;
 	this->pendingBuffs.push(data);
+	LOKK.unlock();
 	this->txDataQ_Pushes++;
 	txReady = true;
-	LOKK.unlock();
 	txNotification.notify_one();
-	lDebug("OUTBOX: " + data + "\nPendingBuffer: " + std::to_string(pendingBuffs.size()));
+
 }
 
 void TCPClient::on_client_write(uv_write_t *req, int status) {
@@ -375,42 +385,46 @@ void TCPClient::reconnTimerCB(uv_timer_t *handle) {
 void TCPClient::txProcessor() {
 	try {
 		while (not __stopDataProcess) {
-
 			std::unique_lock<std::mutex> LOCKK(txMtx);
 
-			while ((not txReady)) {
+			while (not (txReady || txRemoveThread))
 				this->txNotification.wait(LOCKK);
-				if (this->txRemoveThread) {
-					txRemoveThread = false;
-					txThreadCounter--;
-					LOCKK.unlock();
 
-					for (std::vector<std::thread::id>::iterator iterator = transnmissionThreadList.begin();
-					     iterator != transnmissionThreadList.end(); iterator++)
-						if (*iterator == this_thread::get_id()) {
-							transnmissionThreadList.erase(iterator);
+			if (this->txRemoveThread) {
 
-							//delete (*iterator);
-							lDebug("Removing thread.. Number of Tx Acive threads:" + std::to_string(txThreadCounter));
-							return;
-						}
-					txThreadCounter++;
-					lDebug("TX Thread not found on the list, thus not removing it");
+				txRemoveThread = false;
+				txThreadCounter--;
+				LOCKK.unlock();
 
-					continue;
-				}
+				for (std::vector<std::thread::id>::iterator iterator = transnmissionThreadList.begin();
+				     iterator != transnmissionThreadList.end(); iterator++)
+					if (*iterator == this_thread::get_id()) {
+						transnmissionThreadList.erase(iterator);
+
+						//delete (*iterator);
+						lDebug("Removing thread.. Number of Tx Acive threads:" + std::to_string(txThreadCounter));
+						return;
+					}
+				txThreadCounter++;
+				lDebug("TX Thread not found on the list, thus not removing it");
+
+				continue;
 			}
+
 
 			if (pendingBuffs.size() == 0) {
 				txReady = false;
 				LOCKK.unlock();
 				continue;
 			}
+
 			std::string tempData = pendingBuffs.front();
 			pendingBuffs.pop();
 			txDataQ_Pops++;
+
 			while (not uv_is_writable((uv_stream_t *) &this->client))///todo: to be reviewed its validity
 				this_thread::sleep_for(chrono::nanoseconds(5));
+
 
 			uv_write_t *write_req = (uv_write_t *) malloc(sizeof(uv_write_t));
 
@@ -457,7 +471,6 @@ void TCPClient::txThreadMaker(int threadsNumber) {
 		this->txThreadCounter++;
 		this->transnmissionThreadList.push_back(temp.get_id());
 		temp.detach();
-		lDebug("NEW Thread   " + std::to_string(txThreadCounter));
 	}
 }
 
@@ -472,23 +485,20 @@ void TCPClient::rxThradMaker(int numberOfThreads) {
 
 void TCPClient::rxThreadMgr(/*uv_timer_t *handle*/) {
 //TCPClient *c = (TCPClient *) handle->data;
-	std::cout << "RX: " << threadCounter << "   TTC:" << transnmissionThreadList.size() << std::endl;
-	if (dataQ_Pops == 0 && lastDataQSize > 0) {
+
+	if ((dataQ_Pops == 0) && (lastDataQSize > 0)) {
 		rxThradMaker(1);
 		counter = 0;
 	} else if (dataQ_Pushes > dataQ_Pops) {
-
 		rxThradMaker(1);
 		counter = 0;
-	} else if ((dataQ_Pops > dataQ_Pushes or
-	            receivedDataQ.size() == 0) and threadCounter > 1 and
-	           counter <= 3) {//todo  this section needs too be ewviewd
+	} else if (((dataQ_Pops > dataQ_Pushes) ||
+	            (receivedDataQ.size() == 0)) and threadCounter > 1) {//todo  this section needs too be ewviewd
 		counter++;
-	} else if (counter >= 3) {
-		if (not reduceRXthread)
-			reduceRXthread = true;
-		received = true;
-		readNotification.notify_all();
+	}
+	if ((counter > 3) and (threadCounter.load() > 1)) {
+		reduceRXthread = true;
+		readNotification.notify_one();
 		counter = 0;
 	}
 

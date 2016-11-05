@@ -177,30 +177,7 @@ void TCPServer::rxThreadMaker(int numberOfThreads) {
 }
 
 void TCPServer::rxThreadMgr() {
-	/*if (txDataQ_Pops == 0 && txlastDataQSize > 0) {
-		txThreadMaker(1);
-		txCounter = 0;
-	} else if (txDataQ_Pushes > txDataQ_Pops) {
 
-		txThreadMaker(1);
-		txCounter = 0;
-	} else if ((txDataQ_Pops > txDataQ_Pushes or
-	            pendingBuffs.size() == 0)) {//todo  this section needs too be ewviewd
-		txCounter++;
-	} else if (txCounter >= 3) {
-		if (not txRemoveThread and txThreadCounter > 1) {
-			txRemoveThread = true;
-			txNotification.notify_one();
-		}
-		txCounter = 0;
-
-	}
-
-	txlastDataQSize = pendingBuffs.size();
-	txDataQ_Pops = 0;
-	txDataQ_Pushes = 0;
-*/
-//	std::cout << "RX THREADS: " << threadCounter << "\n\n\n\n" << std::endl;
 	if (rxDataQ_Pops == 0 && rxLastDataQSize > 0) {
 		std::cout << "Creating RX pops0, rxLdQs>0:   " << rxThreadCounter << std::endl;
 		rxThreadMaker(1);
@@ -359,9 +336,9 @@ void TCPServer::send(size_t clientId, std::string msg) {
 	txReady = false;
 	pendingBuffs.push(std::make_pair(clients[clientId], msg));
 	txDataQ_Pushes++;
+	LOKK.unlock();
 	txReady = true;
 	txNotification.notify_one();
-	LOKK.unlock();
 
 	//pendingBuffs.push(std::make_pair(clientId, msg));
 }

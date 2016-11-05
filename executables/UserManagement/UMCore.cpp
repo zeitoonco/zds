@@ -929,7 +929,8 @@ DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
 	try {
 		result = querySync(
 				"select permissionid, state, parentid, name, description from grouppermission "
-						"LEFT JOIN permission ON grouppermission.permissionid = permission.id where grouppermission.groupid=" + to_string(usergroupID));
+						"LEFT JOIN permission ON grouppermission.permissionid = permission.id where grouppermission.groupid=" +
+				to_string(usergroupID));
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch  permission names from database", errorInfo);
 	}
@@ -937,8 +938,9 @@ DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
 
 		for (size_t i = 0; i < result.rowCount(); i++) {
 			list.permissionsList.add(
-					new DSPermissionInfo(stoi(result.fieldValue(i, 0)), stoi(result.fieldValue(i, 1)),
-					                      stoi(result.fieldValue(i, 2)), result.fieldValue(i, 3),result.fieldValue(i, 4)),
+					new DSPermissionInfo(result.fieldValueInt(i, 0, -1), result.fieldValueInt(i, 1, -1),
+					                     result.fieldValueInt(i, 0, 2), result.fieldValue(i, 3),
+					                     result.fieldValue(i, 4)),
 					true);
 		}
 	} catch (zeitoon::utility::exceptionEx &err) {

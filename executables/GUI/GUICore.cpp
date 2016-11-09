@@ -115,8 +115,8 @@ void GUICore::callFromClient(std::string CmdName, std::string cmdID, int clientI
 	if (cmdID == "")
 		cmdID = CommunicationUtility::getRandomID();
 	clientData *cd = clients.at(clientID);
-	guiCHI->sm.communication.runCommand(CmdName, data, cmdID, session);
 	cmdClients[cmdID] = clientID;
+	guiCHI->sm.communication.runCommand(CmdName, data, cmdID, session);
 }
 
 void GUICore::callBackReceived(std::string node, std::string cmdID, std::string data, std::string success) {

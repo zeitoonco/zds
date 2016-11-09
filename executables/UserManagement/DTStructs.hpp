@@ -180,7 +180,6 @@ public:
 		username = iusername;
 		password = ipassword;
 		name = iname;
-
 	}
 };
 
@@ -576,9 +575,8 @@ public:
 
 class DSUsergroupPermission : public DTStruct {
 public:
-	DTInteger<int> usergroupID = {"usergroupID"};
-	DTInteger<int> permissionID = {"permissionID"};
-	DTInteger<int> permissionState = {"state"};
+	DTInteger<int> ID={"id"};
+	DTSet<DSPermissionState> permState = {"permissions"};
 
 	static std::string getStructName() {
 		return "DSUsergroupPermission";
@@ -589,20 +587,19 @@ public:
 	}
 
 	DSUsergroupPermission() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
-		list.push_back(&usergroupID);
-		list.push_back(&permissionID);
-		list.push_back(&permissionState);
+		list.push_back(&ID);
+		list.push_back(&permState);
 	}
 
 	DSUsergroupPermission(std::string data) : DSUsergroupPermission() {
 		this->fromString(data);
 	}
 
-	DSUsergroupPermission(int iusergroupID, int ipermissionID, int ipermissionState) : DSUsergroupPermission() {
+/*	DSUsergroupPermission(int iusergroupID, int ipermissionID, int ipermissionState) : DSUsergroupPermission() {
 		permissionID = ipermissionID;
 		usergroupID = iusergroupID;
 		permissionState = ipermissionState;
-	}
+	}*/
 };
 
 class DSPermissionInfo : public DTStruct {

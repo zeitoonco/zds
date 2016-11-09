@@ -111,7 +111,7 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			DSUserIDs temp;
 
 			if (data.size() > 0) {
-				if (JStruct(data).contains("list")) {
+				if (JStruct(data).contains("idlist")) {
 					temp.fromString(data);
 					DSUserList usersList = userMngrInterface.listUsers(false, temp);
 					resultStr = usersList.toString(true);
@@ -156,14 +156,12 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 		} else if (!Strings::compare(node, commandInfo::addUsergroupPermission(), false)) {
 
 			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
-			userMngrInterface.addUsergroupPermission(regInfo.usergroupID.getValue(),
-			                                         regInfo.permissionID.getValue(),
-			                                         regInfo.permissionState.getValue());
+			userMngrInterface.addUsergroupPermission(regInfo);
 		} else if (!Strings::compare(node, commandInfo::removeUsergroupPermission(), false)) {
 			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
-			userMngrInterface.removeUsergroupPermission(regInfo.usergroupID.getValue(),
+			/*userMngrInterface.removeUsergroupPermission(regInfo.usergroupID.getValue(),
 			                                            regInfo.permissionID.getValue(),
-			                                            regInfo.permissionState.getValue());
+			                                            regInfo.permissionState.getValue());*/
 		} else if (!Strings::compare(node, commandInfo::listUsergroupPermissions(), false)) {
 			DSInteger usergroupID;
 			usergroupID.fromString(data);

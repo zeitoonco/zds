@@ -458,7 +458,7 @@ DSUserList UMCore::listUsers(bool listAllUsers, DSUserIDs IDs) {
 	}
 	zeitoon::datatypes::DTTableString result("");
 	try {
-		result = this->querySync("select id,username,name,banned,banreason from users" + strPatch + " order by id");
+		result = this->querySync("select id,username,name,banned,banreason from users " + strPatch + " order by id");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch all usernames from database", errorInfo);
 	}
@@ -878,26 +878,32 @@ DSUserPermissionList UMCore::listUserPermissions(int userID) {
 	return list;
 }
 
-void UMCore::addUsergroupPermission(int usergroupID, int permissionID, int state) {
+void UMCore::addUsergroupPermission(DSUsergroupPermission iList) {
+	//select  setGroupPrmission(1,ARRAY[[1000,1],[5500,1],[2,0]]);
 	try {
-		int a = executeSync(
-				"insert into grouppermission(permissionid,groupid,state) values(" +
-				std::to_string(permissionID) + ", " + std::to_string(usergroupID) +
-				", " + std::to_string(state) + ") ON CONFLICT(permissionid, groupid) DO UPDATE SET state=" +
-				std::to_string(state));
-		if (a != 1)
-			EXTDBError("INSERT FAILED");
+		std::string QUERY = "SELECT setGroupPrmission("+std::to_string(iList.ID.getValue())+",ARRAY[";
+		for (size_t iter = 0; iter != iList.permState.length(); iter++) {
+			QUERY += "[" + std::to_string(iList.permState[iter]->permissionID.getValue()) + ", " +
+			         std::to_string(iList.permState[iter]->permissionState.getValue())+ "]";
+			if (iList.permState.length() == iter+1){
+				QUERY+="])";
+			}else{
+				QUERY+=",";
+			}
+		}
+		lDebug("QUU:  "+QUERY );
+		int a = executeSync(QUERY);
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to add the permission for the user", errorInfo);
 	}
-	umCHI->sm.communication.runEvent(eventInfo::usergroupPermissionAdded(),
+	/*umCHI->sm.communication.runEvent(eventInfo::usergroupPermissionAdded(),
 	                                 zeitoon::usermanagement::DSUserPermission(usergroupID, permissionID,
 	                                                                           state).toString(
 			                                 true));
 	lNote(eventInfo::usergroupPermissionAdded() + "UsergroupID: " + std::to_string(usergroupID) +
 	      "PermissionID: " +
-	      std::to_string(permissionID) + " State: " + std::to_string(state));
-	sessionManager.updateUsergroupCache(usergroupID);//see if its modified in the cache
+	      std::to_string(permissionID) + " State: " + std::to_string(state));*/
+	sessionManager.updateUsergroupCache(iList.ID.getValue());//see if its modified in the cache
 }
 
 void UMCore::removeUsergroupPermission(int usergroupID, int permissionID, int state) {
@@ -939,7 +945,7 @@ DSUsergroupPermissionList UMCore::listUsergroupPermissions(int usergroupID) {
 		for (size_t i = 0; i < result.rowCount(); i++) {
 			list.permissionsList.add(
 					new DSPermissionInfo(result.fieldValueInt(i, 0, -1), result.fieldValueInt(i, 1, -1),
-					                     result.fieldValueInt(i, 0, 2), result.fieldValue(i, 3),
+					                     result.fieldValueInt(i, 2, -1), result.fieldValue(i, 3),
 					                     result.fieldValue(i, 4)),
 					true);
 		}

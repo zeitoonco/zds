@@ -71,9 +71,18 @@ void TCPServer::listen(int port) {
 	r = uv_listen((uv_stream_t *) &server, DEFAULT_BACKLOG, TCPServer::on_new_connection);
 	uvEXT(r, "listen failed(uv_listen)");
 	listenTrd = new std::thread(&TCPServer::_listen, this);
-	/*this->mainTimer.data = this;
-	uv_timer_init(&loop, &mainTimer);
-	uv_timer_start(&this->mainTimer, dataProcThreadMgrTimer, 0, 300);*/
+	std::thread([this] {
+		txThreadCounter=0;
+		rxThreadCounter=0;
+		while (true) {
+			std::cout << "TX: " << txThreadCounter << "  PENDING: " << pendingBuffs.size() << "  BUFFER: " <<
+			receivedDataQ.size() << std::endl;
+			std::cout << "RX: " << txThreadCounter << "   TTC:" << transnmissionThreadList.size() <<
+			"     Counter: " + std::to_string(rxThreadCounter) << std::endl;
+
+			std::this_thread::sleep_for(std::chrono::seconds(5));
+		}
+	}).detach();
 }
 
 void TCPServer::_listen() {

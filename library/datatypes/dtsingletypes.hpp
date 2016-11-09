@@ -536,7 +536,7 @@ protected:
 	IntType parseString(string str, bool &isExact) {
 		IntType x;
 		long double y;
-		str = Strings::trim(str);
+		str = Strings::trim(str,"\"");
 		for (int i = 0; i < str.size(); i++) {
 			if ((str[i] < 48 || str[i] > 57)    //Numbers
 			    && str[i] != 32 && str[i] != 45 && str[i] != 46 && str[i] != 43    // ' ','.','-','+'

@@ -142,9 +142,8 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			userMngrInterface.removeUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
 
 		} else if (!Strings::compare(node, commandInfo::addUserPermission(), false)) {
-			zeitoon::usermanagement::DSUserPermission regInfo(data);
-			userMngrInterface.addUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue(),
-			                                    regInfo.permissionState.getValue());
+			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
+			userMngrInterface.addUserPermission(regInfo);
 		} else if (!Strings::compare(node, commandInfo::removeUserPermission(), false)) {
 			zeitoon::usermanagement::DSUserPermission regInfo(data);
 			userMngrInterface.removeUserPermission(regInfo.userID.getValue(), regInfo.permissionID.getValue());
@@ -223,7 +222,7 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			std::cerr << "UMCHI IMG\n" << resultStr << "\n";
 		}
 
-
+		return true;
 	} catch (exceptionEx &errorInfo) {
 		sm.communication.errorReport(node, id, errorInfo.what());
 		lError("node: " + node + " id: " + id + " errMsg:" + errorInfo.what());
@@ -233,7 +232,7 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 		lError("node: " + node + " id: " + id + " errMsg:" + errorInfo.what());
 		id = "";
 	}
-	return true;
+	return false;
 }
 
 void UmCHI::onCallback(string node, string data, string id, string from, std::string success) {
@@ -265,7 +264,11 @@ void UmCHI::onInstall(string id) {
 	if (res == -1)
 		EXTDBError("Sql error");
 	int uid = userMngrInterface.addUser("admin", "admin", "admin");
-	userMngrInterface.addUserPermission(uid, 0, 1);
+	DSUsergroupPermission permTemp;
+	permTemp.ID.operator=(uid);
+	permTemp.permState.add(new DSPermissionState(0,1),true);
+
+	userMngrInterface.addUserPermission(permTemp);
 	//set serviceID in confMgr
 	UMconfig.serviceID = id;
 	UMconfig.save();
@@ -485,8 +488,8 @@ void UmCHI::setInstallInfo() {
 			                                   DSUserPermissionList::getStructVersion()), true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::addUsergroupPermission(),
-			                                   DSUsergroupPermission::getStructName(),
-			                                   DSUsergroupPermission::getStructVersion(), "", 0), true);
+			                                   DSUsergroupPermissionList::getStructName(),
+			                                   DSUsergroupPermissionList::getStructVersion(), "", 0), true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::removeUsergroupPermission(),
 			                                   DSUsergroupPermission::getStructName(),

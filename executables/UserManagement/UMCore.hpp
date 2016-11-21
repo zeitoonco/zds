@@ -183,7 +183,7 @@ namespace zeitoon {
 
             void removeUserUsergroup(int userID, int usergroupID);
 
-            void addUserPermission(int userID, int permissionID, int state);
+            void addUserPermission(DSUsergroupPermission ilist);
 
             void removeUserPermission(int userID, int permissionID);
 

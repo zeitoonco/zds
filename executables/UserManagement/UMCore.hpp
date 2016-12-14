@@ -96,6 +96,7 @@ namespace zeitoon {
              * @param title string
              * @param desc string
              * @param parentID int*/
+
             void updatePermission(int permissionID, std::string name, std::string title, std::string desc,
                                   int parentID);
 
@@ -179,9 +180,9 @@ namespace zeitoon {
 
             DSUserContactList listContacts(int userID);
 
-            void addUserUsergroup(int userID, int usergroupID);
+            void addUserUsergroup(DSUserUsergroupArray);
 
-            void removeUserUsergroup(int userID, int usergroupID);
+            void removeUserUsergroup(DSUserUsergroupArray);
 
             void addUserPermission(DSUsergroupPermission ilist);
 
@@ -207,6 +208,7 @@ namespace zeitoon {
 
             void loadCaches();
             int getUserIDUsingSessionID(int sessionID);
+            void updateUsersUserGroup(DSUserGroupUpdate);
         private:
             /*
              typedef  void (UMCore::*BPTR) (std::string);
@@ -277,7 +279,7 @@ namespace zeitoon {
              * @param permissionID int
              * @return int permission State
              */
-            int checkUsergroupParentPermission(int &userGroupID, int &sessionID, int &permissionID);
+            int checkUsergroupParentPermission(int &userGroupID, int &permissionID);
 
             /**getPermissionParent() baraye daryaft e parent e permission dar mavagheye khaas(maanand vaghty ke parent dar Cache vojood nadarad)
              * @param permissionID int

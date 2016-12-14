@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	r = new Router(std::stoi(coreConfig.listenPort.getValue()));
+
 	if (argc == 3) {
 		if (std::string(argv[2]) == "-save") {
 			coreConfig.save();
@@ -85,6 +86,7 @@ int main(int argc, char *argv[]) {
 			           zeitoon::utility::LogLevel::trace);
 		}
 	}
+
 	if (!logger.isTerminalLog()) {
 		cout << "\nZeitoon Server _Core Service\n";
 	}

@@ -99,6 +99,8 @@ public:
 
 	static std::string removeUserUsergroup() { return "userman.removeUserUsergroup"; }
 
+	static std::string updateUserUsergroup() { return "userman.updateUserUsergroup"; }
+
 	static std::string addUserPermission() { return "userman.addUserPermission"; }
 
 	static std::string removeUserPermission() { return "userman.removeUserPermission"; }

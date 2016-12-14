@@ -453,8 +453,8 @@ public:
 
 class DSUserUsergroup : public DTStruct {
 public:
-	DTInteger<int> userID = {"userID"};
-	DTInteger<int> groupID = {"groupID"};
+	DTInteger<int> userID = {"userid"};
+	DTInteger<int> groupID = {"groupid"};
 
 	static std::string getStructName() {
 		return "DSUserUsergroup";
@@ -480,6 +480,30 @@ public:
 		userID = iuserID;
 		groupID = igroupID;
 
+	}
+};
+
+class DSUserUsergroupArray : public DTStruct {
+public:
+	DTInteger<int> id={"id"};
+	DTSet<DTInteger<int>> idarray = {"idList"};
+
+	static std::string getStructName() {
+		return "DSUserUsergroupArray";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSUserUsergroupArray() :
+			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&idarray);
+	}
+
+	DSUserUsergroupArray(std::string data) :
+			DSUserUsergroupArray() {
+		this->fromString(data);
 	}
 };
 
@@ -572,10 +596,9 @@ public:
 };
 
 
-
 class DSUsergroupPermission : public DTStruct {
 public:
-	DTInteger<int> ID={"id"};
+	DTInteger<int> ID = {"id"};
 	DTSet<DSPermissionState> permState = {"permissions"};
 
 	static std::string getStructName() {
@@ -631,13 +654,14 @@ public:
 	DSPermissionInfo(std::string data) : DSPermissionInfo() {
 		this->fromString(data);
 	}
+
 	DSPermissionInfo(int idIn, int stateIn, int parentidIn, std::string nameIn, std::string descIn)
 			: DSPermissionInfo() {
-		this->desc=descIn;
-		this->id= idIn;
-		this->state =stateIn;
-		this->parentid=parentidIn;
-		this->name=nameIn;
+		this->desc = descIn;
+		this->id = idIn;
+		this->state = stateIn;
+		this->parentid = parentidIn;
+		this->name = nameIn;
 	}
 };
 
@@ -883,10 +907,11 @@ public:
 		list.push_back(&permissionName);
 	}
 };
+
 class DSUserAvatar : public DTStruct {
 public:
 	DTString image = {"image"};
-	DTInteger<> userID ={"userID"};
+	DTInteger<> userID = {"userID"};
 
 	static std::string getStructName() {
 		return "DSUserAvatar";
@@ -900,15 +925,16 @@ public:
 		list.push_back(&image);
 		list.push_back(&userID);
 	}
-	DSUserAvatar(std::string img, int usrID):DSUserAvatar(){
-			this->image = img;
+
+	DSUserAvatar(std::string img, int usrID) : DSUserAvatar() {
+		this->image = img;
 		this->userID = usrID;
 	}
 };
 
 class DSUserIDs : public DTStruct {
 public:
-	DTSet<DTInteger<int>> idlist ={"idlist"};
+	DTSet<DTInteger<int>> idlist = {"idlist"};
 
 	static std::string getStructName() {
 		return "DSUserIDs";
@@ -922,6 +948,53 @@ public:
 		list.push_back(&idlist);
 	}
 };
+
+class DSGroupState : public DTStruct {
+public:
+	DTBoolean state = {"state"};
+	DTInteger<int> id = {"id"};
+
+	static std::string
+
+	getStructName() {
+		return "DSGroupState";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+	DSGroupState(std::string name):DSGroupState() {
+
+	}
+	DSGroupState() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&state);
+		list.push_back(&id);
+	}
+	DSGroupState(int groupid, bool istate):DSGroupState() {
+		this->id=groupid;
+		this->state=istate;
+	}
+};
+
+class DSUserGroupUpdate : public DTStruct {
+public:
+	DTInteger<int> ids = {"id"};
+	DTSet<DSGroupState> ilist={"list"};
+
+	static std::string getStructName() {
+		return "DSUserGroupUpdate";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSUserGroupUpdate() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&ilist);
+		list.push_back(&ids);
+	}
+};
+
 
 
 } //namespace: zeitoon

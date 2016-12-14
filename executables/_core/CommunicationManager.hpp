@@ -87,7 +87,7 @@ public:
 
 	string callCommandSync(string cmdName, string &data, string from, string id, string sessionid = "");
 
-	string callCommand(string cmdName, string &data, string from, string id, string sessionid="");
+	string callCommand(string cmdName, string &data, string from, string id, string sessionid="",CommunicationManager::idData* SyncPlaceHolder= nullptr);
 
 	void callCallback(string id, string &data, string from, std::string success="");
 

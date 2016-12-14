@@ -199,7 +199,7 @@ void Router::packetReceived(string data, ExtensionProfile *ext, size_t netid) {
 			ext->serviceInfo.fromString(idata);
 			/*if (ext->state == ExtensionProfile::extensionState::upgrading) {
 				lNote("Service " + ext->serviceInfo.name.getValue() + " is upgrading.");
-				ext->state = ExtensionProfile::extensionState::installed;
+				ext->state = ExtensionProfile::extensionStat0e::installed;
 			}*/
 			extManager.save();
 		} else if (type == "callback" && streq(node, "onInstall")) { //response from onInstall(success confirm)
@@ -278,6 +278,7 @@ void Router::sendMessage(string extension, string source, string node, string &d
                          MessageTypes::MessageTypes_ msgT,
                          string id, string session, std::string success) {
 	//check permission
+
 	if (session.length() > 0) {
 		vector<ExtensionProfile *> elist = extManager.getByServiceType(datatypes::EnmServiceType::UserManager);
 		if (elist.size() > 0) {

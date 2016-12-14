@@ -367,6 +367,8 @@ void JStruct::fromString(string str) {//todo:too expensive, NEED rewrite
 		EXTcantParseString("can't parse string as structure");
 	}
 	str = str.substr(pos + 1, rePos - pos - 1);
+	if(Strings::trim(str).size() == 0)
+		return;
 	string parsed, name, value;
 	int q = 0;
 	bool check = true, ready = false;

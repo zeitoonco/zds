@@ -134,13 +134,17 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			DSUserGroupsList usrGrpList = userMngrInterface.listUsergroups();
 			resultStr = usrGrpList.toString(true);
 		} else if (!Strings::compare(node, commandInfo::addUserUsergroup(), false)) {
-			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
-			userMngrInterface.addUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
+			zeitoon::usermanagement::DSUserUsergroupArray regInfo(data);
+			userMngrInterface.addUserUsergroup(regInfo);
 
 		} else if (!Strings::compare(node, commandInfo::removeUserUsergroup(), false)) {
-			zeitoon::usermanagement::DSUserUsergroup regInfo(data);
-			userMngrInterface.removeUserUsergroup(regInfo.userID.getValue(), regInfo.groupID.getValue());
+			zeitoon::usermanagement::DSUserUsergroupArray regInfo(data);
+			userMngrInterface.removeUserUsergroup(regInfo);
 
+		} else if (!Strings::compare(node, commandInfo::updateUserUsergroup(), false)) {
+			DSUserGroupUpdate temp;
+			temp.fromString(data);
+			userMngrInterface.updateUsersUserGroup(temp);
 		} else if (!Strings::compare(node, commandInfo::addUserPermission(), false)) {
 			zeitoon::usermanagement::DSUsergroupPermission regInfo(data);
 			userMngrInterface.addUserPermission(regInfo);
@@ -266,9 +270,11 @@ void UmCHI::onInstall(string id) {
 	int uid = userMngrInterface.addUser("admin", "admin", "admin");
 	DSUsergroupPermission permTemp;
 	permTemp.ID.operator=(uid);
-	permTemp.permState.add(new DSPermissionState(0,1),true);
-
+	permTemp.permState.add(new DSPermissionState(0, 1), true);
 	userMngrInterface.addUserPermission(permTemp);
+
+	userMngrInterface.registerUsergroup("root",-1,"root usergroup");
+
 	//set serviceID in confMgr
 	UMconfig.serviceID = id;
 	UMconfig.save();
@@ -463,18 +469,18 @@ void UmCHI::setInstallInfo() {
 			true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::addUserUsergroup(),
-			                                   DSUserUsergroup::getStructName(),
-			                                   DSUserUsergroup::getStructVersion(), "", 0),
+			                                   DSUserUsergroupArray::getStructName(),
+			                                   DSUserUsergroupArray::getStructVersion(), "", 0),
 			true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserUsergroup(),
-			                                   DSUserUsergroup::getStructName(),
-			                                   DSUserUsergroup::getStructVersion(), "", 0),
+			                                   DSUserUsergroupArray::getStructName(),
+			                                   DSUserUsergroupArray::getStructVersion(), "", 0),
 			true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::addUserPermission(),
-			                                   DSUserPermission::getStructName(),
-			                                   DSUserPermission::getStructVersion(), "", 0),
+			                                   DSUsergroupPermission::getStructName(),
+			                                   DSUsergroupPermission::getStructVersion(), "", 0),
 			true);
 	insInfo.commands.add(
 			new DSInstallInfo::DSCommandDetail(commandInfo::removeUserPermission(),
@@ -543,6 +549,10 @@ void UmCHI::setInstallInfo() {
 			                                   DSInteger::getStructVersion(),
 			                                   DSUserGroupsList::getStructName(),
 			                                   DSUserGroupsList::getStructVersion()), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::updateUserUsergroup(), DSUserGroupUpdate::getStructName(),
+			                                   DSUserGroupUpdate::getStructVersion(),
+			                                   "", 0), true);
 
 //--------set available events info
 
@@ -733,6 +743,16 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(
 					zeitoon::usermanagement::DSUserAvatar::getStructName(),
 					zeitoon::usermanagement::DSUserAvatar::getStructVersion()),
+			true);
+	insInfo.datatypes.add(
+			new DSInstallInfo::DSInstallInfoDatatypesDetail(
+					zeitoon::usermanagement::DSUserGroupUpdate::getStructName(),
+					zeitoon::usermanagement::DSUserGroupUpdate::getStructVersion()),
+			true);
+	insInfo.datatypes.add(
+			new DSInstallInfo::DSInstallInfoDatatypesDetail(
+					zeitoon::usermanagement::DSUserUsergroupArray::getStructName(),
+					zeitoon::usermanagement::DSUserUsergroupArray::getStructVersion()),
 			true);
 	///------------set available hooks
 

@@ -133,30 +133,25 @@ void CommunicationManager::fireEvent(string eventName, string &data, string from
 
 string CommunicationManager::callCommandSync(string cmdName, string &data, string from, string id,
                                              string sessionid) {
-	string cid = callCommand(cmdName, data, from, id, sessionid);
-
 	idData x = {"", false};
-	try {
-		lock_guard<mutex> lg(MtxIdList);
-		idList[cid] = &x;
-	} catch (std::exception ex) {
-		EXTunknownExceptionI("unable to add to id-list");
-	}
+	string cid = callCommand(cmdName, data, from, id, sessionid,&x);
+
 	while (!x.set) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
+
 	string dt = x.data;
-	try {
+/*	try {
 		lock_guard<mutex> lg(MtxIdList);
 		idList.erase(cid);
 	} catch (std::exception &ex) {
 		EXTunknownExceptionI("unable to remove from id-list");
-	}
+	}*/
 	return dt;
 }
 
 string CommunicationManager::callCommand(string cmdName, string &data, string from, string id,
-                                         string sessionid) {
+                                         string sessionid,CommunicationManager::idData* syncPlaceHolde) {
 	lockg(MTXCommandList);
 	auto cmd = commandList.find(cmdName); //todo:case insensitive in command name search?! how?
 	if (cmd != commandList.end()) {
@@ -173,6 +168,15 @@ string CommunicationManager::callCommand(string cmdName, string &data, string fr
 			}
 
 		}
+		if (syncPlaceHolde != nullptr){
+
+			try {
+				lock_guard<mutex> lg(MtxIdList);
+				idList[cbp.uniqId()] = syncPlaceHolde;
+			} catch (std::exception ex) {
+				EXTunknownExceptionI("unable to add to id-list");
+			}
+		}
 		lock.unlock();
 		sendFunc(cmd->second.extension, from, cmd->second.name, data, MessageTypes::MTCall, cbp.uniqId(),
 		         sessionid, "");
@@ -188,16 +192,21 @@ void CommunicationManager::callCallback(string id, string &data, string from, st
 	auto clb = callbackList.find(id);
 	if (clb != callbackList.end()) {
 		//in sync list?
+/*
 		lDebug("Call Duration:  " + std::to_string(chrono::duration_cast<chrono::milliseconds>(
 				std::chrono::system_clock::now() - clb->second.callStartTime).count()) +
 		       " milliseconds. OperationID: " + id);
+		lDebug("$$$$ FINDING CALLBACK ID");
+		for (map<string, idData *>::iterator iter=idList.begin();iter!=idList.end();iter++)
+			lDebug(iter->first);
+		lDebug(".........................");
+*/
 		if (idList.find(id) != idList.end()) {
 			lock_guard<mutex> lg(MtxIdList);
 			idData *x = idList[id];
 			x->data = data;
 			x->set = true;
 			x->success = success;
-
 		} else {            //else, send it
 			sendFunc(clb->second.extension, from, clb->second.command.name, data, MessageTypes::MTCallback,
 			         clb->second.identity, "", success);
@@ -220,7 +229,6 @@ void CommunicationManager::callCallbackError(string &data, string from) {
 			idList[id]->success = "False";
 			idList[id]->data = data;//TODO: CHECK --newlly added 30 sep
 
-			idList.erase(id);//todo:check mediator. does meditor erase cb on error?
 			EXTexceptionRedirect("Command failed.\n" + jdata["description"].getValue());
 		} else {            //else, send it
 			((JVariable &) jdata["id"]).setValue(clb->second.identity);

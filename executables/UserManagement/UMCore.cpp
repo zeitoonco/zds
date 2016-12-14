@@ -357,24 +357,20 @@ void UMCore::updatePermission(int permissionID, std::string name, std::string ti
 void UMCore::removePermission(int permissionID) {
 	std::string permIDStr = std::to_string(permissionID);
 	try {        //remove permission from users permission table in database
-		executeSync("BEGIN;"
-				            " delete from userpermission where permissionid=" + permIDStr + ";"
-				            " delete from grouppermission where permissionid=" + permIDStr + ";"
-				            " delete from permission where id=" + permIDStr + ";"
-				            " END;");
-		//todo@ ajl:  how to check if succeeded?
+		if (executeSync("DELETE FROM permission WHERE id=" + permIDStr)) {
+			sessionManager.permissionCacheUpdate(permissionID);
+			umCHI->sm.communication.runEvent(eventInfo::permissionRemoved(),
+			                                 zeitoon::usermanagement::DSUpdatePermission(permissionID, "", "", "",
+			                                                                             -2).toString(
+					                                 true));
+			//##Event Fired
+			lNote("Permission[ID:" + std::to_string(permissionID) + " ] removed");
+		}
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to remove permission[ID: " + std::to_string(permissionID) + "] from database.",
 		            errorInfo);
 	}
-	sessionManager.permissionCacheUpdate(permissionID);
-	umCHI->sm.communication.runEvent(eventInfo::permissionRemoved(),
-	                                 zeitoon::usermanagement::DSUpdatePermission(permissionID, "", "", "",
-	                                                                             -2).toString(
-			                                 true));
-	//##Event Fired
-	lNote("Permission[ID:" + std::to_string(permissionID) + " ] removed");
-	sessionManager.permissionCacheUpdate(permissionID);//update to remove from cache
+
 }
 
 int UMCore::registerUsergroup(std::string title, int parentID, std::string desc) {
@@ -537,7 +533,7 @@ DSUserGroupsList UMCore::listGroups(int userID) {
 
 	try {
 		result = querySync(
-				"select id,title,parentid,description from groups where id=(select groupid from usergroup where userid=" +
+				"select id,title,parentid,description from groups where id in(select DISTINCT groupid from usergroup where userid=" +
 				std::to_string(userID) + ")");
 	} catch (exceptionEx &errorInfo) {
 		EXTDBErrorI("Unable to fetch usergroups data from database", errorInfo);
@@ -591,6 +587,8 @@ std::string UMCore::singleFieldQuerySync(std::string query) {
 }
 
 void UMCore::addContact(int userID, int contactID, std::string note) {
+	if (userID == contactID)
+		EXTaddContactFailed("Cannot add use's own id as it's contact");
 	int temp = 0;
 	try {
 		temp = executeSync("INSERT INTO contacts (userid, contactid, note) VALUES(" + std::to_string(userID) + "," +
@@ -693,52 +691,61 @@ int UMCore::checkUserPermissionParentState(int &sessionID, int &permissionID) {/
 
 
 int UMCore::checkUsergroupPermission(int &sessionID, int &permissionID) {
+
 	auto tempSession = this->sessionManager.sessionList.find(sessionID);
 	if (tempSession == this->sessionManager.sessionList.end())
-		EXTinvalidName("checkUsergroupPermission FAILED. Invalid sessionID.");
+		EXTinvalidName("checkUsergroupPermission FAILED. Invalid sessionID. NOT YET IMPLEMENTED FOR ONLINE USERS");
+	bool flag = false;
 	for (std::vector<int>::iterator iter = tempSession->second.usergroups.begin();
-	     iter != tempSession->second.usergroups.end(); iter++) {
-		auto tempGroupInfo = this->sessionManager.usergroupCache.find(*iter);
-		if (tempGroupInfo == this->sessionManager.usergroupCache.end())
-			EXTunknownException("UserGroup" + std::to_string(*iter) + " Not found on usergroupCache");
-		auto tempGroupPermission = tempGroupInfo->second.permissions.find(permissionID);
-		if (tempGroupPermission == tempGroupInfo->second.permissions.end())
-			continue;
-		if (tempGroupPermission != tempGroupInfo->second.permissions.end()) {
-			if (tempGroupPermission->second == -1)
-				return -1;
-			if (tempGroupPermission->second == 0)
-				return checkUsergroupParentPermission(*iter, sessionID, permissionID);
-			if (tempGroupPermission->second == 1) {
-				int tempGrpParentState = checkUsergroupParentPermission(*iter, sessionID, permissionID);
-				return (tempGrpParentState == -1 ? -1 : 1);
+	     iter != tempSession->second.usergroups.end(); iter++) {// iterate through Online user's list of userGroups
+		//
+		int ugParentID = *iter;
+		do {
+			switch (checkUsergroupParentPermission(ugParentID, permissionID)) {
+				case -1:
+					return -1;
+				case 1:
+					flag = true;//remove miniflag and use  "flag" only
+					break;
 			}
-		}
+			ugParentID = getUsergroupParent(ugParentID);
+		} while (ugParentID != -1);
 	}
-	//EXTunknownException("checkUserPermissionState Failed. unkown condition. needs debug");//todo:@navidi review
+	if (flag)
+		return 1;
 	return 0;
 }
 
-int UMCore::checkUsergroupParentPermission(int &userGroupID, int &sessionID, int &permissionID) {
-	int tempParID = this->getUsergroupParent(userGroupID);
-	if (tempParID == -1)
-		return 0;
-	return this->checkUsergroupPermission(sessionID, permissionID);
+int UMCore::checkUsergroupParentPermission(int &userGroupID, int &permissionID) {
+	auto userGroupObj = sessionManager.usergroupCache.find(userGroupID);
+	if (userGroupObj == sessionManager.usergroupCache.end())
+		EXTinvalidParameter("NOT FOUND ON THE CACHE--Debug please");
+	int tempPar = permissionID;
+	bool miniFlag = false;
+	do {
+		auto permissionObj = userGroupObj->second.permissions.find(tempPar);
+		if (permissionObj != userGroupObj->second.permissions.end())
+			switch (permissionObj->second) {
+				case -1:
+					return -1;
+				case 1:
+					miniFlag = true;
+					break;
+			}
+		tempPar=getPermissionParent(tempPar);
+
+	} while (tempPar!=-1);
+	if (miniFlag)
+		return 1;
+	return 0;
+
 }
 
 int UMCore::getPermissionParent(int &permissionID) {
 	auto temp = this->sessionManager.permissionCache.find(permissionID);
 	if (temp != this->sessionManager.permissionCache.end()) {
 		return temp->second->parentID;
-	} else {/*///todo: make sure cache is update or make a query
-		try {
-			int res = this->querySync(
-					"SELECT parentid  FROM permission WHERE id = " + std::to_string(permissionID)).fieldValueInt(0, 0,
-			                                                                                                     -1);
-			return res;
-		} catch (zeitoon::utility::exceptionEx err) {
-			EXTDBErrorI("Unanble to fetch permission parent from database", err);
-		}*/
+	} else {
 		return -1;
 	}
 }
@@ -748,67 +755,135 @@ int UMCore::getUsergroupParent(int groupID) {
 	if (temp != this->sessionManager.usergroupCache.end()) {
 		return temp->second.parentID;
 	} else {
-		/*try {
-			int res = this->querySync("select parentid from groups where id=" + std::to_string(groupID)).fieldValueInt(
-					0, 0, -1);
-			return res;
-		} catch (zeitoon::utility::exceptionEx err) {
-			EXTDBErrorI("Unanble to fetch usergroup parent from database", err);
-		}*////todo: make sure cache is update or make a query//cache is updated after each update in db
 		return -1;
 	}
-
-
 }
 
-void UMCore::addUserUsergroup(int userID, int groupID) {
-	try {
-		int a = executeSync(
-				"insert into usergroup values(" + std::to_string(userID) + ", " + std::to_string(groupID) +
-				")");
-		if (a != 1)
-			EXTDBError("INSER FAILED");
-	} catch (exceptionEx &errorInfo) {
-		EXTDBErrorI("Unable to addUserUsergroup", errorInfo);
+void UMCore::addUserUsergroup(DSUserUsergroupArray iList) {
+	if (iList.idarray.length() < 1)
+		return;
+	std::string QUERY =
+			"SELECT userid, groupid, errormsg, sqlstate FROM addusersusergroup(" +
+			std::to_string(iList.id.getValue()) +
+			",ARRAY[";
+	for (size_t iter = 0; iter != iList.idarray.length(); iter++) {
+		QUERY += std::to_string(iList.idarray[iter]->getValue());
+		if (iList.idarray.length() == iter + 1) {
+			QUERY += "])";
+		} else {
+			QUERY += ",";
+		}
 	}
-	umCHI->sm.communication.runEvent(eventInfo::usersUsergroupAdded(),
-	                                 zeitoon::usermanagement::DSUserUsergroup(userID, groupID).toString(true));
-	lNote(eventInfo::usersUsergroupAdded() + "User: " + std::to_string(userID) + "Group: " +
-	      std::to_string(groupID));
-	auto temp = sessionManager.sessionList.find(this->sessionManager.getSessionIDbyUserID(userID));
-	if (temp != sessionManager.sessionList.end()) {
-		temp->second.usergroups.push_back(groupID);
-	}
-}
-
-void UMCore::removeUserUsergroup(int userID, int groupID) {
-	try {
-		int a = executeSync("delete from usergroup where userid=" + std::to_string(userID) + " and groupid=" +
-		                    std::to_string(groupID));
-		if (a != 1)
-			EXTDBError("DELETE FAILED");
-	} catch (exceptionEx &errorInfo) {
-		EXTDBErrorI("Unable to remove from usergroup table", errorInfo);
-	}
-	umCHI->sm.communication.runEvent(eventInfo::usersUsergroupRemoved(),
-	                                 zeitoon::usermanagement::DSUserUsergroup(userID, groupID).toString(true));
-	lNote(eventInfo::usersUsergroupRemoved() + "User: " + std::to_string(userID) + "Group: " +
-	      std::to_string(groupID));
-	auto temp = sessionManager.sessionList.find(this->sessionManager.getSessionIDbyUserID(userID));
-	if (temp != sessionManager.sessionList.end()) {
-		for (auto i = temp->second.usergroups.begin(); i != temp->second.usergroups.end(); i++) {
-			if (*i == groupID) {
-				temp->second.usergroups.erase(i);
+	lDebug("QUU:  " + QUERY);
+	DTTableString result = querySync(QUERY);
+	bool err = false;
+	for (size_t iter = 0; iter < result.rowCount(); iter++) {
+		for (int i = 0; i < iList.idarray.length(); i++) {
+			if (iList.idarray[i]->getValue() == result.fieldValueInt(iter, 1)) {
+				err = true;
+				break;
+			}
+			if (err) {
+				err = false;//return err
+				EXTDBError("FAILED TO ADD USERGROUPS FOR USER:" + std::to_string(iList.id.getValue()));
+			} else {//update user's cache
+				umCHI->sm.communication.runEvent(eventInfo::usersUsergroupAdded(),
+				                                 zeitoon::usermanagement::DSUserUsergroup(
+						                                 iList.id.getValue(),
+						                                 iList.idarray[i]->getValue()).toString(true));
+				auto temp = sessionManager.sessionList.find(
+						this->sessionManager.getSessionIDbyUserID(iList.id.getValue()));
+				if (temp != sessionManager.sessionList.end()) {
+					temp->second.usergroups.push_back(iList.idarray[i]->getValue());
+				}
 			}
 		}
 	}
+
 }
+
+void UMCore::removeUserUsergroup(DSUserUsergroupArray iList) {
+	if (iList.idarray.length() < 1)
+		return;
+	std::string QUERY =
+			"SELECT userid, groupid, errormsg, sqlstate FROM removeusersusergroup(" +
+			std::to_string(iList.id.getValue()) +
+			",ARRAY[";
+	for (size_t iter = 0; iter != iList.idarray.length(); iter++) {
+		QUERY += std::to_string(iList.idarray[iter]->getValue());
+		if (iList.idarray.length() == iter + 1) {
+			QUERY += "])";
+		} else {
+			QUERY += ",";
+		}
+	}
+	lDebug("QUU:  " + QUERY);
+	DTTableString result = querySync(QUERY);
+	bool err = false;
+	for (size_t iter = 0; iter < result.rowCount(); iter++) {
+		for (int i = 0; i < iList.idarray.length(); i++) {
+			if (iList.idarray[i]->getValue() == result.fieldValueInt(iter, 1)) {
+				err = true;
+				break;
+			}
+			if (err) {
+				err = false;//return err
+				lError("FAILED TO ADD USERGROUPS FOR USER:" +
+				       std::to_string(iList.id.getValue()));//todo:COMPLETE IT!
+			} else {//update user's cache
+
+				umCHI->sm.communication.runEvent(eventInfo::usersUsergroupRemoved(),
+				                                 zeitoon::usermanagement::DSUserUsergroup(
+						                                 iList.id.getValue(),
+						                                 iList.idarray[i]->getValue()).toString(true));
+				auto temp = sessionManager.sessionList.find(
+						this->sessionManager.getSessionIDbyUserID(iList.id.getValue()));
+				if (temp != sessionManager.sessionList.end()) {
+					temp->second.usergroups.push_back(iList.idarray[i]->getValue());
+					for (std::vector<int>::iterator miter = temp->second.usergroups.begin();
+					     miter != temp->second.usergroups.end(); miter++) {
+						if ((*miter) == iList.idarray[i]->getValue()) {
+							temp->second.usergroups.erase(miter);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+}
+
+void UMCore::updateUsersUserGroup(DSUserGroupUpdate iList) {
+	if (iList.ilist.length() < 1)
+		return;
+	DSUserUsergroupArray additions, removals;
+	additions.id = iList.ids.getValue();
+	removals.id = iList.ids.getValue();
+
+	for (int i = 0; i < iList.ilist.length(); i++) {
+		if (iList.ilist[i]->state.getValue())
+			additions.idarray.add(new DTInteger<int>("", iList.ilist[i]->id.getValue()), true);
+		else if (!iList.ilist[i]->state.getValue())
+			removals.idarray.add(new DTInteger<int>("", iList.ilist[i]->id.getValue()), true);
+
+	}
+	this->addUserUsergroup(additions);
+	this->removeUserUsergroup(removals);
+	//TODO: BOTH FUNCTIONS NEED TO RETURN ERRORS, THIS FUNCTION NEEDS TO COLLECT THE ERRORS AND SEND THEM BACK
+
+}
+
 
 void UMCore::addUserPermission(DSUsergroupPermission iList) {
 	if (iList.permState.length() < 1)
 		EXTinvalidParameter("Permission/State array is empty!");
 	try {
-		std::string QUERY = "SELECT pid, pstate, errormsg, sqlstate FROM setuserpermission(" + std::to_string(iList.ID.getValue()) + ",ARRAY[";
+		std::string QUERY =
+				"SELECT pid, pstate, errormsg, sqlstate FROM setuserpermission(" +
+				std::to_string(iList.ID.getValue()) +
+				",ARRAY[";
 		for (size_t iter = 0; iter != iList.permState.length(); iter++) {
 			QUERY += "[" + std::to_string(iList.permState[iter]->permissionID.getValue()) + ", " +
 			         std::to_string(iList.permState[iter]->permissionState.getValue()) + "]";
@@ -827,8 +902,8 @@ void UMCore::addUserPermission(DSUsergroupPermission iList) {
 				//TODO: needs to remove unsuccessful insert from the list by comparing them agaist returned results
 			}
 			std::cout << std::endl;
-			for (size_t citer=0;citer!=iList.permState.length();citer++){
-				if(iList.permState[citer]->permissionID== result.fieldValueInt(iter,0)){
+			for (size_t citer = 0; citer != iList.permState.length(); citer++) {
+				if (iList.permState[citer]->permissionID == result.fieldValueInt(iter, 0)) {
 					lDebug("REMOVING UNSUCCESSFULL PIDS");
 					iList.permState.removeAt(citer);
 					break;
@@ -900,12 +975,11 @@ DSUserPermissionList UMCore::listUserPermissions(int userID) {
 }
 
 void UMCore::addUsergroupPermission(DSUsergroupPermission iList) {
-	//select  setGroupPrmission(1,ARRAY[[1000,1],[5500,1],[2,0]]);
-	//std::cout << iList.permState.length() << endl;
 	if (iList.permState.length() < 1)
 		EXTinvalidParameter("Permission/State array is empty!");
 	try {
-		std::string QUERY = "SELECT pid, pstate, errormsg, sqlstate FROM setGroupPermission(" + std::to_string(iList.ID.getValue()) + ",ARRAY[";
+		std::string QUERY = "SELECT pid, pstate, errormsg, sqlstate FROM setGroupPermission(" +
+		                    std::to_string(iList.ID.getValue()) + ",ARRAY[";
 		for (size_t iter = 0; iter != iList.permState.length(); iter++) {
 			QUERY += "[" + std::to_string(iList.permState[iter]->permissionID.getValue()) + ", " +
 			         std::to_string(iList.permState[iter]->permissionState.getValue()) + "]";
@@ -1032,7 +1106,8 @@ bool UMCore::isOnline(int userID) {//if sessionID = -1 ==> user is offline
 DSUserAvatar UMCore::getUserAvatar(int userID) {
 
 	try {
-		std::string tempR = this->singleFieldQuerySync("SELECT avatar FROM users WHERE id=" + std::to_string(userID));
+		std::string tempR = this->singleFieldQuerySync(
+				"SELECT avatar FROM users WHERE id=" + std::to_string(userID));
 		/*string encoded;
 		auto strSink = new CryptoPP::StringSink(encoded);
 		auto Base64Enc = new CryptoPP::Base64Encoder(strSink, false);

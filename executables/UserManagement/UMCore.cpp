@@ -15,7 +15,20 @@
 
 namespace zeitoon {
 namespace usermanagement {
+std::string tokenGenerator(int len) {
+	char s[len];
+	srand(rand() + time(NULL));
+	static const char alphanum[] =
+			"0123456789"
+					"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+					"abcdefghijklmnopqrstuvwxyz";
 
+	for (int i = 0; i < len; ++i) {
+		s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+	}
+	s[len] = 0;
+	return std::string(s);
+}
 
 UMCore::UMCore(UmCHI *instancePtr) :
 		umCHI(instancePtr), /**systemLog("UserManagementLogs"),*/ sessionManager(this) {
@@ -25,7 +38,69 @@ UMCore::~UMCore() {
 
 }
 
-DSLoginResult UMCore::login(std::string username, std::string password) {
+DSLoginResult UMCore::login(int uId, std::string token) {
+	DSLoginResult tempResult;
+	auto result = this->querySync(
+			"SELECT token FROM auth_token WHERE selector=\'" + hashingProccess(std::to_string(uId)) + "\'");
+	bool hasCookie = false;
+	for (size_t iter = 0; iter < result.rowCount(); iter++) {
+
+		if (result.fieldValue(iter, 0) == this->hashingProccess(token)) {
+			hasCookie = true;
+			try {
+				try {
+					auto _qResult = querySync(
+							"SELECT name, username,banned, banreason from users where id=" + std::to_string(uId));
+
+					tempResult.userInfo.userID = uId;
+					tempResult.userInfo.username = _qResult.fieldValue(0, 1, "UNAVAILABLE");
+					tempResult.userInfo.name = _qResult.fieldValue(0, 0, "UNAVAILABLE");
+					tempResult.userInfo.banned = (_qResult.fieldValue(0, 2) == "t" ||
+					                              _qResult.fieldValue(0, 2) == "1" ||
+					                              _qResult.fieldValue(0, 2) == "y") ? true
+					                                                                : false;
+					tempResult.userInfo.banReason = _qResult.fieldValue(0, 3);
+
+					if (tempResult.userInfo.banned.getValue()) {//If user is banned
+						tempResult.sessionID = -1;
+						tempResult.userInfo.isOnline = false;
+						tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::banned];
+						return tempResult;
+					}
+				} catch (exceptionEx &errInfo) {
+					throw errInfo;
+				}
+				tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::ok];
+
+				tempResult.sessionID = this->sessionManager.newSession(tempResult.userInfo.userID.getValue(),
+				                                                       tempResult.userInfo.username.getValue(),
+				                                                       tempResult.userInfo.name.getValue());
+				tempResult.permissions = this->userPermissionDetailedList(uId);
+
+				tempResult.userInfo.isOnline = true;
+
+				umCHI->sm.communication.runEvent(eventInfo::loggedIn(),
+				                                 zeitoon::usermanagement::DSUserInfo(
+						                                 tempResult.userInfo.userID,
+						                                 tempResult.userInfo.username,
+						                                 tempResult.userInfo.name,
+						                                 tempResult.userInfo.banned,
+						                                 "",
+						                                 this->isOnline(tempResult.userInfo.userID)).toString(true));
+				break;
+			} catch (exceptionEx &errorInfo) {
+				EXTDBErrorI("Login: unable to register the session for " + tempResult.userInfo.username.toString(),
+				            errorInfo);
+			}
+		}
+	}
+	if (!hasCookie)
+		tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::accessDenied];
+
+	return tempResult;
+}
+
+DSLoginResult UMCore::login(std::string username, std::string password, bool rememberMe) {
 	DSLoginResult tempResult;
 	auto currentUser = userLogInfo.find(username);
 	if (currentUser != userLogInfo.end()) {    //If user found on userLoginfo list.
@@ -34,8 +109,6 @@ DSLoginResult UMCore::login(std::string username, std::string password) {
 				userLogInfo.erase(currentUser);
 			} else {
 				tempResult.sessionID = -1;
-				//sessionID = -1;
-				//uID = -1;
 				tempResult.userInfo.userID = -1;
 				tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::banned];
 				//desc = "User is temporary banned(too many false login attempts)";
@@ -69,12 +142,25 @@ DSLoginResult UMCore::login(std::string username, std::string password) {
 			tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::banned];
 			return tempResult;
 		} else {    //SUCCESSFUL AUTHENTICATION
+			if (rememberMe) {
+				std::string tempTokk = tokenGenerator(16);
+
+				if (this->executeSync("INSERT INTO auth_token (selector, token) VALUES(\'" +
+				                      hashingProccess(std::to_string(tempResult.userInfo.userID.getValue())) + "\',\'" +
+				                      hashingProccess(tempTokk) + "\')")) {
+					tempResult.authToken.fromString(tempTokk);
+				} else {
+					tempResult.authToken.fromString("DEBUG PLZ");
+				}
+			}
+			//todo:: if remember me? then generate a token insert into DB and send it back along with CB
 			try {
 				tempResult.loginResult = UMLoginResult::typeString[UMLoginResult::ok];
 				/*auto dds= this->sessionManager.newSession(tempResult.userInfo.userID.getValue(),
 														  tempResult.userInfo.username.getValue());*/
 				tempResult.sessionID = this->sessionManager.newSession(tempResult.userInfo.userID.getValue(),
-				                                                       tempResult.userInfo.username.getValue());
+				                                                       tempResult.userInfo.username.getValue(),
+				                                                       tempResult.userInfo.name.getValue());
 				if (!this->checkPermissionByName(tempResult.sessionID, "userman.login")) {
 					sessionManager.removeSession(tempResult.sessionID);
 					tempResult.sessionID = -1;
@@ -297,9 +383,25 @@ void UMCore::modifyUser(int userID, std::string username, std::string password, 
 			userID, username, name, false, "", this->isOnline(userID)).toString(true));
 
 	//##Event Fired
-
-
 }
+
+void UMCore::banUser(int userID, bool ban, string banreason) {
+	bool _success = true;
+	try {
+		std::string temp =
+				"UPDATE users SET banned=" + (ban ? std::string("true") : std::string("false")) + ",banreason=" +
+				(ban ? "'"+banreason+"'" : "NULL") + " WHERE id=" + std::to_string(userID);
+		if (not executeSync(temp)) {
+			_success = false;
+		}
+	} catch (exceptionEx &errInfo) {
+		EXTDBErrorI("Failed to ban/unban the user:[" + std::to_string(userID) + "]", errInfo);
+	}
+	if (not _success)
+		EXTDBError("Failed to ban/unban the user:[" + std::to_string(userID) +
+		           "]. NO AFFECTED ROWS IN DB. DE BUG REQUIRED");
+}
+
 
 UMUserInfo UMCore::getUserInfo(int ID) {
 	try {
@@ -732,9 +834,9 @@ int UMCore::checkUsergroupParentPermission(int &userGroupID, int &permissionID) 
 					miniFlag = true;
 					break;
 			}
-		tempPar=getPermissionParent(tempPar);
+		tempPar = getPermissionParent(tempPar);
 
-	} while (tempPar!=-1);
+	} while (tempPar != -1);
 	if (miniFlag)
 		return 1;
 	return 0;

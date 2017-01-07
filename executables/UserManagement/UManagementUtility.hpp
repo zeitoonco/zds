@@ -127,6 +127,8 @@ public:
 
 	static std::string listGroups() { return "userman.listGroups"; }
 
+	static std::string banUuser() { return "userman.banuser"; }
+
 };
 
 class eventInfo {

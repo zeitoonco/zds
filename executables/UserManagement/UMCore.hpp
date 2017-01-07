@@ -39,7 +39,8 @@ namespace zeitoon {
              * @return UMLoginResult vaziat e login e anjaam shode
              * @return sessionID int , sessionId e generate shode, dar soorate adam e movafaghiat -1 baaz migardaanad
              * @return desc string, tozihaat  e marboot be login dar soorat e adam movafaghiat!*/
-           DSLoginResult login(std::string username, std::string password);
+           DSLoginResult login(std::string username, std::string password, bool rememberMe=false);
+            DSLoginResult login(int uid, std::string token);
 
             /**logout(), ba daryaaft e session Id logout mikonad (az map e sessionList paak mikonad)
              * @param sessionID int*/
@@ -73,6 +74,12 @@ namespace zeitoon {
              * @param password string
              * @param name string*/
             void modifyUser(int userID, std::string username, std::string password, std::string name);
+            /**BAN OR UNBAND a user
+             * @param userID int
+             * @param ban boolean
+             * @param banreason string
+             */
+            void banUser(int userID, bool ban, std::string banreason);
 
             /**getUserInfo() baa daryaaft e Id e User, moshakhasat e marboot be user e mored e nazar ra (dar ghaaleb e yek class)
              * barmigardanad.

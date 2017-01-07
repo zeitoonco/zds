@@ -22,7 +22,7 @@ UMSessionManager::~UMSessionManager() {
 this->clearCaches();
 }
 
-int UMSessionManager::newSession(int userID, std::string uname) {
+int UMSessionManager::newSession(int userID, std::string uname,std::string i_name) {
 
 	int sessionID = 0;
 	if (activeSessions.count(userID) == 1) {
@@ -32,7 +32,7 @@ int UMSessionManager::newSession(int userID, std::string uname) {
 	} else {
 		sessionID = utility::CommunicationUtility::getRandomIDInt();
 		try {
-			auto temp = UMSession(userID, sessionID, uname, this->coreInstance);
+			auto temp = UMSession(userID, sessionID, uname, this->coreInstance,i_name);
 			sessionList[sessionID] = temp;
 		} catch (zeitoon::utility::exceptionEx &err) {
 			EXTloginFailI("Unable to create new Session", err);

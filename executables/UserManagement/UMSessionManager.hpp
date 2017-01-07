@@ -38,7 +38,7 @@ public:
 	 * login detail ra az database migirad  va dar map e sessionList zakhire mikonad
 	 * @param userID int
 	 * @return int sessionID e UNIQUE e sakhte shode */
-	int newSession(int userID, std::string uname);
+	int newSession(int userID, std::string uname,std::string name);
 	/**removeSession(int ID), id e session ra migirad va aan ra az map e sessionList paak mikonad
 	 * @param sessionID*/
 	void removeSession(int id);

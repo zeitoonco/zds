@@ -1358,11 +1358,20 @@ public:
 
 protected:
 	int parseString(string str) {
-		str = Strings::trim(str, "\"");
-		for (int i = 0; i < EnumType::__MAX; i++)
-			if (!Strings::compare(str, EnumType::typeString[i], false))
-				return i;
-		EXTcantParseString("Unknown constant passed to Enum :" + str);
+		if (Strings::isInt(str)){
+			int n=std::stoi(str);
+			if(n>=0 && n<EnumType::__MAX){
+				return n;
+			}else
+				EXTcantParseString("Unknown constant passed to Enum :" + str);
+		}else{
+			str = Strings::trim(str, "\"");
+			for (int i = 0; i < EnumType::__MAX; i++)
+				if (!Strings::compare(str, EnumType::typeString[i], false))
+					return i;
+			EXTcantParseString("Unknown constant passed to Enum :" + str);
+		}
+
 	}
 };
 

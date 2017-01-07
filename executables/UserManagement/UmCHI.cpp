@@ -29,11 +29,24 @@ UmCHI::UmCHI() :
 bool UmCHI::onCommand(string node, string data, string id, string from, std::string &resultStr) {
 	try {
 		if (!Strings::compare(node, commandInfo::login(), false)) {
-			DSLoginInfo logInfo(data);
-			DSLoginResult logResult = userMngrInterface.login(logInfo.username.getValue(),
-			                                                  logInfo.password.getValue());
-			//DSLoginResult logResult(UMlogResString, description, sessionID, userID);
-			resultStr = logResult.toString(true);
+			DSLoginInfo logInfo;
+			logInfo.fromString(data);
+			DSLoginResult logResult;
+			if (JStruct(data).contains("authtoken")) {
+				if (!JStruct(data).contains("userid"))
+					EXTinvalidParameter("NO USERID PROVIDED");
+				std::string tempTok = JStruct(data).operator[]("authtoken").getValue();
+				std::string tempTid = JStruct(data).operator[]("userid").getValue();
+
+				logResult.fromString(userMngrInterface.login(std::stoi(tempTid), tempTok).toString(true));
+				resultStr = logResult.toString(true);
+			} else {
+				logResult.fromString(userMngrInterface.login(logInfo.username.getValue(),
+				                                             logInfo.password.getValue(),
+				                                             logInfo.rememberMe.getValue()).toString(true));
+				//DSLoginResult logResult(UMlogResString, description, sessionID, userID);
+				resultStr = logResult.toString(true);
+			}
 			if (logResult.loginResult.getValue() != UMLoginResult::ok)
 				return false;
 		} else if (!Strings::compare(node, commandInfo::logout(), false)) {
@@ -67,6 +80,10 @@ bool UmCHI::onCommand(string node, string data, string id, string from, std::str
 			DSInteger userID;
 			userID.fromString(data);
 			userMngrInterface.removeUser(userID.value.getValue());
+		}else if(!Strings::compare(node, commandInfo::banUuser(),false)){
+			DSBanUser temp;
+			temp.fromString(data);
+			userMngrInterface.banUser(temp.userid.getValue(),temp.ban.getValue(),temp.banreason.getValue());
 		} else if (!Strings::compare(node, commandInfo::getUserInfo(), false)) {
 			DSInteger userId;
 			userId.fromString(data);
@@ -273,7 +290,7 @@ void UmCHI::onInstall(string id) {
 	permTemp.permState.add(new DSPermissionState(0, 1), true);
 	userMngrInterface.addUserPermission(permTemp);
 
-	userMngrInterface.registerUsergroup("root",-1,"root usergroup");
+	userMngrInterface.registerUsergroup("root", -1, "root usergroup");
 
 	//set serviceID in confMgr
 	UMconfig.serviceID = id;
@@ -553,6 +570,10 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSCommandDetail(commandInfo::updateUserUsergroup(), DSUserGroupUpdate::getStructName(),
 			                                   DSUserGroupUpdate::getStructVersion(),
 			                                   "", 0), true);
+	insInfo.commands.add(
+			new DSInstallInfo::DSCommandDetail(commandInfo::banUuser(), DSBanUser::getStructName(),
+			                                   DSBanUser::getStructVersion(),
+			                                   "", 0), true);
 
 //--------set available events info
 
@@ -753,6 +774,11 @@ void UmCHI::setInstallInfo() {
 			new DSInstallInfo::DSInstallInfoDatatypesDetail(
 					zeitoon::usermanagement::DSUserUsergroupArray::getStructName(),
 					zeitoon::usermanagement::DSUserUsergroupArray::getStructVersion()),
+			true);
+	insInfo.datatypes.add(
+			new DSInstallInfo::DSInstallInfoDatatypesDetail(
+					zeitoon::usermanagement::DSBanUser::getStructName(),
+					zeitoon::usermanagement::DSBanUser::getStructVersion()),
 			true);
 	///------------set available hooks
 

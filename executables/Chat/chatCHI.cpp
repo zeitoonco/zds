@@ -20,7 +20,7 @@ namespace zeitoon {
             result.value = chatCore.newMessage(input.userID.getValue(), input.sessionID.getValue(),
                                                input.msg.getValue(),
                                                (EnumMsgType::msgType) input.type.getValue());
-            resultStr =result.toString(true);
+            resultStr = result.toString(true);
         }
 
         else if (!Strings::compare(node, CommandInfo::removeMessage(), false)) {

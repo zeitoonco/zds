@@ -19,6 +19,8 @@ class UMCore;
 class UMSession {
 
 public:
+	/** BARAYE ZAKHGIRE NAAM E vaagheyi*/
+	std::string name;
 	/** Moteghayyer e haaviye username*/
 	std::string username;
 	/**moteghayyer e haviiye userID*/
@@ -34,7 +36,7 @@ public:
 	/**Overloaded constructor.
 	 *@param userIDIN int ID e user
 	 *@param sessionIDIN e UNIQUE */
-	UMSession(int userIDIN, int sessionIDIN, std::string &username, UMCore* instance);
+	UMSession(int userIDIN, int sessionIDIN, std::string &username, UMCore* instance,std::string name);
 	/**updatePermissionsCache() tamaamiye permissionhaaye marboot be user ra az Database mikhaanad
 	 * va dar map permissions load mikonad*/
 	void updatePermissionsCache();

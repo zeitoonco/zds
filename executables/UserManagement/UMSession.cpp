@@ -20,19 +20,16 @@ UMSession::UMSession() {    //we should have a umSession start time record to ar
 	coreInstance = NULL;
 }
 
-UMSession::UMSession(int userIDIN, int sessionIDIN,std::string &iuserName, UMCore *instance) :
+UMSession::UMSession(int userIDIN, int sessionIDIN, std::string &iuserName, UMCore *instance, std::string i_name) :
 		coreInstance(instance) {
 	/** Proccedure:
 	 *  1-Constructor-->>initializes member variables and loads corresponding permission and usergroup caches.
 	 *  ** Makes a query to fetch  the username from database and initialize "string username" with it.
-	 */try {
-		username = iuserName;
-		//ReImplemented above! username = PQgetvalue(queryGlobal("select username from users where id=" + std::to_string(userIDIN)), 0, 0);
-	} catch (exceptionEx &errorInfo) {
-		EXTDBErrorI("Unable to fetch username from Database", errorInfo);
-	}
-	userID = userIDIN;
-	sessionID = sessionIDIN;
+	 */
+	this->username = iuserName;
+	this->name = i_name;
+	this->userID = userIDIN;
+	this->sessionID = sessionIDIN;
 	try {
 		updatePermissionsCache();
 		updateUsergroups();

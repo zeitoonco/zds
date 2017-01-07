@@ -24,7 +24,7 @@ class DSLoginInfo : public DTStruct {
 public:
 	DTString username = {"username"};
 	DTString password = {"password"};
-
+	DTBoolean rememberMe = {"rememberme"};
 	static std::string getStructName() {
 		return "DSLoginInfo";
 	}
@@ -37,18 +37,15 @@ public:
 			DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		this->list.push_back(&username);
 		this->list.push_back(&password);
+		this->list.push_back(&rememberMe);
 	}
 
-	DSLoginInfo(std::string data) :
-			DSLoginInfo() {
-		this->fromString(data);
-	}
 
-	DSLoginInfo(std::string iusername, std::string ipassword) :
+	DSLoginInfo(std::string iusername, std::string ipassword, bool irememberMe=false) :
 			DSLoginInfo() {
 		username = iusername;
 		password = ipassword;
-
+		rememberMe = irememberMe;
 	}
 };
 
@@ -729,6 +726,7 @@ public:
 	DTInteger<int> sessionID = {"sessionID"};
 	DSUserInfo userInfo = {"userInfo"};
 	DTSet<DSBrfPermission> permissions = {"permissions"};
+	DTString authToken = {"authtoken"};
 
 	static std::string getStructName() {
 		return "DSLoginResult";
@@ -744,19 +742,18 @@ public:
 		this->list.push_back(&sessionID);
 		this->list.push_back(&userInfo);
 		this->list.push_back(&permissions);
+		this->list.push_back(&authToken);
 	}
 
-	DSLoginResult(std::string data) :
-			DSLoginResult() {
-		this->fromString(data);
-	}
+
 
 	DSLoginResult(zeitoon::usermanagement::UMLoginResult::UMLoginResultEnum iUMLoginResult, std::string idescription,
-	              int isessionID) :
+	              int isessionID, std::string iauthToken) :
 			DSLoginResult() {//todo by inf: incompplete ! constructors input args?!
 		loginResult = iUMLoginResult;
 		description = idescription;
 		sessionID = isessionID;
+		authToken = iauthToken;
 	}
 
 	string toString(bool includeVersion, int indent = -1, std::string indentContent = defaultIndentContent) const {
@@ -992,6 +989,27 @@ public:
 	DSUserGroupUpdate() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
 		list.push_back(&ilist);
 		list.push_back(&ids);
+	}
+};
+
+class DSBanUser : public DTStruct {
+public:
+	DTInteger<int> userid={"userid"};
+	DTBoolean ban={"ban"};
+	DTString banreason={"banreason"};
+
+	static std::string getStructName() {
+		return "DSBanUser";
+	}
+
+	static int getStructVersion() {
+		return 1;
+	}
+
+	DSBanUser() : DTStruct(this->getStructName(), this->getStructVersion(), 1, 1) {
+		list.push_back(&userid);
+		list.push_back(&ban);
+		list.push_back(&banreason);
 	}
 };
 
